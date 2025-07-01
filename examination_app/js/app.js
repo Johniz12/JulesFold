@@ -28,38 +28,9 @@ let allFetchedQuestions = [];
 // `questions` will now hold the currently filtered list for the active quiz
 let questions = [];
 
-// Mock question data - This will be fetched and put into allFetchedQuestions.
-// The initial questions array here can be empty or removed.
-// let questions = [
-//     {
-//         id: 1,
-//         text: "What is 2 + 2?",
-        options: ["3", "4", "5", "6"],
-        correctAnswer: "4",
-        competency: "Basic Arithmetic"
-    },
-    {
-        id: 2,
-        text: "What is the capital of France?",
-        options: ["Berlin", "Madrid", "Paris", "Rome"],
-        correctAnswer: "Paris",
-        competency: "Geography"
-    },
-    {
-        id: 3,
-        text: "Which planet is known as the Red Planet?",
-        options: ["Earth", "Mars", "Jupiter", "Saturn"],
-        correctAnswer: "Mars",
-        competency: "Astronomy"
-    },
-    {
-        id: 4,
-        text: "What is the chemical symbol for water?",
-        options: ["O2", "H2O", "CO2", "NaCl"],
-        correctAnswer: "H2O",
-        competency: "Basic Chemistry"
-    }
-];
+// The initial mock question data that was here was malformed and has been removed.
+// All questions are now exclusively sourced from the fetchQuestions() function
+// and stored in allFetchedQuestions.
 
 let currentQuestionIndex = 0;
 let score = 0;
