@@ -259,7 +259,7 @@ header {
 }
 
 
-#review-answers-button, #back-to-results-button {
+#review-answers-button, #back-to-results-button, #change-user-button {
     margin-top:10px; /* Add some space if multiple buttons */
     padding: 10px 20px;
     background-color: #007bff; /* Blue for secondary actions */
@@ -271,7 +271,7 @@ header {
     transition: background-color 0.3s ease;
 }
 
-#review-answers-button:hover, #back-to-results-button:hover {
+#review-answers-button:hover, #back-to-results-button:hover, #change-user-button:hover {
     background-color: #0056b3;
 }
 
@@ -334,6 +334,7 @@ header {
     #next-button,
     #restart-button,
     #review-answers-button,
+    #change-user-button, /* Added new button */
     #back-to-results-button {
         width: 100%;
         padding: 12px; /* Make buttons taller for easier tapping */
@@ -420,6 +421,7 @@ header {
     #next-button,
     #restart-button,
     #review-answers-button,
+    #change-user-button, /* Added new button */
     #back-to-results-button {
         width: auto; /* Revert from mobile's 100% */
         padding: 10px 20px; /* Revert to desktop padding */

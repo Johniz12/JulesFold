@@ -25,6 +25,8 @@ const categorySelectElement = document.getElementById('category-select');
 const assessedGradeLevelDisplayElement = document.getElementById('assessed-grade-level-display');
 const gradeLevelValueElement = document.getElementById('grade-level-value');
 
+const changeUserButtonElement = document.getElementById('change-user-button');
+
 
 // Global store for all questions fetched from API/mock
 let allFetchedQuestions = [];
@@ -88,10 +90,27 @@ document.addEventListener('DOMContentLoaded', () => {
     restartButtonElement.addEventListener('click', restartQuiz);
     reviewAnswersButtonElement.addEventListener('click', displayReview);
     backToResultsButtonElement.addEventListener('click', hideReview);
+    changeUserButtonElement.addEventListener('click', handleChangeUser); // Add listener for new button
 
     // Fetch all questions once and populate categories
     fetchAllQuestionsAndSetupCategories();
 });
+
+function handleChangeUser() {
+    resultsAreaElement.classList.add('hidden');
+    reviewAreaElement.classList.add('hidden'); // Ensure review area is also hidden
+    quizAreaElement.classList.add('hidden'); // Ensure quiz area is hidden if somehow visible
+
+    usernameInputElement.value = ''; // Clear the username input field
+    // currentUsername = ''; // No need to clear here, will be set on new user setup
+    // categorySelectElement.value = 'all'; // Optionally reset category, or leave as is
+
+    userAreaElement.classList.remove('hidden'); // Show the user login area
+
+    // Any other cleanup for a full user switch can go here.
+    // For instance, if we displayed user-specific history summaries, clear them.
+    // The current setup where loadQuizHistory is called after new user setup is fine.
+}
 
 async function fetchAllQuestionsAndSetupCategories() {
     try {
