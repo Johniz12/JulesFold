@@ -22,13 +22,25 @@
                 <select id="category-select">
                     <option value="all">All Categories</option>
                     <!-- Categories will be populated by JavaScript -->
+                    <!-- Categories will be populated by JavaScript -->
                 </select>
+            </div>
+
+            <div id="timer-config-area">
+                <div>
+                    <input type="checkbox" id="enable-timer-checkbox">
+                    <label for="enable-timer-checkbox">Enable Timer</label>
+                </div>
+                <div id="timer-duration-controls" class="hidden"> <!-- Initially hidden -->
+                    <label for="timer-duration-minutes">Set Duration (minutes):</label>
+                    <input type="number" id="timer-duration-minutes" min="1" value="10">
+                </div>
             </div>
 
             <button id="start-quiz-button">Start Quiz</button>
             <!-- Removed "/ View History" for now, can be a separate button later -->
-            <button id="toggle-add-question-form-button" style="margin-top: 10px;">Add New Question</button>
-            <button id="view-history-button" style="margin-top: 10px;">View History</button>
+            <button id="toggle-add-question-form-button">Add New Question</button>
+            <button id="view-history-button">View History</button>
         </div>
 
         <div id="add-question-area" class="hidden">
@@ -80,6 +92,9 @@
         </div>
 
         <div id="quiz-area" class="hidden"> <!-- Initially hidden -->
+            <div id="timer-display-container" class="hidden"> <!-- Initially hidden -->
+                Time Left: <span id="time-remaining">--:--</span>
+            </div>
             <div id="question-container">
                 <p id="question-text">Question text will appear here.</p>
             </div>

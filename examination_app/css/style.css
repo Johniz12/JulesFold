@@ -494,7 +494,50 @@ header {
         width: 100%;
         margin-top: 10px;
     }
+    #timer-config-area input[type="number"] { /* Ensure number input is also full width on mobile */
+        width: 100%;
+    }
 }
+
+/* Timer Configuration Styles */
+#timer-config-area {
+    margin-top: 15px;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #f0f0f0; /* Slightly different background to group it */
+    border-radius: 4px;
+}
+
+#timer-config-area div {
+    margin-bottom: 8px;
+}
+#timer-config-area div:last-child {
+    margin-bottom: 0;
+}
+
+#timer-config-area label {
+    margin-left: 5px;
+    margin-right: 10px;
+}
+
+#timer-duration-minutes {
+    width: 70px; /* Small width for minutes input */
+    padding: 5px;
+    font-size: 0.9em;
+}
+
+/* Timer Display Styles */
+#timer-display-container {
+    text-align: right;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #d9534f; /* Red color for urgency */
+    padding: 5px 10px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #eee;
+}
+
 
 /* Styles for History Area */
 #history-area {

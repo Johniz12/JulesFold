@@ -49,6 +49,13 @@ const historyAreaElement = document.getElementById('history-area');
 const historyListElement = document.getElementById('history-list');
 const backToUserMenuButtonElement = document.getElementById('back-to-user-menu-button');
 
+// DOM elements for Timer
+const enableTimerCheckboxElement = document.getElementById('enable-timer-checkbox');
+const timerDurationControlsElement = document.getElementById('timer-duration-controls');
+const timerDurationMinutesInputElement = document.getElementById('timer-duration-minutes');
+const timerDisplayContainerElement = document.getElementById('timer-display-container');
+const timeRemainingElement = document.getElementById('time-remaining');
+
 
 // Global store for all questions fetched from API/mock
 let allFetchedQuestions = [];
@@ -65,6 +72,12 @@ let selectedAnswer = null; // To store the selected answer temporarily
 let quizSessionResults = []; // To store detailed results for the current session
 let currentUsername = ''; // To store the current user's name
 let currentCategory = 'all'; // To store the selected category, default to 'all'
+
+// Timer state variables
+let isTimerEnabled = false;
+let timerDurationSeconds = 0; // Total duration for the current quiz
+let timeRemainingSeconds = 0; // Current time left
+let timerIntervalId = null;
 
 // Function to display the current question and options
 function displayQuestion() {
@@ -137,7 +150,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if(backToUserMenuButtonElement) {
         backToUserMenuButtonElement.addEventListener('click', hideHistoryArea);
     }
+    // Event listener for Timer enable checkbox
+    if(enableTimerCheckboxElement) {
+        enableTimerCheckboxElement.addEventListener('change', handleEnableTimerChange);
+    }
 });
+
+function handleEnableTimerChange() {
+    isTimerEnabled = enableTimerCheckboxElement.checked;
+    if (isTimerEnabled) {
+        timerDurationControlsElement.classList.remove('hidden');
+    } else {
+        timerDurationControlsElement.classList.add('hidden');
+    }
+}
 
 function showHistoryArea() {
     userAreaElement.classList.add('hidden');
@@ -293,6 +319,11 @@ function handleChangeUser() {
     // Any other cleanup for a full user switch can go here.
     // For instance, if we displayed user-specific history summaries, clear them.
     // The current setup where loadQuizHistory is called after new user setup is fine.
+    if (timerIntervalId) {
+        clearInterval(timerIntervalId);
+        timerIntervalId = null;
+    }
+    timerDisplayContainerElement.classList.add('hidden'); // Hide timer display
 }
 
 async function fetchAllQuestionsAndSetupCategories() {
@@ -379,6 +410,21 @@ function handleUserSetup() {
     currentUsername = username;
     localStorage.setItem('currentUsername', currentUsername);
     currentCategory = categorySelectElement.value; // Get selected category
+    isTimerEnabled = enableTimerCheckboxElement.checked; // Get timer enabled state
+
+    if (isTimerEnabled) {
+        const minutes = parseInt(timerDurationMinutesInputElement.value, 10);
+        if (isNaN(minutes) || minutes < 1) {
+            alert("Please enter a valid number of minutes (minimum 1) for the timer.");
+            // Optionally, prevent quiz start or default to a value
+            // For now, we'll let it proceed but timer might not work as expected or default
+            timerDurationSeconds = 600; // Default to 10 minutes if input is bad
+        } else {
+            timerDurationSeconds = minutes * 60;
+        }
+    } else {
+        timerDurationSeconds = 0;
+    }
 
     userAreaElement.classList.add('hidden');
     addQuestionAreaElement.classList.add('hidden'); // Ensure add question form is hidden
@@ -432,7 +478,47 @@ async function startNewQuizSession() {
     }
     // Event listeners for next/restart are already set in DOMContentLoaded,
     // which is fine as they operate on elements within quizArea.
+
+    if (isTimerEnabled && timerDurationSeconds > 0) {
+        timeRemainingSeconds = timerDurationSeconds;
+        timerDisplayContainerElement.classList.remove('hidden');
+        startTimer();
+    } else {
+        timerDisplayContainerElement.classList.add('hidden');
+    }
 }
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(timeRemainingSeconds / 60);
+    const seconds = timeRemainingSeconds % 60;
+    timeRemainingElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function startTimer() {
+    if (timerIntervalId) {
+        clearInterval(timerIntervalId); // Clear any existing timer
+    }
+    updateTimerDisplay(); // Initial display
+    timerIntervalId = setInterval(() => {
+        timeRemainingSeconds--;
+        updateTimerDisplay();
+        if (timeRemainingSeconds <= 0) {
+            forceEndQuiz();
+        }
+    }, 1000);
+}
+
+function forceEndQuiz() {
+    if (timerIntervalId) {
+        clearInterval(timerIntervalId);
+        timerIntervalId = null;
+    }
+    alert("Time's up! Submitting your answers.");
+    // Mark any unanswered current question as null or skip (quizSessionResults only stores answered ones)
+    // Then proceed to endQuiz which calculates score based on quizSessionResults
+    endQuiz();
+}
+
 
 function handleNextQuestion() {
     if (selectedAnswer === null) {
@@ -496,6 +582,12 @@ function handleNextQuestion() {
 }
 
 function endQuiz() {
+    if (timerIntervalId) { // Clear timer if quiz ends normally
+        clearInterval(timerIntervalId);
+        timerIntervalId = null;
+    }
+    timerDisplayContainerElement.classList.add('hidden'); // Hide timer display
+
     quizAreaElement.classList.add('hidden');
     resultsAreaElement.classList.remove('hidden');
     finalScoreElement.textContent = score;
