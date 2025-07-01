@@ -546,8 +546,19 @@ function generateDetailedRecommendations(assessedGradeInfo) { // Accept assessed
                 const sampleIncorrectQuestionInCompetency = incorrectAnswers.find(q => q.competency === competency);
                 let gradeLevelInfo = "";
                 if (sampleIncorrectQuestionInCompetency && sampleIncorrectQuestionInCompetency.gradeLevel !== undefined) {
-                    gradeLevelInfo = ` (around Grade ${sampleIncorrectQuestionInCompetency.gradeLevel} material`;
-                    if (numericAssessedGrade && sampleIncorrectQuestionInCompetency.gradeLevel < numericAssessedGrade) {
+                    const missedQuestionGrade = sampleIncorrectQuestionInCompetency.gradeLevel;
+                    gradeLevelInfo = ` (around Grade ${missedQuestionGrade} material`;
+
+                    const FOUNDATIONAL_GRADE_THRESHOLD = 1; // Define what's considered foundational
+
+                    // Condition for red text:
+                    // 1. User has a numeric assessed grade AND this missed question is below that.
+                    // OR
+                    // 2. User does NOT have a numeric assessed grade (is struggling overall) AND this missed question is at the foundational threshold.
+                    const isClearlyFoundational = (numericAssessedGrade && missedQuestionGrade < numericAssessedGrade);
+                    const isLowGradeMissWhileStruggling = (numericAssessedGrade === null && missedQuestionGrade <= FOUNDATIONAL_GRADE_THRESHOLD);
+
+                    if (isClearlyFoundational || isLowGradeMissWhileStruggling) {
                         gradeLevelInfo += " - <strong style='color:red;'>reviewing this foundational topic is important!</strong>";
                     }
                     gradeLevelInfo += ")";
