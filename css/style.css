@@ -1,0 +1,122 @@
+/* Basic styles for the Examination App */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+header {
+    background-color: #4CAF50;
+    color: white;
+    padding: 1em 0;
+    text-align: center;
+}
+
+#app-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+#quiz-area {
+    margin-bottom: 20px;
+}
+
+#question-container {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 5px;
+}
+
+#question-text {
+    font-size: 1.2em;
+    margin: 0;
+}
+
+#options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.option-button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #e7e7e7;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.option-button:hover {
+    background-color: #ddd;
+}
+
+.option-button.selected {
+    background-color: #4CAF50;
+    color: white;
+    border-color: #3e8e41;
+}
+
+.option-button.correct {
+    background-color: #5cb85c;
+    color: white;
+}
+
+.option-button.incorrect {
+    background-color: #d9534f;
+    color: white;
+}
+
+
+#navigation-container {
+    text-align: right;
+}
+
+#next-button, #restart-button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
+
+#next-button:hover, #restart-button:hover {
+    background-color: #45a049;
+}
+
+#score-area {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #eef;
+    border: 1px solid #ccf;
+    border-radius: 5px;
+    text-align: center;
+}
+
+#results-area {
+    padding: 20px;
+    background-color: #f0fff0;
+    border: 1px solid #ccffcc;
+    border-radius: 5px;
+    text-align: center;
+}
+
+/* Utility class */
+.hidden {
+    display: none !important;
+}

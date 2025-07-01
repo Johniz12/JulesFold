@@ -1,1 +1,43 @@
-index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examination App</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Grade School Examination</h1>
+    </header>
+
+    <main id="app-container">
+        <div id="quiz-area">
+            <div id="question-container">
+                <p id="question-text">Question text will appear here.</p>
+            </div>
+
+            <div id="options-container">
+                <!-- Answer options will be dynamically inserted here -->
+            </div>
+
+            <div id="navigation-container">
+                <button id="next-button">Next Question</button>
+            </div>
+        </div>
+
+        <div id="score-area">
+            <h2>Your Score: <span id="score-value">0</span></h2>
+        </div>
+
+        <div id="results-area" class="hidden">
+            <h2>Quiz Completed!</h2>
+            <p>Your final score is: <span id="final-score">0</span></p>
+            <p id="recommendations">Recommendations will appear here.</p>
+            <button id="restart-button">Restart Quiz</button>
+        </div>
+    </main>
+
+    <script src="js/app.js" defer></script>
+</body>
+</html>
