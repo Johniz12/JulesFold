@@ -28,6 +28,21 @@ const gradeLevelValueElement = document.getElementById('grade-level-value');
 
 const changeUserButtonElement = document.getElementById('change-user-button');
 
+// DOM elements for Add Question Form
+const toggleAddQuestionFormButtonElement = document.getElementById('toggle-add-question-form-button');
+const addQuestionAreaElement = document.getElementById('add-question-area');
+const addQuestionFormElement = document.getElementById('add-question-form');
+const manualQuestionTextInput = document.getElementById('manual-question-text');
+const manualOptionAInput = document.getElementById('manual-option-a');
+const manualOptionBInput = document.getElementById('manual-option-b');
+const manualOptionCInput = document.getElementById('manual-option-c');
+const manualOptionDInput = document.getElementById('manual-option-d');
+const manualCorrectAnswerSelect = document.getElementById('manual-correct-answer');
+const manualCompetencyInput = document.getElementById('manual-competency');
+const manualGradeLevelInput = document.getElementById('manual-grade-level');
+const saveQuestionButtonElement = document.getElementById('save-question-button'); // Already referenced by form submit
+const cancelAddQuestionButtonElement = document.getElementById('cancel-add-question-button');
+
 
 // Global store for all questions fetched from API/mock
 let allFetchedQuestions = [];
@@ -95,7 +110,102 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fetch all questions once and populate categories
     fetchAllQuestionsAndSetupCategories();
+
+    // Event listener for toggling the Add Question form
+    if(toggleAddQuestionFormButtonElement) { // Check if element exists
+        toggleAddQuestionFormButtonElement.addEventListener('click', toggleAddQuestionFormVisibility);
+    }
+    // Event listener for the Add Question form submission
+    if(addQuestionFormElement) { // Check if element exists
+        addQuestionFormElement.addEventListener('submit', handleSaveManualQuestion);
+    }
+    // Event listener for the cancel button in Add Question form
+    if(cancelAddQuestionButtonElement) { // Check if element exists
+        cancelAddQuestionButtonElement.addEventListener('click', toggleAddQuestionFormVisibility);
+    }
 });
+
+function toggleAddQuestionFormVisibility() {
+    if (addQuestionAreaElement.classList.contains('hidden')) {
+        // Show add question form, hide other main areas
+        addQuestionAreaElement.classList.remove('hidden');
+        userAreaElement.classList.add('hidden');
+        quizAreaElement.classList.add('hidden');
+        resultsAreaElement.classList.add('hidden');
+        reviewAreaElement.classList.add('hidden');
+        scoreAreaElement.classList.add('hidden');
+    } else {
+        // Hide add question form, show user area (default starting point)
+        addQuestionAreaElement.classList.add('hidden');
+        userAreaElement.classList.remove('hidden');
+        // Ensure other areas remain hidden as per their default state before quiz starts
+        quizAreaElement.classList.add('hidden');
+        resultsAreaElement.classList.add('hidden');
+        reviewAreaElement.classList.add('hidden');
+        scoreAreaElement.classList.add('hidden');
+    }
+}
+
+function handleSaveManualQuestion(event) {
+    event.preventDefault(); // Prevent actual form submission
+
+    const questionText = manualQuestionTextInput.value.trim();
+    const optionA = manualOptionAInput.value.trim();
+    const optionB = manualOptionBInput.value.trim();
+    const optionC = manualOptionCInput.value.trim();
+    const optionD = manualOptionDInput.value.trim();
+    const correctOptionKey = manualCorrectAnswerSelect.value; // "A", "B", "C", or "D"
+    const competency = manualCompetencyInput.value.trim();
+    const gradeLevel = parseInt(manualGradeLevelInput.value, 10);
+
+    // Basic Validation
+    if (!questionText || !optionA || !optionB || !correctOptionKey || !competency || isNaN(gradeLevel) || gradeLevel < 1 || gradeLevel > 6) {
+        alert("Please fill in all required fields: Question Text, Option A, Option B, Correct Answer, Competency, and a valid Grade Level (1-6).");
+        return;
+    }
+
+    const options = [optionA, optionB];
+    if (optionC) options.push(optionC);
+    if (optionD) options.push(optionD);
+
+    let correctAnswerText = "";
+    if (correctOptionKey === "A") correctAnswerText = optionA;
+    else if (correctOptionKey === "B") correctAnswerText = optionB;
+    else if (correctOptionKey === "C") correctAnswerText = optionC;
+    else if (correctOptionKey === "D") correctAnswerText = optionD;
+
+    if (!correctAnswerText && ( (correctOptionKey === "C" && !optionC) || (correctOptionKey === "D" && !optionD) ) ) {
+        alert("The selected correct option (C or D) is empty. Please provide text for it or choose a different correct option.");
+        return;
+    }
+     if (!options.includes(correctAnswerText) && correctOptionKey !== "") {
+        alert("The text of the selected correct option does not match any of the provided option texts. This can happen if the correct option field (C or D) is empty but selected as correct.");
+        return;
+    }
+
+
+    const newQuestion = {
+        id: `manual_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, // More robust unique ID
+        text: questionText,
+        options: options,
+        correctAnswer: correctAnswerText,
+        competency: competency,
+        gradeLevel: gradeLevel,
+        isManual: true // Flag to identify manually added questions if needed later
+    };
+
+    let manualQuestions = JSON.parse(localStorage.getItem('manualQuestions')) || [];
+    manualQuestions.push(newQuestion);
+    localStorage.setItem('manualQuestions', JSON.stringify(manualQuestions));
+
+    alert("Question saved successfully!");
+    addQuestionFormElement.reset(); // Clear the form
+    // Optionally, refresh category list if a new competency was added
+    // For now, user would need to refresh or start a new session for new competencies to appear in filter
+    // Or, we could immediately re-populate allFetchedQuestions and the category filter.
+    // For simplicity, let's require a page reload or new session for now to see new questions integrated.
+}
+
 
 function handleChangeUser() {
     resultsAreaElement.classList.add('hidden');
@@ -108,6 +218,7 @@ function handleChangeUser() {
     // categorySelectElement.value = 'all'; // Optionally reset category, or leave as is
 
     userAreaElement.classList.remove('hidden'); // Show the user login area
+    addQuestionAreaElement.classList.add('hidden'); // Ensure add question form is hidden too
 
     // Any other cleanup for a full user switch can go here.
     // For instance, if we displayed user-specific history summaries, clear them.
@@ -117,6 +228,7 @@ function handleChangeUser() {
 async function fetchAllQuestionsAndSetupCategories() {
     try {
         allFetchedQuestions = await fetchQuestions(); // Store all questions globally
+        // Later, we will merge manual questions here too.
         populateCategoryFilter();
     } catch (error) {
         console.error("Failed to fetch initial questions for categories:", error);

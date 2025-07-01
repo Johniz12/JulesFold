@@ -27,6 +27,55 @@
 
             <button id="start-quiz-button">Start Quiz</button>
             <!-- Removed "/ View History" for now, can be a separate button later -->
+            <button id="toggle-add-question-form-button" style="margin-top: 10px;">Add New Question</button>
+        </div>
+
+        <div id="add-question-area" class="hidden">
+            <h2>Add a New Question</h2>
+            <form id="add-question-form">
+                <div>
+                    <label for="manual-question-text">Question Text:</label>
+                    <textarea id="manual-question-text" rows="3" required></textarea>
+                </div>
+                <div>
+                    <label for="manual-option-a">Option A:</label>
+                    <input type="text" id="manual-option-a" required>
+                </div>
+                <div>
+                    <label for="manual-option-b">Option B:</label>
+                    <input type="text" id="manual-option-b" required>
+                </div>
+                <div>
+                    <label for="manual-option-c">Option C:</label>
+                    <input type="text" id="manual-option-c">
+                </div>
+                <div>
+                    <label for="manual-option-d">Option D:</label>
+                    <input type="text" id="manual-option-d">
+                </div>
+                <div>
+                    <label for="manual-correct-answer">Correct Answer:</label>
+                    <select id="manual-correct-answer" required>
+                        <option value="">--Select Correct Option--</option>
+                        <option value="A">Option A</option>
+                        <option value="B">Option B</option>
+                        <option value="C">Option C</option>
+                        <option value="D">Option D</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="manual-competency">Competency:</label>
+                    <input type="text" id="manual-competency" required>
+                </div>
+                <div>
+                    <label for="manual-grade-level">Grade Level (1-6):</label>
+                    <input type="number" id="manual-grade-level" min="1" max="6" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" id="save-question-button">Save Question</button>
+                    <button type="button" id="cancel-add-question-button">Cancel</button>
+                </div>
+            </form>
         </div>
 
         <div id="quiz-area" class="hidden"> <!-- Initially hidden -->
