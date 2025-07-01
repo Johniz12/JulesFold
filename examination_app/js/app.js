@@ -72,6 +72,7 @@ let selectedAnswer = null; // To store the selected answer temporarily
 let quizSessionResults = []; // To store detailed results for the current session
 let currentUsername = ''; // To store the current user's name
 let currentCategory = 'all'; // To store the selected category, default to 'all'
+let reviewReturnTarget = null; // 'results' or 'history'
 
 // Timer state variables
 let isTimerEnabled = false;
@@ -123,8 +124,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Quiz-specific listeners are set up *after* username is provided.
     nextButtonElement.addEventListener('click', handleNextQuestion);
     restartButtonElement.addEventListener('click', restartQuiz);
-    reviewAnswersButtonElement.addEventListener('click', displayReview);
-    backToResultsButtonElement.addEventListener('click', hideReview);
+    reviewAnswersButtonElement.addEventListener('click', () => {
+        reviewReturnTarget = 'results'; // Set return target
+        // Hide results area before showing review
+        resultsAreaElement.classList.add('hidden');
+        displayReview(); // Uses current quizSessionResults by default
+    });
+    backToResultsButtonElement.addEventListener('click', handleReturnFromReview); // Renamed function
     changeUserButtonElement.addEventListener('click', handleChangeUser); // Add listener for new button
 
     // Fetch all questions once and populate categories
@@ -149,6 +155,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listener for Back to User Menu button (from History)
     if(backToUserMenuButtonElement) {
         backToUserMenuButtonElement.addEventListener('click', hideHistoryArea);
+    }
+    // Event listener for clicks within the history list (for review attempt buttons)
+    if(historyListElement) {
+        historyListElement.addEventListener('click', handleHistoryListClick);
     }
     // Event listener for Timer enable checkbox
     if(enableTimerCheckboxElement) {
@@ -211,10 +221,38 @@ function displayQuizHistory() {
             ${attempt.category ? `<p><strong>Category:</strong> ${attempt.category}</p>` : ''}
             ${attempt.assessedGrade ? `<p><strong>Assessed Grade:</strong> ${attempt.assessedGrade}</p>` : ''}
         `;
-        // TODO: Add a button here to "Review this attempt" which would load this attempt's quizSessionResults
-        // into the review area. This is a more advanced feature for later.
+
+        const reviewAttemptButton = document.createElement('button');
+        reviewAttemptButton.textContent = "Review this Attempt";
+        reviewAttemptButton.classList.add('review-attempt-button'); // For styling & event delegation
+        reviewAttemptButton.dataset.attemptIndex = index; // Store index to retrieve data later
+
+        itemDiv.appendChild(reviewAttemptButton);
         historyListElement.appendChild(itemDiv);
     });
+}
+
+function handleHistoryListClick(event) {
+    if (event.target.classList.contains('review-attempt-button')) {
+        const attemptIndex = parseInt(event.target.dataset.attemptIndex, 10);
+        const history = loadQuizHistory(); // Reload or ensure history is accessible
+
+        if (history && history[attemptIndex] && history[attemptIndex].results) {
+            // Before showing review, set where the "Back" button in review area should go
+            // This will be handled in the next step (Adjust "Back to Results" Button Logic)
+            // For now, just manage visibility:
+            historyAreaElement.classList.add('hidden');
+            // resultsAreaElement, quizAreaElement etc. should already be hidden if historyArea was visible
+
+            // We need to set a flag or variable to indicate the review source
+            reviewReturnTarget = 'history'; // Set return target
+            // For now, the actual call to displayReview with specific results
+            displayReview(history[attemptIndex].results);
+        } else {
+            console.error("Could not find results for history item index:", attemptIndex);
+            alert("Sorry, could not retrieve this quiz attempt for review.");
+        }
+    }
 }
 
 
@@ -449,6 +487,7 @@ async function startNewQuizSession() {
     // Ensure correct areas are visible/hidden
     userAreaElement.classList.add('hidden'); // Make sure user area is hidden
     resultsAreaElement.classList.add('hidden'); // Hide previous results if any
+    reviewAreaElement.classList.add('hidden'); // Explicitly hide review area
     quizAreaElement.classList.remove('hidden'); // Show the quiz playing area
     scoreAreaElement.classList.remove('hidden'); // Make score area visible for the new quiz
 
@@ -823,17 +862,25 @@ async function fetchQuestions() {
     // return JSON.parse(JSON.stringify(questions)); // To return a deep copy
 }
 
-function displayReview() {
-    if (quizSessionResults.length === 0) {
-        alert("No quiz data to review. Please complete a quiz first.");
+// Modifying displayReview to accept specific results, or default to current session's
+function displayReview(resultsToReview = quizSessionResults) {
+    if (!resultsToReview || resultsToReview.length === 0) {
+        alert("No quiz data available to review.");
+        // Potentially hide review area and show a more appropriate screen if called directly with no data
+        // For now, just an alert and return.
         return;
     }
 
-    resultsAreaElement.classList.add('hidden');
+    // Determine where to go back to after review
+    // This will be handled by a separate variable/logic in the next step.
+    // For now, just ensure the review area is shown.
+    // resultsAreaElement.classList.add('hidden'); // This might hide the wrong thing if reviewing from history
+    // historyAreaElement.classList.add('hidden'); // Also hide history if it was open
+
     reviewAreaElement.classList.remove('hidden');
     reviewContentElement.innerHTML = ''; // Clear previous review content
 
-    quizSessionResults.forEach((result, index) => {
+    resultsToReview.forEach((result, index) => {
         const questionItemDiv = document.createElement('div');
         questionItemDiv.classList.add('review-question-item');
 
@@ -874,7 +921,15 @@ function displayReview() {
     });
 }
 
-function hideReview() {
+function handleReturnFromReview() {
     reviewAreaElement.classList.add('hidden');
-    resultsAreaElement.classList.remove('hidden'); // Show results area again
+    if (reviewReturnTarget === 'results') {
+        resultsAreaElement.classList.remove('hidden');
+    } else if (reviewReturnTarget === 'history') {
+        historyAreaElement.classList.remove('hidden');
+        // displayQuizHistory(); // Re-display history in case something changed, or rely on it being static
+    } else {
+        userAreaElement.classList.remove('hidden'); // Default fallback if target is unknown
+    }
+    reviewReturnTarget = null; // Reset for next time
 }

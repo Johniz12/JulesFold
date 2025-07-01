@@ -607,6 +607,24 @@ header {
     background-color: #5a6268;
 }
 
+.review-attempt-button { /* Style for the new buttons in history list */
+    padding: 8px 12px;
+    background-color: #17a2b8; /* Teal/info color */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin-top: 10px;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+}
+
+.review-attempt-button:hover {
+    background-color: #138496;
+}
+
+
 /* Ensure #view-history-button in user-area also gets its margin if not full width */
 @media (min-width: 601px) {
     #user-area #view-history-button { /* More specific selector for desktop/tablet */
