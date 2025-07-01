@@ -43,6 +43,12 @@ const manualGradeLevelInput = document.getElementById('manual-grade-level');
 const saveQuestionButtonElement = document.getElementById('save-question-button'); // Already referenced by form submit
 const cancelAddQuestionButtonElement = document.getElementById('cancel-add-question-button');
 
+// DOM elements for History Area
+const viewHistoryButtonElement = document.getElementById('view-history-button');
+const historyAreaElement = document.getElementById('history-area');
+const historyListElement = document.getElementById('history-list');
+const backToUserMenuButtonElement = document.getElementById('back-to-user-menu-button');
+
 
 // Global store for all questions fetched from API/mock
 let allFetchedQuestions = [];
@@ -120,10 +126,71 @@ document.addEventListener('DOMContentLoaded', () => {
         addQuestionFormElement.addEventListener('submit', handleSaveManualQuestion);
     }
     // Event listener for the cancel button in Add Question form
-    if(cancelAddQuestionButtonElement) { // Check if element exists
+    if(cancelAddQuestionButtonElement) {
         cancelAddQuestionButtonElement.addEventListener('click', toggleAddQuestionFormVisibility);
     }
+    // Event listener for View History button
+    if(viewHistoryButtonElement) {
+        viewHistoryButtonElement.addEventListener('click', showHistoryArea);
+    }
+    // Event listener for Back to User Menu button (from History)
+    if(backToUserMenuButtonElement) {
+        backToUserMenuButtonElement.addEventListener('click', hideHistoryArea);
+    }
 });
+
+function showHistoryArea() {
+    userAreaElement.classList.add('hidden');
+    addQuestionAreaElement.classList.add('hidden');
+    quizAreaElement.classList.add('hidden');
+    resultsAreaElement.classList.add('hidden');
+    reviewAreaElement.classList.add('hidden');
+    scoreAreaElement.classList.add('hidden');
+    historyAreaElement.classList.remove('hidden');
+    displayQuizHistory();
+}
+
+function hideHistoryArea() {
+    historyAreaElement.classList.add('hidden');
+    userAreaElement.classList.remove('hidden'); // Go back to user area
+}
+
+function displayQuizHistory() {
+    const history = loadQuizHistory(); // This function already gets history for currentUsername
+    historyListElement.innerHTML = ''; // Clear previous list
+
+    if (!currentUsername) {
+        historyListElement.innerHTML = '<p class="no-history">Please enter your name to view history.</p>';
+        return;
+    }
+    if (history.length === 0) {
+        historyListElement.innerHTML = '<p class="no-history">No quiz history found for this user.</p>';
+        return;
+    }
+
+    history.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date, newest first
+
+    history.forEach(attempt => {
+        const itemDiv = document.createElement('div');
+        itemDiv.classList.add('history-item');
+
+        const date = new Date(attempt.date).toLocaleString();
+        // Infer category if not directly stored (will address in step 4)
+        // For now, we display what's available.
+        // The assessedGrade string is also not yet in 'attempt' object (step 4)
+
+        itemDiv.innerHTML = `
+            <p><strong>Date:</strong> ${date}</p>
+            <p><strong>Score:</strong> ${attempt.score} / ${attempt.totalQuestions}</p>
+            ${attempt.category ? `<p><strong>Category:</strong> ${attempt.category}</p>` : ''}
+            ${attempt.assessedGrade ? `<p><strong>Assessed Grade:</strong> ${attempt.assessedGrade}</p>` : ''}
+        `;
+        // TODO: Add a button here to "Review this attempt" which would load this attempt's quizSessionResults
+        // into the review area. This is a more advanced feature for later.
+        historyListElement.appendChild(itemDiv);
+    });
+}
+
 
 function toggleAddQuestionFormVisibility() {
     if (addQuestionAreaElement.classList.contains('hidden')) {
@@ -134,6 +201,7 @@ function toggleAddQuestionFormVisibility() {
         resultsAreaElement.classList.add('hidden');
         reviewAreaElement.classList.add('hidden');
         scoreAreaElement.classList.add('hidden');
+        historyAreaElement.classList.add('hidden'); // Also hide history
     } else {
         // Hide add question form, show user area (default starting point)
         addQuestionAreaElement.classList.add('hidden');
@@ -143,6 +211,7 @@ function toggleAddQuestionFormVisibility() {
         resultsAreaElement.classList.add('hidden');
         reviewAreaElement.classList.add('hidden');
         scoreAreaElement.classList.add('hidden');
+        historyAreaElement.classList.add('hidden');
     }
 }
 
@@ -219,6 +288,7 @@ function handleChangeUser() {
 
     userAreaElement.classList.remove('hidden'); // Show the user login area
     addQuestionAreaElement.classList.add('hidden'); // Ensure add question form is hidden too
+    historyAreaElement.classList.add('hidden'); // Ensure history area is hidden
 
     // Any other cleanup for a full user switch can go here.
     // For instance, if we displayed user-specific history summaries, clear them.
@@ -261,6 +331,8 @@ function handleUserSetup() {
     currentCategory = categorySelectElement.value; // Get selected category
 
     userAreaElement.classList.add('hidden');
+    addQuestionAreaElement.classList.add('hidden'); // Ensure add question form is hidden
+    historyAreaElement.classList.add('hidden'); // Ensure history area is hidden
     // quizAreaElement.classList.remove('hidden'); // This will be handled by startNewQuizSession
 
     initializeAppLogic();
@@ -391,7 +463,7 @@ function endQuiz() {
 
     generateDetailedRecommendations(assessedResult); // Pass assessedResult (which can be number or string)
 
-    saveQuizAttempt(); // Save the attempt at the end of the quiz
+    saveQuizAttempt(assessedResult, currentCategory); // Pass assessedGrade and currentCategory
 }
 
 function generateDetailedRecommendations(assessedGradeInfo) { // Accept assessedGradeInfo
@@ -510,14 +582,16 @@ function calculateAssessedGradeLevel() {
 }
 
 
-function saveQuizAttempt() {
+function saveQuizAttempt(assessedGrade, category) { // Accept new parameters
     const now = new Date();
     const attempt = {
         date: now.toISOString(),
-        username: currentUsername, // Add username to the saved attempt
+        username: currentUsername,
         score: score,
-        totalQuestions: questions.length,
-        results: quizSessionResults, // The detailed results we've been collecting
+        totalQuestions: questions.length, // Based on the filtered questions for the session
+        results: quizSessionResults,
+        assessedGrade: assessedGrade, // Store the assessed grade string/number
+        category: category // Store the category for this quiz attempt
     };
 
     let history = JSON.parse(localStorage.getItem('quizHistory_' + currentUsername)) || [];
