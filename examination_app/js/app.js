@@ -4,6 +4,7 @@ console.log("Examination App Loaded");
 const questionTextElement = document.getElementById('question-text');
 const optionsContainerElement = document.getElementById('options-container');
 const nextButtonElement = document.getElementById('next-button');
+const scoreAreaElement = document.getElementById('score-area'); // Added this
 const scoreValueElement = document.getElementById('score-value');
 const quizAreaElement = document.getElementById('quiz-area');
 const resultsAreaElement = document.getElementById('results-area');
@@ -99,7 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function handleChangeUser() {
     resultsAreaElement.classList.add('hidden');
     reviewAreaElement.classList.add('hidden'); // Ensure review area is also hidden
-    quizAreaElement.classList.add('hidden'); // Ensure quiz area is hidden if somehow visible
+    quizAreaElement.classList.add('hidden'); // Ensure quiz area is hidden
+    scoreAreaElement.classList.add('hidden'); // Hide score area as well
 
     usernameInputElement.value = ''; // Clear the username input field
     // currentUsername = ''; // No need to clear here, will be set on new user setup
@@ -170,6 +172,7 @@ async function startNewQuizSession() {
     userAreaElement.classList.add('hidden'); // Make sure user area is hidden
     resultsAreaElement.classList.add('hidden'); // Hide previous results if any
     quizAreaElement.classList.remove('hidden'); // Show the quiz playing area
+    scoreAreaElement.classList.remove('hidden'); // Make score area visible for the new quiz
 
     questionTextElement.textContent = "Loading questions...";
     try {
