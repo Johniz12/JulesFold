@@ -531,11 +531,18 @@ header {
     text-align: right;
     font-size: 1.1em;
     font-weight: bold;
-    color: #d9534f; /* Red color for urgency */
+    color: #d9534f; /* Default red color for urgency */
     padding: 5px 10px;
     margin-bottom: 15px;
     background-color: #f9f9f9;
     border-bottom: 1px solid #eee;
+    transition: color 0.3s ease, font-weight 0.3s ease; /* Smooth transition for warning */
+}
+
+#timer-display-container.timer-warning,
+#timer-display-container.timer-warning #time-remaining {
+    color: #A80000; /* Darker, more urgent red */
+    font-weight: bold; /* Ensure it's bold if not already */
 }
 
 

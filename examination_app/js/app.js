@@ -415,10 +415,8 @@ function handleUserSetup() {
     if (isTimerEnabled) {
         const minutes = parseInt(timerDurationMinutesInputElement.value, 10);
         if (isNaN(minutes) || minutes < 1) {
-            alert("Please enter a valid number of minutes (minimum 1) for the timer.");
-            // Optionally, prevent quiz start or default to a value
-            // For now, we'll let it proceed but timer might not work as expected or default
-            timerDurationSeconds = 600; // Default to 10 minutes if input is bad
+            alert("Please enter a valid number of minutes (minimum 1) for the timer. Defaulting to 5 minutes.");
+            timerDurationSeconds = 300; // Default to 5 minutes (300 seconds) if input is bad
         } else {
             timerDurationSeconds = minutes * 60;
         }
@@ -482,9 +480,11 @@ async function startNewQuizSession() {
     if (isTimerEnabled && timerDurationSeconds > 0) {
         timeRemainingSeconds = timerDurationSeconds;
         timerDisplayContainerElement.classList.remove('hidden');
+        timerDisplayContainerElement.classList.remove('timer-warning'); // Reset warning class
         startTimer();
     } else {
         timerDisplayContainerElement.classList.add('hidden');
+        timerDisplayContainerElement.classList.remove('timer-warning'); // Ensure hidden timer is not in warning state
     }
 }
 
@@ -502,6 +502,11 @@ function startTimer() {
     timerIntervalId = setInterval(() => {
         timeRemainingSeconds--;
         updateTimerDisplay();
+
+        if (timeRemainingSeconds === 120) { // 2 minutes remaining
+            timerDisplayContainerElement.classList.add('timer-warning');
+        }
+
         if (timeRemainingSeconds <= 0) {
             forceEndQuiz();
         }
