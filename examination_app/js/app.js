@@ -176,6 +176,21 @@ function handleEnableTimerChange() {
 }
 
 function showHistoryArea() {
+    const enteredUsername = usernameInputElement.value.trim();
+    if (enteredUsername && currentUsername !== enteredUsername) {
+        // If there's text in the input and it's different from the (potentially old) currentUsername,
+        // or if currentUsername was empty, update currentUsername from the input field.
+        currentUsername = enteredUsername;
+        localStorage.setItem('currentUsername', currentUsername); // Persist this effective "login"
+        console.log("showHistoryArea: Updated currentUsername from input field to:", currentUsername);
+    } else if (!currentUsername && enteredUsername) {
+        // If currentUsername was empty, and user typed something.
+        currentUsername = enteredUsername;
+        localStorage.setItem('currentUsername', currentUsername);
+        console.log("showHistoryArea: Set currentUsername from input field to:", currentUsername);
+    }
+
+
     userAreaElement.classList.add('hidden');
     addQuestionAreaElement.classList.add('hidden');
     quizAreaElement.classList.add('hidden');
@@ -192,21 +207,34 @@ function hideHistoryArea() {
 }
 
 function displayQuizHistory() {
-    const history = loadQuizHistory(); // This function already gets history for currentUsername
+    console.log("displayQuizHistory: Called. currentUsername:", currentUsername);
+    const history = loadQuizHistory();
+    console.log("displayQuizHistory: History received from loadQuizHistory:", JSON.parse(JSON.stringify(history))); // Log a deep copy to see its state here
+
     historyListElement.innerHTML = ''; // Clear previous list
 
     if (!currentUsername) {
+        console.log("displayQuizHistory: No currentUsername, displaying 'Please enter name' message.");
         historyListElement.innerHTML = '<p class="no-history">Please enter your name to view history.</p>';
         return;
     }
-    if (history.length === 0) {
+    if (!history || history.length === 0) { // Added !history check for robustness
+        console.log("displayQuizHistory: No history or empty history, displaying 'No history found' message.");
         historyListElement.innerHTML = '<p class="no-history">No quiz history found for this user.</p>';
         return;
     }
 
-    history.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date, newest first
+    // Sort by date, newest first. Ensure date parsing is robust if needed.
+    try {
+        history.sort((a, b) => new Date(b.date) - new Date(a.date));
+    } catch (e) {
+        console.error("displayQuizHistory: Error sorting history by date. Dates might be malformed.", e);
+        // Proceed with unsorted history or handle error
+    }
 
-    history.forEach(attempt => {
+    console.log("displayQuizHistory: Processing sorted history items. Count:", history.length);
+    history.forEach((attempt, index) => { // Added index for logging
+        console.log(`displayQuizHistory: Processing attempt ${index}:`, JSON.parse(JSON.stringify(attempt)));
         const itemDiv = document.createElement('div');
         itemDiv.classList.add('history-item');
 
@@ -799,12 +827,33 @@ function saveQuizAttempt(assessedGrade, category) { // Accept new parameters
 
 function loadQuizHistory() {
     if (!currentUsername) {
-        console.log("No current user to load history for.");
+        console.log("loadQuizHistory: No current user to load history for. currentUsername is:", currentUsername);
         return [];
     }
-    const history = JSON.parse(localStorage.getItem('quizHistory_' + currentUsername)) || [];
-    console.log(`Loaded quiz history for ${currentUsername}:`, history);
-    return history;
+    console.log(`loadQuizHistory: Attempting to load history for user: ${currentUsername}`);
+    const rawHistory = localStorage.getItem('quizHistory_' + currentUsername);
+    console.log(`loadQuizHistory: Raw data from localStorage for ${currentUsername}:`, rawHistory);
+
+    if (!rawHistory) {
+        console.log(`loadQuizHistory: No raw history found in localStorage for ${currentUsername}.`);
+        return [];
+    }
+
+    try {
+        const history = JSON.parse(rawHistory);
+        if (!Array.isArray(history)) {
+            console.error(`loadQuizHistory: Parsed history for ${currentUsername} is not an array:`, history);
+            localStorage.removeItem('quizHistory_' + currentUsername); // Clear corrupted data
+            return [];
+        }
+        console.log(`loadQuizHistory: Successfully parsed history for ${currentUsername}:`, history);
+        return history;
+    } catch (error) {
+        console.error(`loadQuizHistory: Error parsing history JSON for ${currentUsername}:`, error);
+        console.error("Corrupted history data was:", rawHistory);
+        localStorage.removeItem('quizHistory_' + currentUsername); // Clear corrupted data
+        return [];
+    }
 }
 
 // Remove the redundant DOMContentLoaded listener here, as it's merged above.
