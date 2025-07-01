@@ -269,10 +269,10 @@ function handleSaveManualQuestion(event) {
 
     alert("Question saved successfully!");
     addQuestionFormElement.reset(); // Clear the form
-    // Optionally, refresh category list if a new competency was added
-    // For now, user would need to refresh or start a new session for new competencies to appear in filter
-    // Or, we could immediately re-populate allFetchedQuestions and the category filter.
-    // For simplicity, let's require a page reload or new session for now to see new questions integrated.
+
+    // Refresh the questions and category filter to include the new question immediately
+    console.log("New question saved, re-fetching all questions and updating categories...");
+    fetchAllQuestionsAndSetupCategories();
 }
 
 
@@ -297,8 +297,30 @@ function handleChangeUser() {
 
 async function fetchAllQuestionsAndSetupCategories() {
     try {
-        allFetchedQuestions = await fetchQuestions(); // Store all questions globally
-        // Later, we will merge manual questions here too.
+        let mockApiQuestions = await fetchQuestions(); // Get questions from mock API
+
+        const storedManualQuestions = localStorage.getItem('manualQuestions');
+        let manualQuestions = [];
+        if (storedManualQuestions) {
+            try {
+                manualQuestions = JSON.parse(storedManualQuestions);
+                if (!Array.isArray(manualQuestions)) { // Basic validation
+                    console.warn("Manual questions from localStorage was not an array, resetting.");
+                    manualQuestions = [];
+                }
+            } catch (e) {
+                console.error("Error parsing manual questions from localStorage:", e);
+                manualQuestions = []; // Reset if parsing fails
+            }
+        }
+
+        // Merge mock API questions and manual questions
+        // Simple concatenation assumes IDs are unique (e.g. mock are numbers, manual are `manual_...`)
+        // For more robust ID handling, one might check for duplicates before merging or use a Set.
+        allFetchedQuestions = mockApiQuestions.concat(manualQuestions);
+
+        console.log("All fetched/loaded questions:", allFetchedQuestions); // For debugging
+
         populateCategoryFilter();
     } catch (error) {
         console.error("Failed to fetch initial questions for categories:", error);
@@ -307,17 +329,45 @@ async function fetchAllQuestionsAndSetupCategories() {
 }
 
 function populateCategoryFilter() {
-    if (!allFetchedQuestions || allFetchedQuestions.length === 0) return;
+    if (!allFetchedQuestions || allFetchedQuestions.length === 0) {
+        // Ensure the dropdown is empty except for "All Categories" if no questions
+        while (categorySelectElement.options.length > 1) {
+            categorySelectElement.remove(1);
+        }
+        return;
+    }
+
+    // Store current selected value to try and restore it later if it still exists
+    const currentSelectedCategory = categorySelectElement.value;
+
+    // Clear existing options except the first "All Categories" one
+    while (categorySelectElement.options.length > 1) {
+        categorySelectElement.remove(1);
+    }
 
     const competencies = new Set();
-    allFetchedQuestions.forEach(q => competencies.add(q.competency));
+    allFetchedQuestions.forEach(q => {
+        if (q.competency && q.competency.trim() !== "") { // Ensure competency exists and is not empty
+            competencies.add(q.competency.trim());
+        }
+    });
 
-    competencies.forEach(comp => {
+    // Sort competencies alphabetically for consistent order
+    const sortedCompetencies = Array.from(competencies).sort();
+
+    sortedCompetencies.forEach(comp => {
         const option = document.createElement('option');
         option.value = comp;
         option.textContent = comp;
         categorySelectElement.appendChild(option);
     });
+
+    // Try to restore previous selection if it's still a valid category
+    if (Array.from(categorySelectElement.options).some(opt => opt.value === currentSelectedCategory)) {
+        categorySelectElement.value = currentSelectedCategory;
+    } else {
+        categorySelectElement.value = 'all'; // Default to 'all' if previous selection is gone
+    }
 }
 
 function handleUserSetup() {
