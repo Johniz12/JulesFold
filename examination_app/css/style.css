@@ -469,9 +469,23 @@ header {
     /* margin-top: 10px; was inline, can be here or in user-area styles */
 }
 
-#toggle-add-question-form-button:hover {
+#toggle-add-question-form-button:hover, #export-questions-button:hover { /* Grouped hover */
     background-color: #5a6268;
 }
+
+/* Ensure export button shares similar base styles */
+#export-questions-button {
+    padding: 10px 20px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+    margin-top: 10px; /* Add some margin like the others in user-area */
+}
+
 
 /* Responsive adjustments for add question form if any specific are needed */
 @media (max-width: 600px) {
@@ -486,7 +500,7 @@ header {
         width: 100%; /* Make action buttons full width on mobile */
     }
 
-    #toggle-add-question-form-button {
+    #toggle-add-question-form-button, #export-questions-button { /* Grouped for mobile */
         width: 100%; /* Make toggle button full width in user-area on mobile */
         margin-top: 15px;
     }

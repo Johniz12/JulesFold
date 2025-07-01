@@ -49,6 +49,8 @@ const historyAreaElement = document.getElementById('history-area');
 const historyListElement = document.getElementById('history-list');
 const backToUserMenuButtonElement = document.getElementById('back-to-user-menu-button');
 
+const exportQuestionsButtonElement = document.getElementById('export-questions-button');
+
 // DOM elements for Timer
 const enableTimerCheckboxElement = document.getElementById('enable-timer-checkbox');
 const timerDurationControlsElement = document.getElementById('timer-duration-controls');
@@ -164,7 +166,37 @@ document.addEventListener('DOMContentLoaded', () => {
     if(enableTimerCheckboxElement) {
         enableTimerCheckboxElement.addEventListener('change', handleEnableTimerChange);
     }
+    // Event listener for Export Questions button
+    if(exportQuestionsButtonElement) {
+        exportQuestionsButtonElement.addEventListener('click', handleExportQuestions);
+    }
 });
+
+function handleExportQuestions() {
+    const manualQuestions = JSON.parse(localStorage.getItem('manualQuestions')) || [];
+
+    if (manualQuestions.length === 0) {
+        alert("No manual questions to export.");
+        return;
+    }
+
+    const jsonString = JSON.stringify(manualQuestions, null, 2); // Pretty print JSON
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'manual_quiz_questions.json';
+    document.body.appendChild(a); // Required for Firefox
+    a.click();
+
+    // Cleanup
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    alert("Your manually added questions have been exported!");
+}
+
 
 function handleEnableTimerChange() {
     isTimerEnabled = enableTimerCheckboxElement.checked;
