@@ -179,6 +179,17 @@ header {
     text-align: center;
 }
 
+#assessed-grade-level-display {
+    font-size: 1.2em;
+    color: #333;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #e9f5ff; /* Light blueish background */
+    border: 1px solid #cce0ff;
+    border-radius: 4px;
+}
+
 #recommendations ul {
     list-style-position: inside;
     text-align: left;

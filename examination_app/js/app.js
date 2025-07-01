@@ -22,6 +22,9 @@ const backToResultsButtonElement = document.getElementById('back-to-results-butt
 
 const categorySelectElement = document.getElementById('category-select');
 
+const assessedGradeLevelDisplayElement = document.getElementById('assessed-grade-level-display');
+const gradeLevelValueElement = document.getElementById('grade-level-value');
+
 
 // Global store for all questions fetched from API/mock
 let allFetchedQuestions = [];
@@ -216,7 +219,8 @@ function handleNextQuestion() {
         userAnswer: selectedAnswer,
         correctAnswer: currentQuestion.correctAnswer,
         isCorrect: isCorrect,
-        competency: currentQuestion.competency
+        competency: currentQuestion.competency,
+        gradeLevel: currentQuestion.gradeLevel // Store gradeLevel
     });
 
     // Disable options after answering
@@ -240,14 +244,31 @@ function endQuiz() {
     resultsAreaElement.classList.remove('hidden');
     finalScoreElement.textContent = score;
 
-    generateDetailedRecommendations(); // New function for recommendations
+    const assessedResult = calculateAssessedGradeLevel();
+    if (typeof assessedResult === 'number') {
+        gradeLevelValueElement.textContent = `Grade ${assessedResult}`;
+        assessedGradeLevelDisplayElement.classList.remove('hidden');
+    } else if (typeof assessedResult === 'string') { // Covers "Needs review..." or "Could not determine..." etc.
+        gradeLevelValueElement.textContent = assessedResult;
+        assessedGradeLevelDisplayElement.classList.remove('hidden');
+    } else {
+        assessedGradeLevelDisplayElement.classList.add('hidden'); // Should not happen with current logic
+    }
+
+    generateDetailedRecommendations(assessedResult); // Pass assessedResult (which can be number or string)
 
     saveQuizAttempt(); // Save the attempt at the end of the quiz
 }
 
-function generateDetailedRecommendations() {
+function generateDetailedRecommendations(assessedGradeInfo) { // Accept assessedGradeInfo
     const incorrectAnswers = quizSessionResults.filter(result => !result.isCorrect);
     let recommendationHtml = "";
+
+    // Determine numeric assessed grade if possible for comparison
+    let numericAssessedGrade = null;
+    if (typeof assessedGradeInfo === 'number') {
+        numericAssessedGrade = assessedGradeInfo;
+    }
 
     if (incorrectAnswers.length === 0) {
         recommendationHtml = "<p>Excellent work! You answered all questions correctly. Keep up the great effort!</p>";
@@ -265,11 +286,23 @@ function generateDetailedRecommendations() {
         if (sortedCompetencies.length > 0) {
             recommendationHtml += "<p>Here are some areas you might want to focus on:</p><ul>";
             sortedCompetencies.forEach(([competency, count]) => {
-                recommendationHtml += `<li>${competency} (you missed ${count} question${count > 1 ? 's' : ''} in this area)</li>`;
+                // Find one of the incorrect questions in this competency to check its grade level
+                const sampleIncorrectQuestionInCompetency = incorrectAnswers.find(q => q.competency === competency);
+                let gradeLevelInfo = "";
+                if (sampleIncorrectQuestionInCompetency && sampleIncorrectQuestionInCompetency.gradeLevel !== undefined) {
+                    gradeLevelInfo = ` (around Grade ${sampleIncorrectQuestionInCompetency.gradeLevel} material`;
+                    if (numericAssessedGrade && sampleIncorrectQuestionInCompetency.gradeLevel < numericAssessedGrade) {
+                        gradeLevelInfo += " - <strong style='color:red;'>reviewing this foundational topic is important!</strong>";
+                    }
+                    gradeLevelInfo += ")";
+                }
+                recommendationHtml += `<li>${competency} (you missed ${count} question${count > 1 ? 's' : ''} in this area${gradeLevelInfo})</li>`;
             });
             recommendationHtml += "</ul>";
         } else {
-            recommendationHtml = "<p>Good effort! Review the questions you missed to improve further.</p>";
+            // This case (incorrectAnswers.length > 0 but sortedCompetencies.length === 0)
+            // would only happen if incorrect questions had no competency.
+            recommendationHtml = "<p>Good effort! Review the specific questions you missed to improve further.</p>";
         }
     }
 
@@ -281,6 +314,65 @@ function generateDetailedRecommendations() {
     }
 
     recommendationsElement.innerHTML = recommendationHtml;
+}
+
+function calculateAssessedGradeLevel() {
+    if (!quizSessionResults || quizSessionResults.length === 0) {
+        return "Not enough data to assess grade level.";
+    }
+
+    const proficiencyThreshold = 0.75; // 75% needed to be considered proficient at a grade level
+    const gradeLevelStats = {}; // Store { total: x, correct: y } for each grade level
+
+    quizSessionResults.forEach(result => {
+        if (result.gradeLevel === undefined || result.gradeLevel === null) return; // Skip if no grade level
+
+        if (!gradeLevelStats[result.gradeLevel]) {
+            gradeLevelStats[result.gradeLevel] = { total: 0, correct: 0 };
+        }
+        gradeLevelStats[result.gradeLevel].total++;
+        if (result.isCorrect) {
+            gradeLevelStats[result.gradeLevel].correct++;
+        }
+    });
+
+    let assessedGrade = 0; // Start with 0, meaning below Grade 1 or not proficient at any tested level
+
+    // Get sorted unique grade levels present in the quiz
+    const sortedGradeLevels = Object.keys(gradeLevelStats)
+                                   .map(Number)
+                                   .sort((a, b) => a - b);
+
+    for (const level of sortedGradeLevels) {
+        const stats = gradeLevelStats[level];
+        if (stats.total > 0) { // Ensure there were questions at this level
+            const proficiency = stats.correct / stats.total;
+            console.log(`Grade Level ${level}: Correct ${stats.correct}/${stats.total}, Proficiency: ${proficiency.toFixed(2)}`);
+            if (proficiency >= proficiencyThreshold) {
+                assessedGrade = level; // Update to this level if proficient
+            } else {
+                // If proficiency is not met at a certain level,
+                // they cannot be assessed at a higher level based on this model.
+                // However, if they were proficient at a lower level, that still stands.
+                // The current logic correctly finds the *highest* level of proficiency.
+            }
+        }
+    }
+
+    if (assessedGrade === 0 && sortedGradeLevels.length > 0) {
+        // Check if they attempted any questions at all.
+        // If they attempted questions but weren't proficient at the lowest level tested.
+        const lowestTestedLevel = sortedGradeLevels[0];
+        const lowestLevelStats = gradeLevelStats[lowestTestedLevel];
+        if (lowestLevelStats && lowestLevelStats.total > 0 && (lowestLevelStats.correct / lowestLevelStats.total) < proficiencyThreshold) {
+             return `Needs review at Grade ${lowestTestedLevel} material`; // Return string
+        }
+        return "Proficiency not met at any tested grade level"; // Return string
+    } else if (assessedGrade > 0) {
+        return assessedGrade; // Return number
+    } else {
+        return "Could not determine (no graded questions)"; // Return string
+    }
 }
 
 
@@ -342,19 +434,24 @@ async function fetchQuestions() {
     // It's good practice to return a new array/object to mimic immutability of API responses.
     const mockApiResponse = [
         // Basic Arithmetic
-        { id: 1, text: "What is 5 + 7?", options: ["10", "12", "14", "8"], correctAnswer: "12", competency: "Basic Arithmetic" },
-        { id: 5, text: "What is 10 - 3?", options: ["6", "7", "8", "5"], correctAnswer: "7", competency: "Basic Arithmetic" },
+        { id: 1, text: "What is 5 + 7?", options: ["10", "12", "14", "8"], correctAnswer: "12", competency: "Basic Arithmetic", gradeLevel: 1 },
+        { id: 5, text: "What is 10 - 3?", options: ["6", "7", "8", "5"], correctAnswer: "7", competency: "Basic Arithmetic", gradeLevel: 1 },
+        { id: 9, text: "What is 4 x 6?", options: ["20", "24", "28", "18"], correctAnswer: "24", competency: "Basic Arithmetic", gradeLevel: 2 },
+
         // Geography
-        { id: 2, text: "Which is the largest ocean on Earth?", options: ["Atlantic", "Indian", "Arctic", "Pacific"], correctAnswer: "Pacific", competency: "Geography" },
-        { id: 6, text: "What is the capital of Japan?", options: ["Seoul", "Beijing", "Tokyo", "Bangkok"], correctAnswer: "Tokyo", competency: "Geography" },
+        { id: 2, text: "Which is the largest ocean on Earth?", options: ["Atlantic", "Indian", "Arctic", "Pacific"], correctAnswer: "Pacific", competency: "Geography", gradeLevel: 3 },
+        { id: 6, text: "What is the capital of Japan?", options: ["Seoul", "Beijing", "Tokyo", "Bangkok"], correctAnswer: "Tokyo", competency: "Geography", gradeLevel: 4 },
+
         // Basic Biology
-        { id: 3, text: "What gas do plants absorb from the atmosphere?", options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"], correctAnswer: "Carbon Dioxide", competency: "Basic Biology" },
-        { id: 7, text: "How many legs does a spider have?", options: ["6", "8", "10", "4"], correctAnswer: "8", competency: "Basic Biology" },
+        { id: 3, text: "What gas do plants absorb from the atmosphere?", options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"], correctAnswer: "Carbon Dioxide", competency: "Basic Biology", gradeLevel: 2 },
+        { id: 7, text: "How many legs does a spider have?", options: ["6", "8", "10", "4"], correctAnswer: "8", competency: "Basic Biology", gradeLevel: 1 },
+
         // Mathematics (more advanced)
-        { id: 4, text: "What is the square root of 81?", options: ["7", "8", "9", "10"], correctAnswer: "9", competency: "Mathematics" },
-        { id: 8, text: "What is 3 multiplied by 12?", options: ["30", "36", "24", "33"], correctAnswer: "36", competency: "Mathematics" }
+        { id: 4, text: "What is the square root of 81?", options: ["7", "8", "9", "10"], correctAnswer: "9", competency: "Mathematics", gradeLevel: 5 },
+        { id: 8, text: "What is 3 multiplied by 12?", options: ["30", "36", "24", "33"], correctAnswer: "36", competency: "Mathematics", gradeLevel: 4 },
+        { id: 10, text: "Solve for x: 2x + 5 = 11", options: ["2", "3", "4", "5"], correctAnswer: "3", competency: "Mathematics", gradeLevel: 6 }
     ];
-    console.log("Simulated questions fetched, now with more diverse competencies.");
+    console.log("Simulated questions fetched, now with gradeLevel and more diverse competencies.");
     return mockApiResponse;
     // If you want to test with the original questions array (which might be modified by the app):
     // return JSON.parse(JSON.stringify(questions)); // To return a deep copy
