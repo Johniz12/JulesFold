@@ -1,4 +1,8 @@
 /* Basic styles for the Examination App */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -275,4 +279,168 @@ header {
 /* Utility class */
 .hidden {
     display: none !important;
+}
+
+/* Responsive Styles */
+
+/* Mobile View (up to 600px) */
+@media (max-width: 600px) {
+    body {
+        padding: 0; /* Remove body padding, rely on app-container or specific elements */
+        font-size: 15px; /* Slightly smaller base font for mobile */
+    }
+
+    header h1 {
+        font-size: 1.5em; /* Adjust header font size */
+    }
+
+    #app-container {
+        margin: 10px; /* Reduce margin */
+        padding: 15px; /* Reduce padding */
+        width: auto; /* Allow it to be fluid */
+    }
+
+    #user-area {
+        padding: 15px;
+    }
+
+    #username-input {
+        width: 100%; /* Full width */
+        max-width: none; /* Remove max-width for mobile */
+        margin-bottom: 15px;
+    }
+
+    #category-filter-container {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch; /* Make label and select full width */
+        gap: 8px; /* Space between label and select */
+        margin-bottom: 20px;
+    }
+
+    #category-filter-container label {
+        margin-right: 0;
+        margin-bottom: 5px; /* Space below label when stacked */
+        text-align: left;
+    }
+
+    #category-select {
+        width: 100%; /* Full width */
+        min-width: 0; /* Reset min-width */
+        font-size: 0.95em;
+    }
+
+    #start-quiz-button,
+    #next-button,
+    #restart-button,
+    #review-answers-button,
+    #back-to-results-button {
+        width: 100%;
+        padding: 12px; /* Make buttons taller for easier tapping */
+        font-size: 1em;
+        margin-top: 10px; /* Ensure spacing between stacked buttons */
+    }
+
+    #start-quiz-button {
+        margin-top: 0; /* No top margin if it's the last element in its group */
+    }
+
+    #navigation-container {
+        text-align: center; /* Center the full-width button */
+    }
+
+    #question-text {
+        font-size: 1.1em;
+    }
+
+    .option-button {
+        padding: 12px;
+        font-size: 0.95em;
+    }
+
+    #results-area h2, #review-area h2 {
+        font-size: 1.3em;
+    }
+    #results-area h3, #review-area h3 { /* For assessed grade level */
+        font-size: 1.1em;
+    }
+
+    #recommendations ul {
+        display: block; /* Stack list items properly */
+        text-align: left;
+        padding-left: 20px; /* Indent list items */
+    }
+
+    #review-content .review-options p {
+        padding: 10px; /* Slightly more padding for tappability */
+    }
+}
+
+/* Tablet View (601px to 900px) */
+@media (min-width: 601px) and (max-width: 900px) {
+    body {
+        font-size: 15.5px; /* Intermediate font size */
+    }
+
+    #app-container {
+        padding: 18px; /* Intermediate padding */
+    }
+
+    header h1 {
+        font-size: 1.7em;
+    }
+
+    #username-input {
+        /* Keep its desktop styling (max-width: 300px, block, margin auto) */
+        /* No specific change needed unless desktop style was too wide */
+    }
+
+    #category-filter-container {
+        /* Allow label and select to be side-by-side if space permits, but stack if not.
+           Flexbox can handle this well. Default is row. */
+        flex-direction: row;
+        align-items: center; /* Vertically align label and select */
+        justify-content: center; /* Center the group */
+        gap: 10px;
+    }
+
+    #category-filter-container label {
+        margin-bottom: 0; /* Remove bottom margin from mobile */
+        text-align: right; /* Align label text to the right of itself */
+    }
+
+    #category-select {
+        width: auto; /* Allow select to size based on content or its min-width */
+        min-width: 220px; /* Ensure it's reasonably wide */
+        font-size: 1em; /* Revert to base font size for select */
+    }
+
+    /* Buttons can revert to their desktop non-full-width, or have a max-width */
+    #start-quiz-button,
+    #next-button,
+    #restart-button,
+    #review-answers-button,
+    #back-to-results-button {
+        width: auto; /* Revert from mobile's 100% */
+        padding: 10px 20px; /* Revert to desktop padding */
+    }
+
+    #navigation-container {
+        text-align: right; /* Revert to desktop alignment */
+    }
+
+    #question-text {
+        font-size: 1.15em;
+    }
+
+    .option-button {
+        font-size: 1em; /* Revert to base font size */
+    }
+
+    #results-area h2, #review-area h2 {
+        font-size: 1.4em;
+    }
+    #results-area h3, #review-area h3 {
+        font-size: 1.15em;
+    }
 }
