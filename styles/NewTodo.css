@@ -1,0 +1,337 @@
+/* CSS for Todo List */
+
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+    color: #333;
+    line-height: 1.6;
+    box-sizing: border-box; /* Apply to all elements for easier sizing */
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.todo-input {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 10px; /* Adds space between input elements */
+}
+
+.todo-input input[type="text"],
+.todo-input input[type="date"] {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.todo-input input[type="text"] {
+    flex-grow: 1; /* Allows the text input to take up available space */
+    max-width: 400px; /* Optional: constrain max width */
+}
+
+.todo-input input[type="date"] {
+    min-width: 130px; /* Ensure date input is wide enough */
+}
+
+.todo-input button {
+    padding: 10px 15px;
+    background-color: #5cb85c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.todo-input button:hover,
+.todo-input button:focus {
+    background-color: #4cae4c;
+    outline: 2px solid #3e8e3e; /* Focus outline for accessibility */
+    outline-offset: 2px;
+}
+
+.todo-input button:focus {
+    background-color: #45a045; /* Slightly different shade for focus if not hovered */
+}
+
+
+/* Basic styling for the container that will hold todo items */
+#render {
+    margin: 0 auto;
+    max-width: 700px; /* Adjust as needed */
+}
+
+/* Hidden class utility */
+.hidden {
+    display: none !important;
+}
+
+/* Todo Item Styling */
+.todo-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.todo-view {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.todo-text {
+    font-size: 18px;
+    flex-grow: 1;
+    margin-right: 10px; /* Space between text and date */
+}
+
+.todo-date {
+    font-size: 14px;
+    color: #666;
+    margin-right: 15px; /* Space between date and actions */
+    min-width: 90px; /* Ensure date is not too squished */
+    text-align: right;
+}
+
+.todo-actions button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    margin-left: 5px;
+}
+
+.edit-todo-button {
+    background-color: #f0ad4e;
+    color: white;
+}
+
+.edit-todo-button:hover,
+.edit-todo-button:focus {
+    background-color: #ec971f;
+    outline: 2px solid #d58512;
+    outline-offset: 1px;
+}
+
+.edit-todo-button:focus {
+    background-color: #e69017;
+}
+
+.delete-todo-button {
+    background-color: #d9534f;
+    color: white;
+}
+
+.delete-todo-button:hover,
+.delete-todo-button:focus {
+    background-color: #c9302c;
+    outline: 2px solid #b52b27;
+    outline-offset: 1px;
+}
+
+.delete-todo-button:focus {
+    background-color: #c22a26;
+}
+
+/* Responsive Design */
+
+/* Mobile View (up to 600px) */
+@media (max-width: 600px) {
+    body {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .todo-input {
+        flex-direction: column;
+        align-items: stretch; /* Make input fields take full width */
+    }
+
+    .todo-input input[type="text"],
+    .todo-input input[type="date"],
+    .todo-input button {
+        width: 100%; /* Full width for all elements */
+        margin-bottom: 10px; /* Add some space between stacked items */
+        box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    }
+
+.todo-input input[type="text"]:focus,
+.todo-input input[type="date"]:focus {
+    border-color: #5cb85c; /* Highlight focus with a green border */
+    outline: none; /* Remove default outline if custom border is sufficient */
+    box-shadow: 0 0 0 2px rgba(92, 184, 92, 0.2); /* Optional: subtle glow */
+}
+
+    .todo-input input[type="text"] {
+        max-width: none; /* Remove max-width on mobile */
+    }
+
+    .todo-input button {
+        margin-bottom: 0; /* No margin for the last item */
+    }
+
+    .todo-item {
+        padding: 10px;
+    }
+
+    .todo-view {
+        flex-direction: column;
+        align-items: flex-start; /* Align items to the start */
+    }
+
+    .todo-text {
+        margin-bottom: 8px; /* Space between text and date */
+        margin-right: 0;
+    }
+
+    .todo-date {
+        margin-bottom: 10px; /* Space between date and actions */
+        margin-right: 0;
+        text-align: left;
+        font-size: 13px;
+    }
+
+    .todo-actions {
+        width: 100%; /* Make actions take full width */
+        display: flex;
+        justify-content: flex-end; /* Align buttons to the right */
+    }
+
+    .todo-actions button {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+}
+
+/* Tablet View (601px to 900px) */
+@media (min-width: 601px) and (max-width: 900px) {
+    .todo-input input[type="text"] {
+        max-width: 300px; /* Adjust max-width for tablets if needed */
+    }
+
+    #render {
+        max-width: 600px;
+    }
+
+    .todo-view {
+        /* Minor adjustments if needed, but desktop styles might be mostly fine */
+    }
+}
+
+/* Desktop View (901px and above) */
+/* Most desktop styles are already defined above.
+   This section can be used for specific overrides if necessary. */
+@media (min-width: 901px) {
+    /* Example: Increase max-width of input for very large screens if desired */
+    /* .todo-input input[type="text"] {
+        max-width: 500px;
+    } */
+}
+
+/* Edit Form Styling */
+.todo-edit-form {
+    display: flex;
+    flex-direction: column; /* Stack inputs and buttons */
+    gap: 10px; /* Space between form elements */
+    padding: 10px 0; /* Add some padding top and bottom */
+}
+
+.todo-edit-form input[type="text"],
+.todo-edit-form input[type="date"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 100%; /* Make inputs take full width */
+    box-sizing: border-box; /* Include padding and border in width */
+}
+
+.todo-edit-form input[type="text"]:focus,
+.todo-edit-form input[type="date"]:focus {
+    border-color: #5cb85c;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(92, 184, 92, 0.2);
+}
+
+.todo-edit-form button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.save-edit {
+    background-color: #5cb85c; /* Green */
+    color: white;
+}
+
+.save-edit:hover,
+.save-edit:focus {
+    background-color: #4cae4c;
+    outline: 2px solid #3e8e3e;
+    outline-offset: 1px;
+}
+.save-edit:focus {
+    background-color: #45a045;
+}
+
+.cancel-edit {
+    background-color: #f0f0f0; /* Light gray */
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.cancel-edit:hover,
+.cancel-edit:focus {
+    background-color: #e0e0e0;
+    border-color: #ccc;
+    outline: 2px solid #c0c0c0;
+    outline-offset: 1px;
+}
+.cancel-edit:focus {
+    background-color: #d8d8d8;
+}
+
+
+/* Responsive adjustments for edit form if needed */
+@media (max-width: 600px) {
+    .todo-edit-form {
+        /* Styles for mobile, if different from above */
+        /* For now, the column layout should work well. */
+    }
+
+    .todo-edit-form input[type="text"],
+    .todo-edit-form input[type="date"] {
+        font-size: 15px; /* Slightly smaller font for mobile inputs */
+    }
+
+    .todo-edit-form button {
+        font-size: 15px;
+        padding: 9px 12px;
+    }
+}
