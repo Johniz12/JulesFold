@@ -23,6 +23,69 @@ header {
     border-radius: 8px;
 }
 
+#user-area {
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+#user-area h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+#user-area p {
+    margin-bottom: 10px;
+}
+
+#username-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+    margin-bottom: 15px; /* Added margin */
+    display: block; /* Make it full width for better mobile */
+    width: calc(100% - 22px); /* Account for padding and border */
+    max-width: 300px; /* Max width on larger screens */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#category-filter-container {
+    margin-bottom: 20px;
+}
+
+#category-filter-container label {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+#category-select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+    min-width: 200px; /* Give it some decent width */
+}
+
+#start-quiz-button {
+    padding: 10px 20px;
+    background-color: #5cb85c; /* Green */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
+
+#start-quiz-button:hover {
+    background-color: #4cae4c;
+}
+
+
 #quiz-area {
     margin-bottom: 20px;
 }
@@ -115,6 +178,88 @@ header {
     border-radius: 5px;
     text-align: center;
 }
+
+#recommendations ul {
+    list-style-position: inside;
+    text-align: left;
+    display: inline-block; /* To center the list block itself if text-align:center is on parent */
+    padding-left: 0;
+}
+
+#recommendations li {
+    margin-bottom: 5px;
+}
+
+#review-area {
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+#review-content .review-question-item {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+#review-content .review-question-item:last-child {
+    border-bottom: none;
+}
+
+#review-content h4 { /* Question text */
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+#review-content .review-options p {
+    margin: 5px 0;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+#review-content .user-answer-correct {
+    background-color: #d4edda; /* Light green */
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+#review-content .user-answer-incorrect {
+    background-color: #f8d7da; /* Light red */
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+#review-content .correct-answer-not-selected {
+    background-color: #d1ecf1; /* Light blue */
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+    font-weight: bold;
+}
+
+#review-content .other-option {
+    background-color: #f0f0f0;
+    border: 1px solid #e0e0e0;
+}
+
+
+#review-answers-button, #back-to-results-button {
+    margin-top:10px; /* Add some space if multiple buttons */
+    padding: 10px 20px;
+    background-color: #007bff; /* Blue for secondary actions */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
+
+#review-answers-button:hover, #back-to-results-button:hover {
+    background-color: #0056b3;
+}
+
 
 /* Utility class */
 .hidden {

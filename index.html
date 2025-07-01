@@ -12,7 +12,24 @@
     </header>
 
     <main id="app-container">
-        <div id="quiz-area">
+        <div id="user-area">
+            <h2>Welcome!</h2>
+            <p>Please enter your name:</p>
+            <input type="text" id="username-input" placeholder="Enter your name">
+
+            <div id="category-filter-container">
+                <label for="category-select">Choose a category:</label>
+                <select id="category-select">
+                    <option value="all">All Categories</option>
+                    <!-- Categories will be populated by JavaScript -->
+                </select>
+            </div>
+
+            <button id="start-quiz-button">Start Quiz</button>
+            <!-- Removed "/ View History" for now, can be a separate button later -->
+        </div>
+
+        <div id="quiz-area" class="hidden"> <!-- Initially hidden -->
             <div id="question-container">
                 <p id="question-text">Question text will appear here.</p>
             </div>
@@ -33,8 +50,15 @@
         <div id="results-area" class="hidden">
             <h2>Quiz Completed!</h2>
             <p>Your final score is: <span id="final-score">0</span></p>
-            <p id="recommendations">Recommendations will appear here.</p>
+            <div id="recommendations">Recommendations will appear here.</div>
+            <button id="review-answers-button">Review Answers</button>
             <button id="restart-button">Restart Quiz</button>
+        </div>
+
+        <div id="review-area" class="hidden">
+            <h2>Review Your Answers</h2>
+            <div id="review-content"></div>
+            <button id="back-to-results-button">Back to Results</button>
         </div>
     </main>
 
