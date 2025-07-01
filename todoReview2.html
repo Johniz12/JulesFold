@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Todo</title>
+    <link rel="stylesheet" href="styles/NewTodo.css">
+</head>
+<body>
+    <h1>To Do List</h1>
+
+    <div class="todo-input">
+        <input type="text" id="input" placeholder="Enter todo...">
+        <input type="date" id="date">
+        <button id="addButton">Add</button>
+    </div>
+    <div id="render"></div>
+    
+
+    <script>
+        const todoApp = (() => {
+            let todos = JSON.parse(localStorage.getItem('todos')) || [
+                {name: 'done work', dueDate: '2025-05-13'},
+                {name: 'be nice', dueDate: '2025-05-15'}
+            ];
+
+            function saveToStorage() {
+                localStorage.setItem('todos', JSON.stringify(todos));
+            }
+
+            function render() {
+                document.getElementById('render').innerHTML = todos.map((todo, i) => `
+                    <div class="todo-item" data-id="${i}">
+                        <div class="todo-view">
+                            <span class="todo-text">${todo.name}</span>
+                            <span class="todo-date">${todo.dueDate}</span>
+                            <div class="todo-actions">
+                                <button class="edit-todo-button">Edit</button>
+                                <button class="delete-todo-button">Delete</button>
+                            </div>
+                        </div>
+                        <form class="todo-edit-form hidden">
+                            <input type="text" class="edit-name" value="${todo.name}" required>
+                            <input type="date" class="edit-date" value="${todo.dueDate}" required>
+                            <button type="submit" class="save-edit">Save</button>
+                            <button type="button" class="cancel-edit">Cancel</button>
+                        </form>
+                    </div>
+                `).join('');
+            }
+
+            function addTodo(name, dueDate) {
+                if (name.trim() && dueDate) {
+                    todos.push({ name, dueDate });
+                    saveToStorage();
+                    render();
+                    return true;
+                }
+                return false;
+            }
+
+            function deleteTodo(index) {
+                if (index >= 0 && index < todos.length) {
+                    todos.splice(index, 1);
+                    saveToStorage();
+                    render();
+                }
+            }
+
+            function editTodo(index, newName, newDate) {
+                if (index >= 0 && index < todos.length) {
+                    todos[index] = { 
+                        name: newName, 
+                        dueDate: newDate 
+                    };
+                    saveToStorage();
+                    render();
+                }
+            }
+
+            function setupEventHandlers() {
+                // Add todo handler
+                document.getElementById('addButton').addEventListener('click', () => {
+                    const nameInput = document.getElementById('input');
+                    const dateInput = document.getElementById('date');
+                    
+                    if (addTodo(nameInput.value, dateInput.value)) {
+                        nameInput.value = '';
+                        dateInput.value = '';
+                        nameInput.focus();
+                    } else {
+                        alert('Please enter both a task name and due date');
+                    }
+                });
+
+                // Delete handler
+                document.getElementById('render').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('delete-todo-button')) {
+                        const index = parseInt(e.target.closest('.todo-item').dataset.id);
+                        deleteTodo(index);
+                    }
+                });
+
+                // Edit button handler - show form
+                document.getElementById('render').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('edit-todo-button')) {
+                        const todoItem = e.target.closest('.todo-item');
+                        todoItem.querySelector('.todo-view').classList.add('hidden');
+                        todoItem.querySelector('.todo-edit-form').classList.remove('hidden');
+                        todoItem.querySelector('.edit-name').focus();
+                    }
+                });
+
+                // Cancel edit handler - hide form
+                document.getElementById('render').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('cancel-edit')) {
+                        const todoItem = e.target.closest('.todo-item');
+                        todoItem.querySelector('.todo-view').classList.remove('hidden');
+                        todoItem.querySelector('.todo-edit-form').classList.add('hidden');
+                    }
+                });
+
+                // Save edit handler
+                document.getElementById('render').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    if (e.target.classList.contains('todo-edit-form')) {
+                        const todoItem = e.target.closest('.todo-item');
+                        const index = parseInt(todoItem.dataset.id);
+                        const newName = todoItem.querySelector('.edit-name').value;
+                        const newDate = todoItem.querySelector('.edit-date').value;
+                        
+                        editTodo(index, newName, newDate);
+                    }
+                });
+
+                // Enter key to add todo
+                document.getElementById('input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        document.getElementById('addButton').click();
+                    }
+                });
+            }
+
+            function init() {
+                render();
+                setupEventHandlers();
+            }
+
+            return { init };
+        })();
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', todoApp.init);
+    </script>
+</body>
+</html>
