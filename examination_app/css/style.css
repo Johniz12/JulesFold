@@ -481,6 +481,11 @@ header {
     background-color: #5a6268;
 }
 
+#user-utility-buttons {
+    margin-top: 0; /* Start Quiz button above it has margin-bottom */
+    /* text-align: center; /* The parent #user-area already has this */
+}
+
 /* Ensure export and import buttons share similar base styles */
 #export-questions-button, #import-questions-button {
     padding: 10px 20px;
