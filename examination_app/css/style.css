@@ -75,14 +75,16 @@ header {
 }
 
 #start-quiz-button {
-    padding: 10px 20px;
-    background-color: #5cb85c; /* Green */
+    padding: 12px 28px; /* Increased padding */
+    font-size: 1.15em;  /* Increased font size */
+    background-color: #5cb85c; /* Existing Green */
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 1em;
+    /* font-size: 1em; */ /* Overridden by more specific rule above */
     transition: background-color 0.3s ease;
+    margin-top: 20px; /* Added more top margin for separation */
 }
 
 #start-quiz-button:hover {
@@ -334,16 +336,18 @@ header {
     #next-button,
     #restart-button,
     #review-answers-button,
-    #change-user-button, /* Added new button */
+    #change-user-button,
     #back-to-results-button {
         width: 100%;
-        padding: 12px; /* Make buttons taller for easier tapping */
-        font-size: 1em;
-        margin-top: 10px; /* Ensure spacing between stacked buttons */
+        padding: 12px;
+        font-size: 1em; /* Base mobile button font size */
+        margin-top: 10px;
     }
 
     #start-quiz-button {
-        margin-top: 0; /* No top margin if it's the last element in its group */
+        margin-top: 20px; /* Ensure it has good separation when stacked last */
+        padding: 15px; /* Make it even more prominent on mobile */
+        font-size: 1.1em; /* Slightly larger font for primary action on mobile */
     }
 
     #navigation-container {
