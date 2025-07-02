@@ -85,34 +85,50 @@ header {
     background-color: white; /* Ensure select has a background */
 }
 
-#main-stage-select label, #sub-grade-select label, #category-filter-container label {
-    display: block; /* Make labels take full width and appear above selects */
+#main-stage-select label, #sub-grade-select label { /* Keep these labels as before */
+    display: block;
     margin-bottom: 5px;
     font-weight: bold;
-    text-align: left; /* Align label text to the left */
+    text-align: left;
+}
+
+#category-filter-container label { /* Specific styling for competency filter label */
+    font-weight: normal; /* Remove bold */
+    margin-right: 8px;  /* Space between label and select when side-by-side */
+    /* display: block; will be overridden by flex context on wider screens */
+    /* text-align: left; will be overridden by flex context on wider screens */
 }
 
 
 /* Desktop and Tablet adjustments for selects if needed */
 @media (min-width: 601px) {
     #main-stage-select, #sub-grade-select, #category-select {
-        width: auto; /* Allow them to size to content or min-width */
-        min-width: 250px; /* Decent default width for larger screens */
+        width: auto;
+        min-width: 250px;
     }
 
-    #exam-type-filter-container, #category-filter-container {
-        /* For side-by-side label and select on larger screens if desired,
-           currently they are stacked due to label display:block.
-           The current stacking is fine and clear. */
+    #exam-type-filter-container {
+        /* For side-by-side label and select on larger screens if desired for main/sub stage,
+           currently they are stacked due to label display:block. This is fine. */
     }
-     #main-stage-select label, #sub-grade-select label, #category-filter-container label {
-        /* On larger screens, if we wanted label and select side-by-side:
+    #category-filter-container { /* Apply flex for side-by-side on desktop/tablet */
+        display: flex;
+        align-items: center; /* Vertically align label and select */
+        justify-content: center; /* Center the label+select group */
+    }
+
+    #category-filter-container label {
+        display: inline; /* Allow it to be side-by-side */
+        margin-bottom: 0; /* Reset mobile margin */
+        /* text-align: left; from base is fine or can be removed */
+    }
+     /* #main-stage-select label, #sub-grade-select label {
         display: inline-block;
         margin-right: 10px;
         margin-bottom: 0;
         text-align: right;
-        width: auto; */
-    }
+        width: auto;
+    } */
 }
 
 
@@ -565,8 +581,32 @@ header {
     }
     /* Note: #start-quiz-button is separate as it's usually the primary action after inputs */
 
-    #timer-config-area input[type="number"] { /* Ensure number input is also full width on mobile */
+    /* Ensure filter containers stack their content on mobile */
+    #exam-type-filter-container,
+    #category-filter-container,
+    #timer-config-area { /* Grouping timer config for similar mobile layout */
+        display: flex;
+        flex-direction: column;
+        align-items: stretch; /* Make children like labels and selects full width */
+        gap: 8px; /* Space between items in the column */
+    }
+
+    /* Ensure labels within these containers are styled for stacking */
+    #exam-type-filter-container label,
+    #category-filter-container label,
+    #timer-config-area label {
+        text-align: left;
+        margin-right: 0;
+        margin-bottom: 5px; /* Space below label when stacked */
+    }
+
+    /* Ensure selects and specific inputs are full width on mobile */
+    #main-stage-select,
+    #sub-grade-select,
+    #category-select,
+    #timer-config-area input[type="number"] {
         width: 100%;
+        min-width: 0; /* Reset min-width from desktop styles */
     }
 }
 
