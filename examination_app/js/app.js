@@ -60,6 +60,11 @@ const timerDurationMinutesInputElement = document.getElementById('timer-duration
 const timerDisplayContainerElement = document.getElementById('timer-display-container');
 const timeRemainingElement = document.getElementById('time-remaining');
 
+// DOM elements for Hierarchical Exam Selectors
+const mainStageSelectElement = document.getElementById('main-stage-select');
+const subGradeFilterContainerElement = document.getElementById('sub-grade-filter-container');
+const subGradeSelectElement = document.getElementById('sub-grade-select');
+
 
 // Global store for all questions fetched from API/mock
 let allFetchedQuestions = [];
@@ -175,11 +180,67 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listener for Import Questions button (to trigger file input)
     if(importQuestionsButtonElement && importQuestionsInput) {
         importQuestionsButtonElement.addEventListener('click', () => {
-            importQuestionsInput.click(); // Programmatically click the hidden file input
+            importQuestionsInput.click();
         });
         importQuestionsInput.addEventListener('change', handleImportFileSelected);
     }
+    // Event listener for Main Stage select change
+    if(mainStageSelectElement) {
+        mainStageSelectElement.addEventListener('change', populateSubGradeSelect);
+        // Call it once on load to initialize sub-grade if a main stage is pre-selected (e.g. by browser)
+        // However, initial value is "" so it won't populate anything yet, which is fine.
+    }
 });
+
+function populateSubGradeSelect() {
+    const selectedStage = mainStageSelectElement.value;
+    subGradeSelectElement.innerHTML = ''; // Clear existing options
+
+    // Add a default placeholder option for the sub-grade select
+    const defaultSubOption = document.createElement('option');
+    defaultSubOption.value = "";
+    defaultSubOption.textContent = "-- Select Specific Level/Exam --";
+    subGradeSelectElement.appendChild(defaultSubOption);
+
+    let optionsData = [];
+
+    if (selectedStage === "preschool") {
+        subGradeFilterContainerElement.classList.remove('hidden');
+        optionsData = [
+            { value: "preschool_comp", text: "Preschool Comprehensive" },
+            { value: "-2", text: "Nursery" },
+            { value: "-1", text: "Kinder" }
+        ];
+    } else if (selectedStage === "elementary") {
+        subGradeFilterContainerElement.classList.remove('hidden');
+        optionsData.push({ value: "elementary_comp", text: "Elementary Comprehensive (Gr 1-6)" });
+        for (let i = 1; i <= 6; i++) {
+            optionsData.push({ value: i.toString(), text: `Grade ${i}` });
+        }
+    } else if (selectedStage === "highschool") {
+        subGradeFilterContainerElement.classList.remove('hidden');
+        optionsData.push({ value: "highschool_comp", text: "High School Comprehensive (Gr 7-10)" });
+        for (let i = 7; i <= 10; i++) {
+            optionsData.push({ value: i.toString(), text: `Grade ${i}` });
+        }
+    } else if (selectedStage === "seniorhigh") {
+        subGradeFilterContainerElement.classList.remove('hidden');
+        optionsData.push({ value: "seniorhigh_comp", text: "Senior High Comprehensive (Gr 11-12)" });
+        for (let i = 11; i <= 12; i++) {
+            optionsData.push({ value: i.toString(), text: `Grade ${i}` });
+        }
+    } else { // "competency_only" or "" (initial "-- Select Main Stage --")
+        subGradeFilterContainerElement.classList.add('hidden'); // Hide if no relevant main stage
+    }
+
+    optionsData.forEach(opt => {
+        const optionElement = document.createElement('option');
+        optionElement.value = opt.value;
+        optionElement.textContent = opt.text;
+        subGradeSelectElement.appendChild(optionElement);
+    });
+}
+
 
 function handleImportFileSelected(event) {
     const file = event.target.files[0];
@@ -593,8 +654,9 @@ function handleUserSetup() {
     }
     currentUsername = username;
     localStorage.setItem('currentUsername', currentUsername);
-    currentCategory = categorySelectElement.value; // Get selected category
-    isTimerEnabled = enableTimerCheckboxElement.checked; // Get timer enabled state
+    // currentCategory will be set by the competency filter, but primary filtering is now by stage/grade
+    // The actual filtering based on these new dropdowns will happen in startNewQuizSession
+    isTimerEnabled = enableTimerCheckboxElement.checked;
 
     if (isTimerEnabled) {
         const minutes = parseInt(timerDurationMinutesInputElement.value, 10);
@@ -639,17 +701,73 @@ async function startNewQuizSession() {
 
     questionTextElement.textContent = "Loading questions...";
     try {
-        // Filter questions based on currentCategory
-        if (currentCategory === 'all') {
-            questions = [...allFetchedQuestions]; // Use all questions (create a copy)
+        let filteredByStageGrade = [];
+        const selectedMainStage = mainStageSelectElement.value;
+        const selectedSubGrade = subGradeSelectElement.value;
+
+        console.log("Filtering questions. Main Stage:", selectedMainStage, "Sub/Grade:", selectedSubGrade);
+
+        if (selectedMainStage && selectedMainStage !== "competency_only" && selectedMainStage !== "") {
+            if (!selectedSubGrade || selectedSubGrade === "") {
+                questionTextElement.textContent = `Please select a specific level/exam for the chosen stage.`;
+                optionsContainerElement.innerHTML = '';
+                nextButtonElement.classList.add('hidden');
+                questions = []; // Ensure questions array is empty
+                return; // Stop further processing
+            }
+
+            switch (selectedSubGrade) {
+                case "preschool_comp": // Covers Nursery (-2) and Kinder (-1)
+                    filteredByStageGrade = allFetchedQuestions.filter(q => q.gradeLevel <= -1);
+                    break;
+                case "elementary_comp": // Grades 1-6
+                    filteredByStageGrade = allFetchedQuestions.filter(q => q.gradeLevel >= 1 && q.gradeLevel <= 6);
+                    break;
+                case "highschool_comp": // Grades 7-10
+                    filteredByStageGrade = allFetchedQuestions.filter(q => q.gradeLevel >= 7 && q.gradeLevel <= 10);
+                    break;
+                case "seniorhigh_comp": // Grades 11-12
+                    filteredByStageGrade = allFetchedQuestions.filter(q => q.gradeLevel >= 11 && q.gradeLevel <= 12);
+                    break;
+                default: // Specific numeric grade level (e.g., "-2", "1", "7")
+                    const numericGrade = parseInt(selectedSubGrade, 10);
+                    if (!isNaN(numericGrade)) {
+                        filteredByStageGrade = allFetchedQuestions.filter(q => q.gradeLevel === numericGrade);
+                    } else {
+                        // Should not happen if dropdowns are populated correctly
+                        console.warn("Invalid subGradeValue:", selectedSubGrade);
+                        filteredByStageGrade = [];
+                    }
+                    break;
+            }
         } else {
-            questions = allFetchedQuestions.filter(q => q.competency === currentCategory);
+            // "competency_only" or no main stage selected, so start with all questions for competency filter
+            filteredByStageGrade = [...allFetchedQuestions];
         }
+
+        // Now, apply competency filter (currentCategory) to the stage/grade filtered list
+        currentCategory = categorySelectElement.value; // Get current competency selection
+        if (currentCategory === 'all') {
+            questions = filteredByStageGrade; // Use all from the stage/grade filter
+        } else {
+            questions = filteredByStageGrade.filter(q => q.competency === currentCategory);
+        }
+
+        console.log("Final filtered questions for quiz:", questions);
 
         if (questions && questions.length > 0) {
             displayQuestion();
         } else {
-            questionTextElement.textContent = `No questions found for category: ${currentCategory}. Try 'All Categories'.`;
+            let message = "No questions found for the selected criteria.";
+            if (selectedMainStage && selectedMainStage !== "competency_only" && selectedSubGrade) {
+                message = `No questions found for Stage: '${mainStageSelectElement.options[mainStageSelectElement.selectedIndex].text}', Level/Exam: '${subGradeSelectElement.options[subGradeSelectElement.selectedIndex].text}'`;
+                if (currentCategory !== 'all') {
+                    message += `, Competency: '${currentCategory}'`;
+                }
+            } else if (currentCategory !== 'all') {
+                 message = `No questions found for Competency: '${currentCategory}'. Try 'All Competencies'.`;
+            }
+            questionTextElement.textContent = message;
             optionsContainerElement.innerHTML = '';
             nextButtonElement.classList.add('hidden');
         }
@@ -1005,25 +1123,52 @@ async function fetchQuestions() {
     // For now, we return a copy of our mock data to simulate an API response.
     // It's good practice to return a new array/object to mimic immutability of API responses.
     const mockApiResponse = [
-        // Basic Arithmetic
+        // Preschool - Nursery (-2)
+        { id: 101, text: "Which animal says 'Moo'?", options: ["Dog", "Cat", "Cow", "Duck"], correctAnswer: "Cow", competency: "Animal Sounds", gradeLevel: -2 },
+        { id: 102, text: "What color is a banana?", options: ["Red", "Yellow", "Blue", "Green"], correctAnswer: "Yellow", competency: "Colors", gradeLevel: -2 },
+
+        // Preschool - Kinder (-1)
+        { id: 201, text: "How many wheels does a bicycle have?", options: ["1", "2", "3", "4"], correctAnswer: "2", competency: "Counting", gradeLevel: -1 },
+        { id: 202, text: "Which shape is round?", options: ["Square", "Triangle", "Circle", "Rectangle"], correctAnswer: "Circle", competency: "Shapes", gradeLevel: -1 },
+
+        // Elementary - Grade 1
         { id: 1, text: "What is 5 + 7?", options: ["10", "12", "14", "8"], correctAnswer: "12", competency: "Basic Arithmetic", gradeLevel: 1 },
-        { id: 5, text: "What is 10 - 3?", options: ["6", "7", "8", "5"], correctAnswer: "7", competency: "Basic Arithmetic", gradeLevel: 1 },
-        { id: 9, text: "What is 4 x 6?", options: ["20", "24", "28", "18"], correctAnswer: "24", competency: "Basic Arithmetic", gradeLevel: 2 },
-
-        // Geography
-        { id: 2, text: "Which is the largest ocean on Earth?", options: ["Atlantic", "Indian", "Arctic", "Pacific"], correctAnswer: "Pacific", competency: "Geography", gradeLevel: 3 },
-        { id: 6, text: "What is the capital of Japan?", options: ["Seoul", "Beijing", "Tokyo", "Bangkok"], correctAnswer: "Tokyo", competency: "Geography", gradeLevel: 4 },
-
-        // Basic Biology
-        { id: 3, text: "What gas do plants absorb from the atmosphere?", options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"], correctAnswer: "Carbon Dioxide", competency: "Basic Biology", gradeLevel: 2 },
         { id: 7, text: "How many legs does a spider have?", options: ["6", "8", "10", "4"], correctAnswer: "8", competency: "Basic Biology", gradeLevel: 1 },
 
-        // Mathematics (more advanced)
-        { id: 4, text: "What is the square root of 81?", options: ["7", "8", "9", "10"], correctAnswer: "9", competency: "Mathematics", gradeLevel: 5 },
+        // Elementary - Grade 2
+        { id: 9, text: "What is 4 x 6?", options: ["20", "24", "28", "18"], correctAnswer: "24", competency: "Basic Arithmetic", gradeLevel: 2 },
+        { id: 3, text: "What gas do plants absorb from the atmosphere?", options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"], correctAnswer: "Carbon Dioxide", competency: "Basic Biology", gradeLevel: 2 },
+
+        // Elementary - Grade 3
+        { id: 2, text: "Which is the largest ocean on Earth?", options: ["Atlantic", "Indian", "Arctic", "Pacific"], correctAnswer: "Pacific", competency: "Geography", gradeLevel: 3 },
+        { id: 301, text: "What is 100 - 25?", options: ["75", "65", "85", "50"], correctAnswer: "75", competency: "Basic Arithmetic", gradeLevel: 3 },
+
+        // Elementary - Grade 4
+        { id: 6, text: "What is the capital of Japan?", options: ["Seoul", "Beijing", "Tokyo", "Bangkok"], correctAnswer: "Tokyo", competency: "Geography", gradeLevel: 4 },
         { id: 8, text: "What is 3 multiplied by 12?", options: ["30", "36", "24", "33"], correctAnswer: "36", competency: "Mathematics", gradeLevel: 4 },
-        { id: 10, text: "Solve for x: 2x + 5 = 11", options: ["2", "3", "4", "5"], correctAnswer: "3", competency: "Mathematics", gradeLevel: 6 }
+
+        // Elementary - Grade 5
+        { id: 4, text: "What is the square root of 81?", options: ["7", "8", "9", "10"], correctAnswer: "9", competency: "Mathematics", gradeLevel: 5 },
+        { id: 501, text: "Name a primary color.", options: ["Green", "Orange", "Blue", "Purple"], correctAnswer: "Blue", competency: "Arts", gradeLevel: 5 },
+
+        // Elementary - Grade 6
+        { id: 10, text: "Solve for x: 2x + 5 = 11", options: ["2", "3", "4", "5"], correctAnswer: "3", competency: "Mathematics", gradeLevel: 6 },
+        { id: 601, text: "What is the main function of the heart?", options: ["Digestion", "Pumping blood", "Breathing", "Thinking"], correctAnswer: "Pumping blood", competency: "Human Body", gradeLevel: 6 },
+
+        // High School - Grade 7
+        { id: 701, text: "What is a synonym for 'happy'?", options: ["Sad", "Joyful", "Angry", "Tired"], correctAnswer: "Joyful", competency: "Vocabulary", gradeLevel: 7 },
+        { id: 702, text: "Calculate 15% of 200.", options: ["15", "30", "20", "300"], correctAnswer: "30", competency: "Percentages", gradeLevel: 7 },
+
+        // High School - Grade 10
+        { id: 1001, text: "What is H2O also known as?", options: ["Salt", "Sugar", "Water", "Oxygen"], correctAnswer: "Water", competency: "Chemistry", gradeLevel: 10 },
+
+        // Senior High - Grade 11
+        { id: 1101, text: "In physics, what does 'E=mc^2' represent?", options: ["Gravity", "Energy-mass equivalence", "Speed of light", "Momentum"], correctAnswer: "Energy-mass equivalence", competency: "Physics", gradeLevel: 11 },
+
+        // Senior High - Grade 12
+        { id: 1201, text: "What is the main theme in Shakespeare's 'Hamlet'?", options: ["Love", "Revenge", "Ambition", "Friendship"], correctAnswer: "Revenge", competency: "Literature", gradeLevel: 12 }
     ];
-    console.log("Simulated questions fetched, now with gradeLevel and more diverse competencies.");
+    console.log("Simulated questions fetched, updated with detailed gradeLevel mapping.");
     return mockApiResponse;
     // If you want to test with the original questions array (which might be modified by the app):
     // return JSON.parse(JSON.stringify(questions)); // To return a deep copy

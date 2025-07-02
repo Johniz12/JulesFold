@@ -17,11 +17,30 @@
             <p>Please enter your name:</p>
             <input type="text" id="username-input" placeholder="Enter your name">
 
-            <div id="category-filter-container">
-                <label for="category-select">Choose a category:</label>
+            <div id="exam-type-filter-container">
+                <div>
+                    <label for="main-stage-select">Choose Exam Type:</label>
+                    <select id="main-stage-select">
+                        <option value="">-- Select Main Stage --</option>
+                        <option value="preschool">Preschool</option>
+                        <option value="elementary">Elementary School</option>
+                        <option value="highschool">High School</option>
+                        <option value="seniorhigh">Senior High School</option>
+                        <option value="competency_only">All Levels (Filter by Competency Below)</option>
+                    </select>
+                </div>
+                <div id="sub-grade-filter-container" class="hidden">
+                    <label for="sub-grade-select">Choose Specific Level/Exam:</label>
+                    <select id="sub-grade-select">
+                        <!-- Options populated by JavaScript -->
+                    </select>
+                </div>
+            </div>
+
+            <div id="category-filter-container"> <!-- Existing competency filter -->
+                <label for="category-select">Filter by Competency (Optional):</label>
                 <select id="category-select">
-                    <option value="all">All Categories</option>
-                    <!-- Categories will be populated by JavaScript -->
+                    <option value="all">All Competencies</option>
                     <!-- Categories will be populated by JavaScript -->
                 </select>
             </div>
