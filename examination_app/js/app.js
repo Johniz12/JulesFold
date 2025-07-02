@@ -50,6 +50,8 @@ const historyListElement = document.getElementById('history-list');
 const backToUserMenuButtonElement = document.getElementById('back-to-user-menu-button');
 
 const exportQuestionsButtonElement = document.getElementById('export-questions-button');
+const importQuestionsInput = document.getElementById('import-questions-input');
+const importQuestionsButtonElement = document.getElementById('import-questions-button');
 
 // DOM elements for Timer
 const enableTimerCheckboxElement = document.getElementById('enable-timer-checkbox');
@@ -170,7 +172,91 @@ document.addEventListener('DOMContentLoaded', () => {
     if(exportQuestionsButtonElement) {
         exportQuestionsButtonElement.addEventListener('click', handleExportQuestions);
     }
+    // Event listener for Import Questions button (to trigger file input)
+    if(importQuestionsButtonElement && importQuestionsInput) {
+        importQuestionsButtonElement.addEventListener('click', () => {
+            importQuestionsInput.click(); // Programmatically click the hidden file input
+        });
+        importQuestionsInput.addEventListener('change', handleImportFileSelected);
+    }
 });
+
+function handleImportFileSelected(event) {
+    const file = event.target.files[0];
+    if (!file) {
+        console.log("No file selected for import.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const fileContent = e.target.result;
+        let importedQuestionsFromFile = [];
+        try {
+            importedQuestionsFromFile = JSON.parse(fileContent);
+        } catch (error) {
+            alert("Import failed: Invalid JSON file. Please select a valid .json file exported from this app.");
+            console.error("Error parsing imported JSON:", error);
+            event.target.value = null; // Reset file input
+            return;
+        }
+
+        if (!Array.isArray(importedQuestionsFromFile)) {
+            alert("Import failed: File does not contain a valid question array.");
+            event.target.value = null; // Reset file input
+            return;
+        }
+
+        let existingManualQuestions = JSON.parse(localStorage.getItem('manualQuestions')) || [];
+        let successfullyImportedCount = 0;
+        let skippedCount = 0;
+
+        importedQuestionsFromFile.forEach((qFromFile, index) => {
+            // Basic validation of the question structure from file
+            if (qFromFile && typeof qFromFile.text === 'string' && Array.isArray(qFromFile.options) &&
+                typeof qFromFile.correctAnswer === 'string' && typeof qFromFile.competency === 'string' &&
+                typeof qFromFile.gradeLevel === 'number' && qFromFile.options.length >= 2) {
+
+                const newQuestion = {
+                    // Generate a new unique ID, ignoring any ID from the file
+                    id: `manual_${Date.now()}_${Math.random().toString(36).substring(2, 5)}_${successfullyImportedCount}`,
+                    text: qFromFile.text,
+                    options: qFromFile.options,
+                    correctAnswer: qFromFile.correctAnswer, // Assuming this is the text of the correct answer
+                    competency: qFromFile.competency,
+                    gradeLevel: qFromFile.gradeLevel,
+                    isManual: true // Mark as manual
+                };
+                existingManualQuestions.push(newQuestion);
+                successfullyImportedCount++;
+            } else {
+                console.warn(`Skipping an improperly structured question object at index ${index} from imported file:`, qFromFile);
+                skippedCount++;
+            }
+        });
+
+        localStorage.setItem('manualQuestions', JSON.stringify(existingManualQuestions));
+
+        let importMessage = `${successfullyImportedCount} questions imported successfully!`;
+        if (skippedCount > 0) {
+            importMessage += `\n${skippedCount} questions were skipped due to formatting issues (see console for details).`;
+        }
+        alert(importMessage);
+
+        fetchAllQuestionsAndSetupCategories(); // Refresh question pool and filters
+
+        event.target.value = null; // Reset file input to allow importing the same file again
+    };
+
+    reader.onerror = () => {
+        alert("Error reading the selected file.");
+        console.error("FileReader error:", reader.error);
+        event.target.value = null; // Reset file input
+    };
+
+    reader.readAsText(file);
+}
+
 
 function handleExportQuestions() {
     const manualQuestions = JSON.parse(localStorage.getItem('manualQuestions')) || [];
