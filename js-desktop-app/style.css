@@ -123,6 +123,53 @@ main {
     background-color: #5a6268;
 }
 
+/* Visual Notification Overlay */
+#visual-notification-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent backdrop */
+    display: flex; /* Used to center content */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* High z-index to be on top */
+    /* display: none; /* Initial state set by inline style, JS toggles */
+}
+
+#visual-notification-content {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+#notification-image {
+    max-width: 150px; /* Adjust as needed */
+    max-height: 150px; /* Adjust as needed */
+    display: block; /* Remove extra space below if it's inline */
+}
+
+#dismiss-notification-btn {
+    padding: 8px 20px;
+    font-size: 0.9em;
+    background-color: #007bff; /* Primary button color */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#dismiss-notification-btn:hover {
+    background-color: #0056b3;
+}
+
 /* Alarm Specific Styles */
 #alarm-feature-block .feature-block-value { /* e.g., "No Alarms Set" or "Next: 07:30" */
     font-size: 1em; /* Adjusted for potentially more text like "Next: HH:MM" */
@@ -147,10 +194,12 @@ main {
 }
 
 #alarm-settings-section #new-alarm-time {
-    padding: 6px;
+    padding: 8px 6px; /* Increased padding */
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 0.95em;
+    font-size: 1.1em; /* Increased font size */
+    width: auto; /* Allow it to size based on content + padding, or set a specific larger width */
+    /* e.g., width: 100px; */
 }
 
 #alarm-settings-section #new-alarm-label {

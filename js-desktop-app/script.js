@@ -54,8 +54,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const alarmsListDiv = document.getElementById('alarms-list');
 
     const allTimeFeatureSections = [timerSettingsSection, networkTimeSettingsSection, timezonesSettingsSection, alarmSettingsSection].filter(el => el);
-    // Add alarmFeatureBlock to allTimeFeatureBlocks if it wasn't captured by a querySelectorAll elsewhere
-    // For now, individual const is fine.
+
+    // Visual Notification Elements
+    const visualNotificationOverlay = document.getElementById('visual-notification-overlay');
+    const notificationImage = document.getElementById('notification-image');
+    const dismissNotificationBtn = document.getElementById('dismiss-notification-btn');
 
 
     const SAMPLE_TIMEZONES = [ // A small list for now, can be expanded
@@ -1400,7 +1403,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Timer Core Logic ---
     function timerFinished() {
-        alert("Timer Finished!");
+        // alert("Timer Finished!"); // Replaced by new notifications
+        console.log("Timer Finished!"); // Keep a console log for debugging
+
+        playSound('assets/sounds/timer_alarm.mp3'); // Placeholder path
+        showVisualNotification('assets/images/timer_done_animation.gif'); // Placeholder path
 
         if (startTimerButton) {
              startTimerButton.disabled = false;
@@ -1417,7 +1424,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (timerTimeRemaining <= 0 && !timerIntervalId && !isTimerPaused) {
                     timerBlockDisplaySpan.textContent = "Set Timer";
                 }
-            }, 3000);
+            }, 3000); // Revert text after 3 seconds
         }
         enableTimerInputs(true); // Re-enable inputs when timer is truly done
     }
@@ -1568,9 +1575,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (alarm.enabled) {
                 const [alarmHours, alarmMinutes] = alarm.time.split(':').map(Number);
                 if (alarmHours === currentHours && alarmMinutes === currentMinutes) {
-                    alert(`Alarm! ${alarm.time} - ${alarm.label || 'Alarm'}`);
+                    console.log(`Alarm Triggered: ${alarm.time} - ${alarm.label || 'Alarm'}`); // Debug log
+
+                    playSound('assets/sounds/alarm_default.mp3'); // Placeholder path
+                    // Use alarm label in notification if available, or a default message
+                    const visualNotificationMessage = alarm.label ? `Alarm: ${alarm.label}` : "Alarm Triggered!";
+                    // For now, showVisualNotification takes an image URL. We might need to adapt it
+                    // or the overlay if we want to show text like `visualNotificationMessage`.
+                    // Let's assume we have a generic alarm animation for now.
+                    showVisualNotification('assets/images/alarm_animation.gif'); // Placeholder path
+
+                    // We could also update the #notification-image alt text or add a text element to the overlay.
+                    // For now, the image is generic. The alert used to show the label.
+                    // A more advanced notification would have custom text.
+
                     alarm.enabled = false; // Disable alarm after it rings
-                    // Or, implement snooze or more complex recurrence later
                     alarmsChanged = true;
                 }
             }
@@ -1610,6 +1629,55 @@ document.addEventListener('DOMContentLoaded', () => {
             // Clear inputs
             newAlarmTimeInput.value = '';
             newAlarmLabelInput.value = '';
+        });
+    }
+
+
+    // --- Notification Functions ---
+    /**
+     * Plays a sound from the given URL.
+     * @param {string} soundFileUrl - URL of the sound file.
+     */
+    function playSound(soundFileUrl) {
+        try {
+            const audio = new Audio(soundFileUrl);
+            audio.play().catch(e => console.error("Error playing sound:", e)); // Catch promise rejection
+        } catch (e) {
+            console.error("Error creating audio element:", e);
+        }
+    }
+
+    /**
+     * Shows the visual notification overlay with a specific image.
+     * @param {string} imageFileUrl - URL of the image/animation to display.
+     */
+    function showVisualNotification(imageFileUrl) {
+        if (visualNotificationOverlay && notificationImage) {
+            notificationImage.src = imageFileUrl;
+            visualNotificationOverlay.style.display = 'flex'; // Show overlay
+        }
+    }
+
+    /**
+     * Hides the visual notification overlay.
+     */
+    function hideVisualNotification() {
+        if (visualNotificationOverlay) {
+            visualNotificationOverlay.style.display = 'none';
+            if (notificationImage) notificationImage.src = "#"; // Reset src to stop animation/loading
+        }
+    }
+
+    // Event listener for the dismiss button on the notification overlay
+    if (dismissNotificationBtn) {
+        dismissNotificationBtn.addEventListener('click', hideVisualNotification);
+    }
+    // Optional: Click on overlay backdrop to dismiss
+    if (visualNotificationOverlay) {
+        visualNotificationOverlay.addEventListener('click', (event) => {
+            if (event.target === visualNotificationOverlay) { // Only if backdrop itself is clicked
+                hideVisualNotification();
+            }
         });
     }
 
