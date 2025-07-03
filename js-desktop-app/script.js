@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Time Widget related elements
     const timeWidgetArea = document.getElementById('time-widget-area');
-    const compactTimeDisplay = document.getElementById('compact-time-display');
+    const pcClockDisplay = document.getElementById('compact-time-display'); // RENAMED from compactTimeDisplay
     const currentTimeText = document.getElementById('current-time-text');
     const timeSettingsView = document.getElementById('time-settings-view');
     const closeTimeSettingsButton = document.getElementById('close-time-settings');
@@ -654,115 +654,90 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- Time Settings Expand/Collapse ---
-    // #compact-time-display (PC clock) will now toggle the whole #time-settings-view
-    if (compactTimeDisplay) { // This is the main PC clock display
-        compactTimeDisplay.addEventListener('click', () => {
+    // #pcClockDisplay (PC clock) will now toggle the whole #time-settings-view
+    if (pcClockDisplay) {
+        pcClockDisplay.addEventListener('click', () => {
             if (timeSettingsView) {
-                const isSettingsHidden = timeSettingsView.style.display === 'none';
+                const isSettingsHidden = timeSettingsView.style.display === 'none' || !timeSettingsView.style.display;
                 timeSettingsView.style.display = isSettingsHidden ? 'block' : 'none';
 
                 if (isSettingsHidden) { // When opening the settings view
-                    // Ensure all specific feature sections are hidden initially
-                    allTimeFeatureSections.forEach(section => {
-                        if(section) section.style.display = 'none';
-                    });
-                    // When settings view is opened, the new feature blocks will be visible by default.
-                    // Specific feature sections (timer-settings-section, etc.) will be hidden.
-                    // This initial hiding of sections is already done by their inline style or will be handled by JS.
-                    allTimeFeatureSections.forEach(section => { // Ensure detailed sections are hidden
-                        if(section) section.style.display = 'none';
-                    });
-                    // The feature blocks themselves will be visible as direct children of timeSettingsView.
-                } else { // When closing the settings view
-                    // Also hide all detailed feature sections
-                    allTimeFeatureSections.forEach(section => {
-                        if(section) section.style.display = 'none';
-                    });
-                    // And hide the feature blocks (which will be added in next step as children of timeSettingsView)
-                    // For now, this part is conceptual as blocks aren't there yet.
-                    // document.querySelectorAll('.time-feature-block').forEach(block => block.style.display = 'none');
+                    showFeatureBlocks();
+                } else { // When closing the settings view (by clicking PC clock again)
+                    showFeatureBlocks();
                 }
             }
         });
     }
-    // Removed showTimeFeatureSection function.
-    // New function to handle showing one section and hiding blocks.
+
     function showDetailedSettingsSection(sectionToShow) {
-        if (timeFeatureBlocksContainer) timeFeatureBlocksContainer.style.display = 'none';
+        if (timeFeatureBlocksContainer) {
+            timeFeatureBlocksContainer.style.display = 'none';
+        }
         allTimeFeatureSections.forEach(section => {
-            if (section) section.style.display = (section === sectionToShow) ? 'block' : 'none';
+            if (section) {
+                section.style.display = (section === sectionToShow) ? 'block' : 'none';
+            }
         });
     }
 
     function showFeatureBlocks() {
-        if (timeFeatureBlocksContainer) timeFeatureBlocksContainer.style.display = 'flex'; // Or 'block' depending on desired layout for blocks
+        if (timeFeatureBlocksContainer) {
+            timeFeatureBlocksContainer.style.display = 'flex'; // This was the intended display for the blocks container
+        }
         allTimeFeatureSections.forEach(section => {
-            if (section) section.style.display = 'none';
-        });
-        // Reset active class from any specific feature blocks if needed, though not strictly necessary here
-        // as they are not "menu buttons" in the same way.
-    }
-
-    // Adapt #compact-time-display click listener
-    if (compactTimeDisplay) { // This is the main PC clock display
-        compactTimeDisplay.addEventListener('click', () => {
-            if (timeSettingsView) {
-                const isSettingsHidden = timeSettingsView.style.display === 'none';
-                timeSettingsView.style.display = isSettingsHidden ? 'block' : 'none';
-                if (isSettingsHidden) { // When opening the settings view
-                    showFeatureBlocks(); // Show the main feature blocks, hide detailed sections
-                } else { // When closing the settings view
-                    showFeatureBlocks(); // Also ensure details are hidden and blocks would be shown if view was not closing
-                }
+            if (section) {
+                section.style.display = 'none';
             }
         });
     }
 
-
-    // Add listeners to new feature blocks
+    // Event listeners for feature blocks
     if (timerFeatureBlock) {
         timerFeatureBlock.addEventListener('click', () => {
-            if (timerIntervalId || isTimerPaused) { // Timer is active or paused, so toggle pause/resume
+            if (timerIntervalId || isTimerPaused) {
                 if (isTimerPaused) {
-                    startTimer(); // This will resume
+                    startTimer();
                 } else {
                     pauseTimer();
                 }
-            } else { // Timer is idle, so show settings
+            } else {
                 showDetailedSettingsSection(timerSettingsSection);
-                // Ensure timer inputs are enabled and buttons are in correct initial state
                 enableTimerInputs(true);
                 if(startTimerButton) { startTimerButton.disabled = false; startTimerButton.textContent = "Start"; }
                 if(pauseTimerButton) { pauseTimerButton.disabled = true; }
-                updateTimerDisplayDOM(0, false); // Ensure display in settings is 00:00:00
+                updateTimerDisplayDOM(0, false);
             }
         });
 
         timerFeatureBlock.addEventListener('dblclick', () => {
-            if (timerIntervalId || isTimerPaused) { // Only if timer is active or paused
+            if (timerIntervalId || isTimerPaused) {
                 showDetailedSettingsSection(timerSettingsSection);
-                // Ensure buttons/inputs in settings reflect current state
                 if (startTimerButton) {
                     startTimerButton.disabled = !isTimerPaused;
                     startTimerButton.textContent = isTimerPaused ? "Resume" : "Start";
                 }
                 if (pauseTimerButton) pauseTimerButton.disabled = isTimerPaused;
-                enableTimerInputs(false); // Inputs should be disabled if timer is active/paused
+                enableTimerInputs(false);
             }
-            // If timer is idle, dblclick could also open settings, same as single click.
-            // Or do nothing if already handled by single click. For now, let single click handle idle.
         });
     }
     if (networkTimeFeatureBlock) {
-        networkTimeFeatureBlock.addEventListener('click', () => showDetailedSettingsSection(networkTimeSettingsSection));
+        networkTimeFeatureBlock.addEventListener('click', () => {
+            showDetailedSettingsSection(networkTimeSettingsSection);
+        });
     }
     if (timezonesFeatureBlock) {
-        timezonesFeatureBlock.addEventListener('click', () => showDetailedSettingsSection(timezonesSettingsSection));
+        timezonesFeatureBlock.addEventListener('click', () => {
+            showDetailedSettingsSection(timezonesSettingsSection);
+        });
     }
 
-    // Add listeners to "Back to Features" buttons
+    // Event listeners for "Back to Features" buttons
     document.querySelectorAll('.back-to-features-btn').forEach(button => {
-        button.addEventListener('click', showFeatureBlocks);
+        button.addEventListener('click', () => {
+            showFeatureBlocks();
+        });
     });
 
 
