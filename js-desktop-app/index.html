@@ -28,42 +28,19 @@
                     <span id="current-time-text">Loading time...</span>
                 </div>
 
-                <div id="compact-timer-control" class="clickable">Set Timer</div>
 
                 <div id="time-settings-view" style="display: none;">
                     <h3>Time Settings</h3>
 
-                    <div class="setting-section">
-                        <h4>Network Time</h4>
-                        <button id="sync-network-time-button">Sync Network Time</button>
-                        <div id="network-time-display" class="time-display-box">Not synced yet.</div>
+                    <div id="time-features-menu">
+                        <button id="timer-feature-button" class="time-feature-btn">Timer</button>
+                        <button id="network-time-feature-button" class="time-feature-btn">Network Time</button>
+                        <button id="timezones-feature-button" class="time-feature-btn">Time Zones</button>
                     </div>
+                    <hr class="feature-menu-divider">
 
-                    <hr>
-
-                    <div class="setting-section">
-                        <h4>Additional Time Zones</h4>
-
-                        <div class="timezone-selector-group">
-                            <label for="timezone-select-1">Time Zone 1:</label>
-                            <select id="timezone-select-1" class="timezone-select">
-                                <!-- Options will be populated by JS -->
-                            </select>
-                            <div id="timezone-display-1" class="time-display-box">Select a zone</div>
-                        </div>
-
-                        <div class="timezone-selector-group">
-                            <label for="timezone-select-2">Time Zone 2:</label>
-                            <select id="timezone-select-2" class="timezone-select">
-                                <!-- Options will be populated by JS -->
-                            </select>
-                            <div id="timezone-display-2" class="time-display-box">Select a zone</div>
-                        </div>
-                    </div>
-
-                    <hr>
-
-                    <div class="setting-section">
+                    <div id="timer-settings-section" class="time-feature-section" style="display:none;">
+                        <!-- Timer UI from previous step will be moved here by JS or confirmed structure -->
                         <h4>Timer (Countdown)</h4>
                         <div id="timer-inputs">
                             <label for="timer-hours">H:</label>
@@ -81,7 +58,33 @@
                         </div>
                     </div>
 
-                    <button id="close-time-settings">Close Settings</button>
+                    <div id="network-time-settings-section" class="time-feature-section" style="display:none;">
+                         <h4>Network Time</h4>
+                         <button id="sync-network-time-button">Sync Network Time</button>
+                         <div id="network-time-display" class="time-display-box">Not synced yet.</div>
+                    </div>
+
+                    <div id="timezones-settings-section" class="time-feature-section" style="display:none;">
+                        <h4>Additional Time Zones</h4>
+                        <div class="timezone-selector-group">
+                            <label for="timezone-select-1">Time Zone 1:</label>
+                            <select id="timezone-select-1" class="timezone-select">
+                                <!-- Options will be populated by JS -->
+                            </select>
+                            <div id="timezone-display-1" class="time-display-box">Select a zone</div>
+                        </div>
+                        <div class="timezone-selector-group">
+                            <label for="timezone-select-2">Time Zone 2:</label>
+                            <select id="timezone-select-2" class="timezone-select">
+                                <!-- Options will be populated by JS -->
+                            </select>
+                            <div id="timezone-display-2" class="time-display-box">Select a zone</div>
+                        </div>
+                    </div>
+
+                    <!-- This HR might be redundant if sections have their own bottom borders or spacing -->
+                    <!-- <hr> -->
+                    <button id="close-time-settings" style="margin-top: 15px;">Close Settings</button>
                 </div>
             </div>
         </main>

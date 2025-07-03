@@ -303,39 +303,6 @@ main {
     background-color: #495057; /* Slightly lighter on hover */
 }
 
-#compact-timer-control {
-    padding: 8px;
-    text-align: center;
-    font-size: 1em; /* Smaller than main clock, but clear */
-    font-weight: normal;
-    background-color: #6c757d; /* Grey, distinct from main clock */
-    color: #fff;
-    border-radius: 4px;
-    margin-top: 10px; /* Space below main clock */
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-#compact-timer-control:hover {
-    background-color: #5a6268;
-}
-
-#compact-timer-control.timer-active { /* When timer is running/paused */
-    background-color: #28a745; /* Green, similar to timer display */
-    font-weight: bold;
-}
-#compact-timer-control.timer-active:hover {
-    background-color: #218838;
-}
-
-#compact-timer-control.timer-paused { /* Specific style if paused */
-    background-color: #ffc107; /* Yellow for paused */
-    color: #333;
-}
-#compact-timer-control.timer-paused:hover {
-    background-color: #e0a800;
-}
-
 
 #time-settings-view {
     padding: 15px;
@@ -376,18 +343,71 @@ main {
     background-color: #5a6268;
 }
 
-.setting-section {
+#time-features-menu {
+    display: flex;
+    justify-content: space-around; /* Or space-between, or center */
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.time-feature-btn {
+    flex-grow: 1; /* Make buttons share space */
+    padding: 8px 5px; /* Adjust padding */
+    font-size: 0.85em;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #495057;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+.time-feature-btn:hover {
+    background-color: #e9ecef;
+    color: #212529;
+}
+
+.time-feature-btn.active-feature-button {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+hr.feature-menu-divider {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.time-feature-section {
+    padding: 10px;
+    border: 1px solid #f0f0f0; /* Light border for the section itself */
+    border-radius: 4px;
+    margin-bottom: 15px; /* Space between sections if multiple were shown (though only one will be) */
+    background-color: #ffffff; /* White background for content area */
+}
+
+.time-feature-section h4 { /* Titles within each feature section */
+    font-size: 1.1em; /* Slightly larger than old .setting-section h4 */
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 12px;
+    text-align: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+
+/* Old .setting-section can be removed or repurposed if no longer used elsewhere */
+.setting-section { /* If still used, ensure it doesn't conflict. For now, assume it's replaced by .time-feature-section */
     margin-bottom: 15px;
     padding-bottom: 10px;
-    border-bottom: 1px dashed #eee; /* Optional: separate sections */
+    /* border-bottom: 1px dashed #eee; */ /* Handled by hr or section borders now */
 }
-.setting-section:last-of-type { /* If it's the last section before close button */
-    border-bottom: none;
-    margin-bottom: 5px; /* Reduce margin if no border */
+.setting-section:last-of-type {
+    /* border-bottom: none; */
+    margin-bottom: 5px;
 }
-
-
-.setting-section h4 {
+.setting-section h4 { /* This was the old style, ensure new .time-feature-section h4 is preferred */
     font-size: 1em;
     color: #555;
     margin-top: 0;

@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const timezoneDisplay2 = document.getElementById('timezone-display-2');
 
     // Timer UI Elements
-    const compactTimerControl = document.getElementById('compact-timer-control'); // New compact timer display/button
+    // const compactTimerControl = document.getElementById('compact-timer-control'); // REVERTED
     const timerHoursInput = document.getElementById('timer-hours');
     const timerMinutesInput = document.getElementById('timer-minutes');
     const timerSecondsInput = document.getElementById('timer-seconds');
@@ -33,6 +33,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const startTimerButton = document.getElementById('start-timer');
     const pauseTimerButton = document.getElementById('pause-timer');
     const resetTimerButton = document.getElementById('reset-timer');
+
+    // Time Settings Sectioning Elements
+    const timeFeaturesMenu = document.getElementById('time-features-menu');
+    const timerFeatureButton = document.getElementById('timer-feature-button');
+    const networkTimeFeatureButton = document.getElementById('network-time-feature-button');
+    const timezonesFeatureButton = document.getElementById('timezones-feature-button');
+
+    const timerSettingsSection = document.getElementById('timer-settings-section');
+    const networkTimeSettingsSection = document.getElementById('network-time-settings-section');
+    const timezonesSettingsSection = document.getElementById('timezones-settings-section');
+    const allTimeFeatureSections = [timerSettingsSection, networkTimeSettingsSection, timezonesSettingsSection].filter(el => el);
+
 
     const SAMPLE_TIMEZONES = [ // A small list for now, can be expanded
         { value: 'UTC', label: 'UTC' },
@@ -641,50 +653,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- Time Settings Expand/Collapse ---
-    // The main #compact-time-display (PC clock) no longer opens general time settings.
-    // Each feature within time settings will be opened by its own compact control.
+    // #compact-time-display (PC clock) will now toggle the whole #time-settings-view
+    if (compactTimeDisplay) { // This is the main PC clock display
+        compactTimeDisplay.addEventListener('click', () => {
+            if (timeSettingsView) {
+                const isSettingsHidden = timeSettingsView.style.display === 'none';
+                timeSettingsView.style.display = isSettingsHidden ? 'block' : 'none';
 
-    if (compactTimerControl) {
-        compactTimerControl.addEventListener('click', () => {
-            // If timer is running or paused, this click is for pause/resume (handled in later step)
-            // If timer is NOT active (i.e. timerTimeRemaining <= 0 and !isTimerPaused), then open settings.
-            if (timerTimeRemaining <= 0 && !isTimerPaused) {
-                if (timeSettingsView) {
-                    timeSettingsView.style.display = 'block';
-                    // Ensure the correct section of settings is visible if settings view is shared.
-                    // For now, assume timer settings are always the primary content or only content.
-                    // TODO: Potentially focus on timer inputs or ensure timer section is visible.
-                }
-            } else { // Timer is active (running or paused), so this click is for pause/resume
-                if (isTimerPaused) {
-                    startTimer(); // startTimer will handle resume logic
-                } else {
-                    pauseTimer();
+                if (isSettingsHidden) { // When opening the settings view
+                    // Ensure all specific feature sections are hidden initially
+                    allTimeFeatureSections.forEach(section => {
+                        if(section) section.style.display = 'none';
+                    });
+                    // Reset active state on feature buttons
+                    [timerFeatureButton, networkTimeFeatureButton, timezonesFeatureButton].forEach(btn => {
+                        if(btn) btn.classList.remove('active-feature-button');
+                    });
+                    // Make sure the menu itself is visible
+                    if (timeFeaturesMenu) timeFeaturesMenu.style.display = 'flex';
+                } else { // When closing the settings view
+                    // Optionally, also hide all feature sections if settings view is closed externally
+                    allTimeFeatureSections.forEach(section => {
+                        if(section) section.style.display = 'none';
+                    });
                 }
             }
         });
     }
 
-    if (compactTimerControl) { // Add dblclick listener for reopening settings
-        compactTimerControl.addEventListener('dblclick', () => {
-            if (timerIntervalId || isTimerPaused) { // Only if timer is active or paused
-                if (timeSettingsView) {
-                    timeSettingsView.style.display = 'block';
-                    // Ensure buttons in settings reflect current state
-                    if (startTimerButton) {
-                        startTimerButton.disabled = !isTimerPaused; // Disabled if running, enabled if paused
-                        startTimerButton.textContent = isTimerPaused ? "Resume" : "Start";
-                    }
-                    if (pauseTimerButton) {
-                        pauseTimerButton.disabled = isTimerPaused; // Enabled if running, disabled if paused
-                    }
-                    // Ensure input fields remain disabled as timer is active
-                    if (timerHoursInput) timerHoursInput.disabled = true;
-                    if (timerMinutesInput) timerMinutesInput.disabled = true;
-                    if (timerSecondsInput) timerSecondsInput.disabled = true;
-                }
-            }
+    function showTimeFeatureSection(sectionToShow, buttonToActivate) {
+        allTimeFeatureSections.forEach(section => {
+            if(section) section.style.display = 'none';
         });
+        if (sectionToShow) {
+            sectionToShow.style.display = 'block';
+        }
+
+        [timerFeatureButton, networkTimeFeatureButton, timezonesFeatureButton].forEach(btn => {
+            if(btn) btn.classList.remove('active-feature-button');
+        });
+        if (buttonToActivate) {
+            buttonToActivate.classList.add('active-feature-button');
+        }
+    }
+
+    if (timerFeatureButton) {
+        timerFeatureButton.addEventListener('click', () => showTimeFeatureSection(timerSettingsSection, timerFeatureButton));
+    }
+    if (networkTimeFeatureButton) {
+        networkTimeFeatureButton.addEventListener('click', () => showTimeFeatureSection(networkTimeSettingsSection, networkTimeFeatureButton));
+    }
+    if (timezonesFeatureButton) {
+        timezonesFeatureButton.addEventListener('click', () => showTimeFeatureSection(timezonesSettingsSection, timezonesFeatureButton));
     }
 
 
@@ -1076,19 +1096,26 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Updates the timer display DOM element.
      * @param {number} timeInSeconds - Time in seconds to display.
+     * @param {boolean} isTimerActiveOrPaused - Indicates if the timer is in a running or paused state.
      */
-    function updateTimerDisplayDOM(timeInSeconds) {
+    function updateTimerDisplayDOM(timeInSeconds, isTimerActiveOrPaused = false) {
         const formattedTime = formatTime(timeInSeconds);
-        if (compactTimerControl && (timerIntervalId || isTimerPaused || timeInSeconds > 0 )) { // Update compact if timer is active/paused or has time
-            compactTimerControl.textContent = formattedTime;
-            compactTimerControl.classList.add('timer-active');
-            compactTimerControl.classList.remove('timer-paused'); // Ensure paused style is removed if running
-        } else if (compactTimerControl) { // Timer is reset or not set
-            compactTimerControl.textContent = "Set Timer";
-            compactTimerControl.classList.remove('timer-active', 'timer-paused');
+
+        if (timerFeatureButton) {
+            if (isTimerActiveOrPaused || (timeInSeconds > 0 && (timerIntervalId || isTimerPaused))) { // Timer is active, paused with time, or explicitly set as active
+                timerFeatureButton.textContent = formattedTime;
+                timerFeatureButton.classList.add('timer-button-running'); // General active state
+                timerFeatureButton.classList.remove('timer-button-paused'); // Remove paused if running
+            } else { // Timer is reset or not set
+                timerFeatureButton.textContent = "Timer";
+                timerFeatureButton.classList.remove('timer-button-running', 'timer-button-paused');
+            }
         }
 
-        if (timerDisplay) { // Also update the display within settings view if it exists
+        if (timerDisplay) { // This is the display inside the settings section
+            // When timer is not running, it shows 00:00:00 or the set duration.
+            // When running, it could also show countdown, or be static.
+            // For now, let it mirror the main display or show 0 if reset.
             timerDisplay.textContent = formattedTime;
         }
     }
@@ -1097,45 +1124,49 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Timer Core Logic ---
     function timerFinished() {
         alert("Timer Finished!");
-        // Future: Play sound, show visual notification
 
-        if (startTimerButton) { // These are buttons in the settings panel
+        if (startTimerButton) {
              startTimerButton.disabled = false;
              startTimerButton.textContent = "Start";
         }
         if (pauseTimerButton) pauseTimerButton.disabled = true;
 
-        if (compactTimerControl) {
-            compactTimerControl.textContent = "Timer Done!";
-            compactTimerControl.classList.remove('timer-active', 'timer-paused');
-            setTimeout(() => {
+        if(timerFeatureButton) {
+            timerFeatureButton.textContent = "Timer Done!";
+            timerFeatureButton.classList.remove('timer-button-running', 'timer-button-paused');
+             setTimeout(() => {
                 // Check if still in a finished state (not reset or a new timer started)
                 if (timerTimeRemaining <= 0 && !timerIntervalId && !isTimerPaused) {
-                     if (compactTimerControl) {
-                        compactTimerControl.textContent = "Set Timer";
-                        // Input fields should be enabled if settings are open, resetTimer handles this.
-                     }
+                    timerFeatureButton.textContent = "Timer";
                 }
             }, 3000);
         }
-        // Input fields should be re-enabled if the settings view is open.
-        // This is better handled by resetTimer or if settings are opened explicitly.
-        // For now, resetTimer is the main way to re-enable inputs.
+        // Ensure inputs are enabled if settings are somehow visible (resetTimer is better for this)
+        // if (timerSettingsSection && timerSettingsSection.style.display !== 'none') {
+        //     enableTimerInputs(true);
+        // }
     }
 
     function tickTimer() {
-        if (isTimerPaused) return; // Should not happen if interval is cleared on pause, but good check
+        if (isTimerPaused) return;
 
         timerTimeRemaining--;
-        updateTimerDisplayDOM(timerTimeRemaining);
+        // Pass true to indicate timer is active for #timer-feature-button display
+        updateTimerDisplayDOM(timerTimeRemaining, true);
 
         if (timerTimeRemaining < 0) {
             clearInterval(timerIntervalId);
             timerIntervalId = null;
-            timerFinished();
+            timerFinished(); // Handles UI changes for finished state
             timerTimeRemaining = 0;
-            updateTimerDisplayDOM(timerTimeRemaining);
+            updateTimerDisplayDOM(timerTimeRemaining, false); // Update to 00:00:00 and not active
         }
+    }
+
+    function enableTimerInputs(enable) {
+        if (timerHoursInput) timerHoursInput.disabled = !enable;
+        if (timerMinutesInput) timerMinutesInput.disabled = !enable;
+        if (timerSecondsInput) timerSecondsInput.disabled = !enable;
     }
 
     function startTimer() {
@@ -1145,47 +1176,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!isTimerPaused || timerTimeRemaining <= 0) {
             getTimerDurationFromInputs();
-            if (timerDurationSet <= 0) { // Check if any duration was actually set from inputs
+            if (timerDurationSet <= 0) {
                 alert("Please set a timer duration greater than 0.");
                 return;
             }
             timerTimeRemaining = timerDurationSet;
         }
-        // If resuming a paused timer with timerTimeRemaining > 0, it will use that.
 
         isTimerPaused = false;
         if (timerIntervalId) clearInterval(timerIntervalId);
 
-        updateTimerDisplayDOM(timerTimeRemaining);
+        updateTimerDisplayDOM(timerTimeRemaining, true); // Indicate timer is active for display on feature button
         timerIntervalId = setInterval(tickTimer, 1000);
 
-        if (compactTimerControl) {
-            compactTimerControl.classList.add('timer-active');
-            compactTimerControl.classList.remove('timer-paused');
+        if (timerSettingsSection) { // Hide the detailed settings section
+            timerSettingsSection.style.display = 'none';
         }
-        if (timeSettingsView) {
-            timeSettingsView.style.display = 'none'; // Hide settings view when timer starts
+        // Ensure main feature menu is visible if settings were hidden
+        if (timeFeaturesMenu && timeSettingsView && timeSettingsView.style.display === 'block') {
+            timeFeaturesMenu.style.display = 'flex';
         }
 
-        startTimerButton.disabled = true;
-        pauseTimerButton.disabled = false;
-        timerHoursInput.disabled = true;
-        timerMinutesInput.disabled = true;
-        timerSecondsInput.disabled = true;
+
+        if (startTimerButton) startTimerButton.disabled = true;
+        if (pauseTimerButton) pauseTimerButton.disabled = false;
+        enableTimerInputs(false); // Disable input fields
     }
 
     function pauseTimer() {
-        if (!timerIntervalId || isTimerPaused || !startTimerButton || !pauseTimerButton) return; // Not running or already paused
+        if (!timerIntervalId || isTimerPaused || !startTimerButton || !pauseTimerButton) return;
 
         clearInterval(timerIntervalId);
-        // timerIntervalId = null; // Keep it to know it was running
         isTimerPaused = true;
-        if (compactTimerControl) {
-            compactTimerControl.classList.add('timer-paused');
-            compactTimerControl.classList.remove('timer-active'); // Or adjust if active should persist with paused
-            compactTimerControl.textContent = `Paused: ${formatTime(timerTimeRemaining)}`;
+
+        if (timerFeatureButton) {
+            timerFeatureButton.textContent = `Paused: ${formatTime(timerTimeRemaining)}`;
+            timerFeatureButton.classList.add('timer-button-paused');
+            timerFeatureButton.classList.remove('timer-button-running'); // If running style is different from general active
         }
-        if (startTimerButton) { // Update settings button too
+        // Also update the display within settings if it's open
+        if (timerDisplay) timerDisplay.textContent = formatTime(timerTimeRemaining);
+
+
+        if (startTimerButton) {
             startTimerButton.disabled = false;
             startTimerButton.textContent = "Resume";
         }
@@ -1199,9 +1232,14 @@ document.addEventListener('DOMContentLoaded', () => {
         timerIntervalId = null;
         isTimerPaused = false;
         timerTimeRemaining = 0;
-        // timerDurationSet = 0; // Resetting this means user must re-enter duration
+        timerDurationSet = 0; // Also reset the stored duration
 
-        updateTimerDisplayDOM(0); // This will update compactTimerControl to "Set Timer" & remove classes
+        updateTimerDisplayDOM(0, false); // Update displays (feature button to "Timer", settings display to 00:00:00)
+
+        if (timerFeatureButton) { // Ensure it's reset fully
+            timerFeatureButton.textContent = "Timer";
+            timerFeatureButton.classList.remove('timer-button-running', 'timer-button-paused');
+        }
 
         if (startTimerButton) {
             startTimerButton.disabled = false;
@@ -1209,7 +1247,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (pauseTimerButton) pauseTimerButton.disabled = true;
 
-        // Re-enable and clear input fields
+        enableTimerInputs(true); // Re-enable input fields
         timerHoursInput.disabled = false;
         timerMinutesInput.disabled = false;
         timerSecondsInput.disabled = false;
