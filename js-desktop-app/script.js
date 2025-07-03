@@ -36,9 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     let currentDate = new Date(); // Tracks the currently displayed month and year (for both views)
-    let emojiData = loadEmojiData(); // Holds all emoji data { "YYYY-MM-DD": "😊" }
+    let emojiData = loadEmojiData(); // Holds all emoji data { "YYYY-MM-DD": ["😊", "🎉"] }
 
-    const PREDEFINED_EMOJIS = ['😊', '🎉', '⛽', '❤️', '🛒', '💼', '✈️', '🛠️', '❌']; // '❌' for remove
+    const PREDEFINED_EMOJIS = ['😊', '🎉', '⛽', '❤️', '🛒', '💼', '✈️', '🛠️']; // '❌' removed, toggle handles removal
 
     // --- Compact Date Display ---
     /**
@@ -86,17 +86,40 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Adds or removes an emoji for a specific date and saves the data.
      * @param {string} dateKey - The date in "YYYY-MM-DD" format.
-     * @param {string} emoji - The emoji character. If empty, the emoji is removed.
+     * @param {string} emojiToToggle - The emoji character to add or remove.
      */
-    function addEmojiToDate(dateKey, emoji) {
-        if (emoji) { // Add/update emoji if provided
-            emojiData[dateKey] = emoji;
-        } else { // Remove emoji if input is empty
-            delete emojiData[dateKey];
+    function addEmojiToDate(dateKey, emojiToToggle) {
+        // Ensure the dateKey entry is an array
+        if (!emojiData[dateKey] || !Array.isArray(emojiData[dateKey])) {
+            emojiData[dateKey] = [];
         }
+
+        const emojiIndex = emojiData[dateKey].indexOf(emojiToToggle);
+
+        if (emojiToToggle === '') { // Special case: clear all emojis for this date (if '❌' was used)
+            emojiData[dateKey] = [];
+        } else if (emojiIndex > -1) { // Emoji exists, so remove it (toggle off)
+            emojiData[dateKey].splice(emojiIndex, 1);
+        } else { // Emoji doesn't exist, so add it (toggle on)
+            emojiData[dateKey].push(emojiToToggle);
+            // Optional: Sort emojis in the array for consistent display order, e.g., alphabetically
+            // emojiData[dateKey].sort();
+        }
+
+        // If after modifications, the array is empty, we can choose to delete the key or keep an empty array.
+        // For consistency and easier type checking later, let's keep the empty array.
+        // if (emojiData[dateKey].length === 0) {
+        //     delete emojiData[dateKey];
+        // }
+
         saveEmojiData();
         renderCalendar(currentDate.getFullYear(), currentDate.getMonth()); // Re-render calendar
-        updateEmojiSummary(); // Update summary display
+
+        // Ensure summary updates if it's visible
+        const summaryPanel = document.getElementById('calendar-internal-summary');
+        if (summaryPanel && summaryPanel.style.display !== 'none') {
+            updateEmojiSummary();
+        }
     }
 
     // --- Emoji Summary Display ---
@@ -170,13 +193,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const counts = {};
         for (const dateKey in filteredData) {
-            const emoji = filteredData[dateKey];
-            if (emoji) {
-                counts[emoji] = (counts[emoji] || 0) + 1;
+            const emojisOnDate = filteredData[dateKey]; // This is now an array
+            if (Array.isArray(emojisOnDate)) {
+                emojisOnDate.forEach(emoji => {
+                    if (emoji) { // Ensure emoji string is not empty/null
+                        counts[emoji] = (counts[emoji] || 0) + 1;
+                    }
+                });
             }
         }
 
-        if (Object.keys(counts).length === 0) { // Should be caught by filteredData check, but good fallback
+        if (Object.keys(counts).length === 0) {
             summaryListDisplay.innerHTML = `<h4>${summaryTitleText}</h4><p>No emojis recorded for this period.</p>`;
             return;
         }
@@ -424,12 +451,22 @@ document.addEventListener('DOMContentLoaded', () => {
             dayNumberSpan.textContent = day;
             dayCell.appendChild(dayNumberSpan);
 
-            // Display emoji if one exists for this date
-            if (emojiData[dateKey]) {
-                const emojiSpan = document.createElement('span');
-                emojiSpan.className = 'emoji';
-                emojiSpan.textContent = emojiData[dateKey];
-                dayCell.appendChild(emojiSpan);
+            // Display emoji(s) if they exist for this date
+            if (emojiData[dateKey] && Array.isArray(emojiData[dateKey]) && emojiData[dateKey].length > 0) {
+                const emojiContainer = document.createElement('div'); // Use a div for better layout control if needed
+                emojiContainer.className = 'emoji-display-container';
+
+                // Option 1: Join emojis into a single string
+                // emojiContainer.textContent = emojiData[dateKey].join(' ');
+
+                // Option 2: Create separate spans for each emoji (better for individual styling/spacing if needed)
+                emojiData[dateKey].forEach(emo => {
+                    const emojiSpan = document.createElement('span');
+                    emojiSpan.className = 'emoji';
+                    emojiSpan.textContent = emo;
+                    emojiContainer.appendChild(emojiSpan);
+                });
+                dayCell.appendChild(emojiContainer);
             }
 
             // Highlight today's date
@@ -475,16 +512,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const picker = document.createElement('div');
         picker.id = 'emoji-picker-popup';
 
-        PREDEFINED_EMOJIS.forEach(emoji => {
+        PREDEFINED_EMOJIS.forEach(emojiSymbol => {
             const emojiButton = document.createElement('button');
-            emojiButton.textContent = emoji;
+            emojiButton.textContent = emojiSymbol;
+
+            // Check if this emoji is already selected for the date
+            if (emojiData[dateKey] && emojiData[dateKey].includes(emojiSymbol)) {
+                emojiButton.classList.add('picker-emoji-active');
+            }
+
             emojiButton.addEventListener('click', () => {
-                const emojiToSave = (emoji === '❌') ? '' : emoji;
-                addEmojiToDate(dateKey, emojiToSave);
-                closeEmojiPicker();
+                // emojiToToggle is just the emojiSymbol itself.
+                // addEmojiToDate will handle adding or removing it from the array.
+                addEmojiToDate(dateKey, emojiSymbol);
+                // No need to close picker immediately, allow multiple toggles.
+                // Picker will close on "click outside" or if another date is clicked.
+                // Or, we can explicitly close it: closeEmojiPicker();
+                // For now, let's keep it open to allow multiple toggles, and rely on click-outside.
+                // To reflect the change immediately on the button:
+                emojiButton.classList.toggle('picker-emoji-active');
             });
             picker.appendChild(emojiButton);
         });
+
+        // Add a "Done" or "Close Picker" button to the picker itself
+        const doneButton = document.createElement('button');
+        doneButton.textContent = 'Done';
+        doneButton.classList.add('picker-done-button'); // For specific styling
+        doneButton.addEventListener('click', () => {
+            closeEmojiPicker();
+        });
+        picker.appendChild(doneButton);
 
         // Positioning logic (relative to fullCalendarView for simplicity)
         const calendarView = targetElement.closest('#full-calendar-view');
@@ -908,7 +966,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const dataToFilter = getFilteredEmojiData(period, year, month); // Get data for the specific period
 
         for (const dateKey in dataToFilter) {
-            if (dataToFilter[dateKey] === emoji) {
+            const emojisOnDate = dataToFilter[dateKey]; // This is an array
+            if (Array.isArray(emojisOnDate) && emojisOnDate.includes(emoji)) {
                 datesForEmoji.push(dateKey);
             }
         }

@@ -189,8 +189,26 @@ main {
 
 .day-cell .emoji {
     font-size: 1.1em;
-    margin-top: 4px;
+    /* margin-top: 4px; // Removed, as emoji-display-container will handle spacing */
+    margin-right: 2px; /* Add a little space between multiple emojis if they are spans */
 }
+.day-cell .day-number {
+    display: block; /* Ensure it takes its own line if emoji is present */
+    font-size: 0.9em;
+    margin-bottom: 2px;
+}
+
+.emoji-display-container {
+    display: flex; /* Arrange multiple emojis in a row */
+    flex-wrap: wrap; /* Allow wrapping if too many emojis */
+    justify-content: center; /* Center emojis within the container */
+    align-items: center;
+    margin-top: 3px; /* Space above the emoji container */
+    line-height: 1; /* Prevent extra space from line height if emojis are tall */
+    max-height: 2.5em; /* Limit height to prevent oversized cells, allows approx 2 lines of small emojis */
+    overflow-y: hidden; /* Hide overflow if too many emojis to fit in max-height */
+}
+
 
 /* Styling for the emoji summary list */
 #summary-content ul {
@@ -405,6 +423,24 @@ main {
     background-color: #e0e0e0;
     border-color: #ccc;
 }
+
+#emoji-picker-popup button.picker-emoji-active {
+    background-color: #007bff;
+    color: white;
+    border-color: #0056b3;
+}
+
+#emoji-picker-popup button.picker-done-button {
+    background-color: #28a745; /* Green for done */
+    color: white;
+    border-color: #1e7e34;
+    width: 100%; /* Make it full width within the picker */
+    margin-top: 5px;
+}
+#emoji-picker-popup button.picker-done-button:hover {
+    background-color: #218838;
+}
+
 
 /* Drag and Drop Styles */
 .dragging {
