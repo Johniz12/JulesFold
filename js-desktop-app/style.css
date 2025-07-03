@@ -248,6 +248,133 @@ main {
     border-bottom: none;
 }
 
+/* Time Widget Area */
+#time-widget-area {
+    flex: 1; /* Adjust flex properties as needed, similar to old widgets-container */
+    min-width: 200px; /* Minimum width before wrapping or shrinking */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px; /* Add margin if it wraps below calendar in compact view */
+}
+
+#app-container.expanded #time-widget-area {
+    margin-top: 0; /* No margin-top when side-by-side in expanded view */
+}
+
+
+#compact-time-display {
+    padding: 10px;
+    text-align: center;
+    font-size: 1.5em; /* Larger font for time */
+    font-weight: bold;
+    background-color: #343a40; /* Dark background for time */
+    color: #fff; /* Light text */
+    border-radius: 4px;
+    margin-bottom: 10px; /* Space before settings view if it expands */
+}
+
+#compact-time-display.clickable {
+    cursor: pointer;
+}
+
+#compact-time-display.clickable:hover {
+    background-color: #495057; /* Slightly lighter on hover */
+}
+
+#time-settings-view {
+    padding: 15px;
+    border-top: 1px solid #ccc;
+    background-color: #fff;
+}
+
+#time-settings-view h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    color: #333;
+    text-align: center;
+}
+
+#time-settings-view button { /* General button style within settings */
+    display: block;
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+#time-settings-view button:hover {
+    background-color: #0056b3;
+}
+
+#time-settings-view button#close-time-settings {
+    background-color: #6c757d; /* Grey for close */
+    margin-top: 10px;
+}
+#time-settings-view button#close-time-settings:hover {
+    background-color: #5a6268;
+}
+
+.setting-section {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #eee; /* Optional: separate sections */
+}
+.setting-section:last-of-type { /* If it's the last section before close button */
+    border-bottom: none;
+    margin-bottom: 5px; /* Reduce margin if no border */
+}
+
+
+.setting-section h4 {
+    font-size: 1em;
+    color: #555;
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+.time-display-box {
+    background-color: #e9ecef;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: #333;
+    margin-top: 8px;
+    min-height: 20px; /* Ensure it has some height even when empty */
+    text-align: center;
+}
+
+.timezone-selector-group {
+    margin-bottom: 15px;
+}
+
+.timezone-selector-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.timezone-select {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    font-size: 0.9em;
+    margin-bottom: 8px;
+}
+
+
 /* Emoji Picker Popup */
 #emoji-picker-popup {
     position: absolute; /* Will be positioned by JS */

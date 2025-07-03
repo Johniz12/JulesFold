@@ -21,7 +21,46 @@
                     <!-- Full calendar (header + grid) will be rendered here by JS -->
                 </div>
             </div>
-            <!-- Widgets container removed -->
+
+            <div id="time-widget-area">
+                <div id="compact-time-display" class="clickable">
+                    <!-- Live clock will be rendered here by JS -->
+                    <span id="current-time-text">Loading time...</span>
+                </div>
+                <div id="time-settings-view" style="display: none;">
+                    <h3>Time Settings</h3>
+
+                    <div class="setting-section">
+                        <h4>Network Time</h4>
+                        <button id="sync-network-time-button">Sync Network Time</button>
+                        <div id="network-time-display" class="time-display-box">Not synced yet.</div>
+                    </div>
+
+                    <hr>
+
+                    <div class="setting-section">
+                        <h4>Additional Time Zones</h4>
+
+                        <div class="timezone-selector-group">
+                            <label for="timezone-select-1">Time Zone 1:</label>
+                            <select id="timezone-select-1" class="timezone-select">
+                                <!-- Options will be populated by JS -->
+                            </select>
+                            <div id="timezone-display-1" class="time-display-box">Select a zone</div>
+                        </div>
+
+                        <div class="timezone-selector-group">
+                            <label for="timezone-select-2">Time Zone 2:</label>
+                            <select id="timezone-select-2" class="timezone-select">
+                                <!-- Options will be populated by JS -->
+                            </select>
+                            <div id="timezone-display-2" class="time-display-box">Select a zone</div>
+                        </div>
+                    </div>
+
+                    <button id="close-time-settings">Close Settings</button>
+                </div>
+            </div>
         </main>
     </div>
     <script src="script.js"></script>

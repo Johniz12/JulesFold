@@ -8,6 +8,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const compactDateText = document.getElementById('compact-date-text');
     const fullCalendarView = document.getElementById('full-calendar-view'); // Container for full calendar
 
+    // Time Widget related elements
+    const timeWidgetArea = document.getElementById('time-widget-area');
+    const compactTimeDisplay = document.getElementById('compact-time-display');
+    const currentTimeText = document.getElementById('current-time-text');
+    const timeSettingsView = document.getElementById('time-settings-view');
+    const closeTimeSettingsButton = document.getElementById('close-time-settings');
+    const syncNetworkTimeButton = document.getElementById('sync-network-time-button');
+    const networkTimeDisplay = document.getElementById('network-time-display');
+
+    // Time Zone elements
+    const timezoneSelect1 = document.getElementById('timezone-select-1');
+    const timezoneDisplay1 = document.getElementById('timezone-display-1');
+    const timezoneSelect2 = document.getElementById('timezone-select-2');
+    const timezoneDisplay2 = document.getElementById('timezone-display-2');
+
+    const SAMPLE_TIMEZONES = [ // A small list for now, can be expanded
+        { value: 'UTC', label: 'UTC' },
+        { value: 'America/New_York', label: 'New York (EST/EDT)' },
+        { value: 'Europe/London', label: 'London (GMT/BST)' },
+        { value: 'Asia/Tokyo', label: 'Tokyo (JST)' },
+        { value: 'Australia/Sydney', label: 'Sydney (AEST/AEDT)' },
+        { value: 'America/Los_Angeles', label: 'Los Angeles (PST/PDT)' },
+        { value: 'Europe/Paris', label: 'Paris (CET/CEST)' },
+    ];
+
+
     let currentDate = new Date(); // Tracks the currently displayed month and year (for both views)
     let emojiData = loadEmojiData(); // Holds all emoji data { "YYYY-MM-DD": "😊" }
 
@@ -363,10 +389,211 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- Live Clock Update ---
+    /**
+     * Updates the compact time display with the current system time.
+     */
+    function updateLiveClock() {
+        if (currentTimeText) { // Ensure element exists
+            const now = new Date();
+            const timeString = now.toLocaleTimeString(undefined, {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            currentTimeText.textContent = timeString;
+        }
+    }
+
+
+    // --- Time Settings Expand/Collapse ---
+    if (compactTimeDisplay) {
+        compactTimeDisplay.addEventListener('click', () => {
+            if (timeSettingsView) {
+                // Toggle visibility of the settings view
+                const isHidden = timeSettingsView.style.display === 'none';
+                timeSettingsView.style.display = isHidden ? 'block' : 'none';
+                // Optional: Change text or style of compactTimeDisplay if needed
+            }
+        });
+    }
+
+    if (closeTimeSettingsButton) {
+        closeTimeSettingsButton.addEventListener('click', () => {
+            if (timeSettingsView) {
+                timeSettingsView.style.display = 'none';
+            }
+        });
+    }
+
+
+    // --- Network Time Sync Placeholder ---
+    if (syncNetworkTimeButton) {
+        syncNetworkTimeButton.addEventListener('click', () => {
+            if (networkTimeDisplay) {
+                networkTimeDisplay.textContent = 'Fetching network time...';
+                syncNetworkTimeButton.disabled = true; // Disable button during fetch
+            }
+
+            fetch('https://worldtimeapi.org/api/ip')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (networkTimeDisplay) {
+                        const networkDateTime = new Date(data.datetime); // The API provides ISO 8601 datetime string
+                        const timeString = networkDateTime.toLocaleTimeString(undefined, {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            timeZoneName: 'short'
+                        });
+                        const dateString = networkDateTime.toLocaleDateString(undefined, {
+                            weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
+                        });
+                        networkTimeDisplay.textContent = `Network Time: ${dateString}, ${timeString} (${data.timezone})`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching network time:', error);
+                    if (networkTimeDisplay) {
+                        networkTimeDisplay.textContent = 'Error fetching time.';
+                    }
+                })
+                .finally(() => {
+                    if (syncNetworkTimeButton) {
+                        syncNetworkTimeButton.disabled = false; // Re-enable button
+                    }
+                });
+        });
+    }
+
+
+    // --- Time Zone Functions Placeholder ---
+    /**
+     * Populates the time zone select dropdowns.
+     */
+    function populateTimeZoneSelects() {
+        [timezoneSelect1, timezoneSelect2].forEach(selectElement => {
+            if (!selectElement) return;
+            // Add a default "Select a zone" option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = "";
+            defaultOption.textContent = "Select a time zone...";
+            defaultOption.disabled = true; // Disable it so it can't be "selected" after choosing another
+            defaultOption.selected = true; // Make it the default shown
+            selectElement.appendChild(defaultOption);
+
+            SAMPLE_TIMEZONES.forEach(tz => {
+                const option = document.createElement('option');
+                option.value = tz.value;
+                option.textContent = tz.label;
+                selectElement.appendChild(option);
+            });
+        });
+    }
+
+    // --- Time Zone Functions ---
+    let selectedTimeZone1 = localStorage.getItem('timezone-select-1_selectedZone') || "";
+    let selectedTimeZone2 = localStorage.getItem('timezone-select-2_selectedZone') || "";
+
+    /**
+     * Formats and displays time for a given IANA timezone.
+     * @param {string} timeZone - The IANA timezone string.
+     * @param {HTMLElement} displayElement - The HTML element to display the time in.
+     */
+    function displayTimeForZone(timeZone, displayElement) {
+        if (!timeZone || !displayElement) {
+            if(displayElement) displayElement.textContent = "Select a zone";
+            return;
+        }
+        try {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { // Using en-US for consistency, locale can be dynamic
+                timeZone: timeZone,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                // timeZoneName: 'short' // Can be verbose, consider removing or making optional
+            });
+            displayElement.textContent = timeString;
+        } catch (error) {
+            console.error(`Error formatting time for zone ${timeZone}:`, error);
+            displayElement.textContent = "Invalid zone";
+        }
+    }
+
+    /**
+     * Populates the time zone select dropdowns.
+     */
+    function populateTimeZoneSelects() {
+        [timezoneSelect1, timezoneSelect2].forEach((selectElement, index) => {
+            if (!selectElement) return;
+
+            const defaultOption = document.createElement('option');
+            defaultOption.value = "";
+            defaultOption.textContent = "Select a time zone...";
+            // defaultOption.disabled = true; // Keep it selectable to "unset"
+            selectElement.appendChild(defaultOption);
+
+            SAMPLE_TIMEZONES.forEach(tz => {
+                const option = document.createElement('option');
+                option.value = tz.value;
+                option.textContent = tz.label;
+                selectElement.appendChild(option);
+            });
+
+            // Set initial value from localStorage
+            const savedZone = index === 0 ? selectedTimeZone1 : selectedTimeZone2;
+            if (savedZone) {
+                selectElement.value = savedZone;
+            }
+        });
+    }
+
+    function handleTimeZoneChange(event, displayElement) {
+        const selectedZone = event.target.value;
+        if (event.target === timezoneSelect1) {
+            selectedTimeZone1 = selectedZone;
+        } else if (event.target === timezoneSelect2) {
+            selectedTimeZone2 = selectedZone;
+        }
+
+        localStorage.setItem(event.target.id + '_selectedZone', selectedZone);
+        displayTimeForZone(selectedZone, displayElement);
+    }
+
+    if (timezoneSelect1) timezoneSelect1.addEventListener('change', (e) => handleTimeZoneChange(e, timezoneDisplay1));
+    if (timezoneSelect2) timezoneSelect2.addEventListener('change', (e) => handleTimeZoneChange(e, timezoneDisplay2));
+
+    function updateDisplayedZoneTimes() {
+        displayTimeForZone(selectedTimeZone1, timezoneDisplay1);
+        displayTimeForZone(selectedTimeZone2, timezoneDisplay2);
+    }
+
+    // Load initial times for selected zones
+    function loadSelectedTimeZones() {
+        populateTimeZoneSelects(); // Populates and sets selected value from stored vars
+        updateDisplayedZoneTimes(); // Initial display of times
+    }
+
+
     // --- Initialization ---
     renderCompactDateDisplay(); // Display compact date first
+    updateLiveClock(); // Initial call to set time immediately
+    setInterval(updateLiveClock, 1000); // Update time every second
+
+    if(timeSettingsView) timeSettingsView.style.display = 'none'; // Ensure it's hidden on init
+
+    loadSelectedTimeZones(); // Populates dropdowns, loads saved selections, and displays initial times
+    setInterval(updateDisplayedZoneTimes, 1000); // Update displayed time zone times every second
+
+
     // updateEmojiSummary(); // Summary is now part of full calendar, and updated when shown.
                              // No need to call it here on initial load as summary panel is hidden.
 
-    console.log("JS Desktop App Initialized: Compact date shown, full calendar ready for expansion.");
+    console.log("JS Desktop App Initialized: Compact date and time shown.");
 });
