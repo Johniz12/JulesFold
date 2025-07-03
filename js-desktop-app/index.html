@@ -32,15 +32,27 @@
                 <div id="time-settings-view" style="display: none;">
                     <h3>Time Settings</h3>
 
-                    <div id="time-features-menu">
-                        <button id="timer-feature-button" class="time-feature-btn">Timer</button>
-                        <button id="network-time-feature-button" class="time-feature-btn">Network Time</button>
-                        <button id="timezones-feature-button" class="time-feature-btn">Time Zones</button>
+                    <div id="time-feature-blocks-container"> <!-- Container for the blocks -->
+                        <div id="timer-feature-block" class="time-feature-block clickable">
+                            <span class="feature-block-title">Timer</span>
+                            <span id="timer-block-display" class="feature-block-value">Set Timer</span>
+                        </div>
+                        <div id="network-time-feature-block" class="time-feature-block clickable">
+                            <span class="feature-block-title">Network Time</span>
+                            <span id="network-time-block-status" class="feature-block-value">Sync</span>
+                        </div>
+                        <div id="timezones-feature-block" class="time-feature-block clickable">
+                            <span class="feature-block-title">Time Zones</span>
+                            <div id="feature-tz-display-container">
+                                <span id="feature-tz1-display" class="feature-block-value tz-value">Zone 1: --:--</span>
+                                <span id="feature-tz2-display" class="feature-block-value tz-value">Zone 2: --:--</span>
+                            </div>
+                        </div>
                     </div>
-                    <hr class="feature-menu-divider">
+                    <hr> <!-- Separator between blocks and detailed settings sections -->
 
                     <div id="timer-settings-section" class="time-feature-section" style="display:none;">
-                        <!-- Timer UI from previous step will be moved here by JS or confirmed structure -->
+                        <button class="back-to-features-btn">← Back to Features</button>
                         <h4>Timer (Countdown)</h4>
                         <div id="timer-inputs">
                             <label for="timer-hours">H:</label>
@@ -59,12 +71,14 @@
                     </div>
 
                     <div id="network-time-settings-section" class="time-feature-section" style="display:none;">
+                         <button class="back-to-features-btn">← Back to Features</button>
                          <h4>Network Time</h4>
                          <button id="sync-network-time-button">Sync Network Time</button>
                          <div id="network-time-display" class="time-display-box">Not synced yet.</div>
                     </div>
 
                     <div id="timezones-settings-section" class="time-feature-section" style="display:none;">
+                        <button class="back-to-features-btn">← Back to Features</button>
                         <h4>Additional Time Zones</h4>
                         <div class="timezone-selector-group">
                             <label for="timezone-select-1">Time Zone 1:</label>

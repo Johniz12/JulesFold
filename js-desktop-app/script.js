@@ -35,10 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetTimerButton = document.getElementById('reset-timer');
 
     // Time Settings Sectioning Elements
-    const timeFeaturesMenu = document.getElementById('time-features-menu');
-    const timerFeatureButton = document.getElementById('timer-feature-button');
-    const networkTimeFeatureButton = document.getElementById('network-time-feature-button');
-    const timezonesFeatureButton = document.getElementById('timezones-feature-button');
+    const timeFeatureBlocksContainer = document.getElementById('time-feature-blocks-container');
+    const timerFeatureBlock = document.getElementById('timer-feature-block');
+    const networkTimeFeatureBlock = document.getElementById('network-time-feature-block');
+    const timezonesFeatureBlock = document.getElementById('timezones-feature-block');
+    const allTimeFeatureBlocks = [timerFeatureBlock, networkTimeFeatureBlock, timezonesFeatureBlock].filter(el => el);
 
     const timerSettingsSection = document.getElementById('timer-settings-section');
     const networkTimeSettingsSection = document.getElementById('network-time-settings-section');
@@ -665,53 +666,113 @@ document.addEventListener('DOMContentLoaded', () => {
                     allTimeFeatureSections.forEach(section => {
                         if(section) section.style.display = 'none';
                     });
-                    // Reset active state on feature buttons
-                    [timerFeatureButton, networkTimeFeatureButton, timezonesFeatureButton].forEach(btn => {
-                        if(btn) btn.classList.remove('active-feature-button');
+                    // When settings view is opened, the new feature blocks will be visible by default.
+                    // Specific feature sections (timer-settings-section, etc.) will be hidden.
+                    // This initial hiding of sections is already done by their inline style or will be handled by JS.
+                    allTimeFeatureSections.forEach(section => { // Ensure detailed sections are hidden
+                        if(section) section.style.display = 'none';
                     });
-                    // Make sure the menu itself is visible
-                    if (timeFeaturesMenu) timeFeaturesMenu.style.display = 'flex';
+                    // The feature blocks themselves will be visible as direct children of timeSettingsView.
                 } else { // When closing the settings view
-                    // Optionally, also hide all feature sections if settings view is closed externally
+                    // Also hide all detailed feature sections
                     allTimeFeatureSections.forEach(section => {
                         if(section) section.style.display = 'none';
                     });
+                    // And hide the feature blocks (which will be added in next step as children of timeSettingsView)
+                    // For now, this part is conceptual as blocks aren't there yet.
+                    // document.querySelectorAll('.time-feature-block').forEach(block => block.style.display = 'none');
+                }
+            }
+        });
+    }
+    // Removed showTimeFeatureSection function.
+    // New function to handle showing one section and hiding blocks.
+    function showDetailedSettingsSection(sectionToShow) {
+        if (timeFeatureBlocksContainer) timeFeatureBlocksContainer.style.display = 'none';
+        allTimeFeatureSections.forEach(section => {
+            if (section) section.style.display = (section === sectionToShow) ? 'block' : 'none';
+        });
+    }
+
+    function showFeatureBlocks() {
+        if (timeFeatureBlocksContainer) timeFeatureBlocksContainer.style.display = 'flex'; // Or 'block' depending on desired layout for blocks
+        allTimeFeatureSections.forEach(section => {
+            if (section) section.style.display = 'none';
+        });
+        // Reset active class from any specific feature blocks if needed, though not strictly necessary here
+        // as they are not "menu buttons" in the same way.
+    }
+
+    // Adapt #compact-time-display click listener
+    if (compactTimeDisplay) { // This is the main PC clock display
+        compactTimeDisplay.addEventListener('click', () => {
+            if (timeSettingsView) {
+                const isSettingsHidden = timeSettingsView.style.display === 'none';
+                timeSettingsView.style.display = isSettingsHidden ? 'block' : 'none';
+                if (isSettingsHidden) { // When opening the settings view
+                    showFeatureBlocks(); // Show the main feature blocks, hide detailed sections
+                } else { // When closing the settings view
+                    showFeatureBlocks(); // Also ensure details are hidden and blocks would be shown if view was not closing
                 }
             }
         });
     }
 
-    function showTimeFeatureSection(sectionToShow, buttonToActivate) {
-        allTimeFeatureSections.forEach(section => {
-            if(section) section.style.display = 'none';
-        });
-        if (sectionToShow) {
-            sectionToShow.style.display = 'block';
-        }
 
-        [timerFeatureButton, networkTimeFeatureButton, timezonesFeatureButton].forEach(btn => {
-            if(btn) btn.classList.remove('active-feature-button');
+    // Add listeners to new feature blocks
+    if (timerFeatureBlock) {
+        timerFeatureBlock.addEventListener('click', () => {
+            if (timerIntervalId || isTimerPaused) { // Timer is active or paused, so toggle pause/resume
+                if (isTimerPaused) {
+                    startTimer(); // This will resume
+                } else {
+                    pauseTimer();
+                }
+            } else { // Timer is idle, so show settings
+                showDetailedSettingsSection(timerSettingsSection);
+                // Ensure timer inputs are enabled and buttons are in correct initial state
+                enableTimerInputs(true);
+                if(startTimerButton) { startTimerButton.disabled = false; startTimerButton.textContent = "Start"; }
+                if(pauseTimerButton) { pauseTimerButton.disabled = true; }
+                updateTimerDisplayDOM(0, false); // Ensure display in settings is 00:00:00
+            }
         });
-        if (buttonToActivate) {
-            buttonToActivate.classList.add('active-feature-button');
-        }
+
+        timerFeatureBlock.addEventListener('dblclick', () => {
+            if (timerIntervalId || isTimerPaused) { // Only if timer is active or paused
+                showDetailedSettingsSection(timerSettingsSection);
+                // Ensure buttons/inputs in settings reflect current state
+                if (startTimerButton) {
+                    startTimerButton.disabled = !isTimerPaused;
+                    startTimerButton.textContent = isTimerPaused ? "Resume" : "Start";
+                }
+                if (pauseTimerButton) pauseTimerButton.disabled = isTimerPaused;
+                enableTimerInputs(false); // Inputs should be disabled if timer is active/paused
+            }
+            // If timer is idle, dblclick could also open settings, same as single click.
+            // Or do nothing if already handled by single click. For now, let single click handle idle.
+        });
+    }
+    if (networkTimeFeatureBlock) {
+        networkTimeFeatureBlock.addEventListener('click', () => showDetailedSettingsSection(networkTimeSettingsSection));
+    }
+    if (timezonesFeatureBlock) {
+        timezonesFeatureBlock.addEventListener('click', () => showDetailedSettingsSection(timezonesSettingsSection));
     }
 
-    if (timerFeatureButton) {
-        timerFeatureButton.addEventListener('click', () => showTimeFeatureSection(timerSettingsSection, timerFeatureButton));
-    }
-    if (networkTimeFeatureButton) {
-        networkTimeFeatureButton.addEventListener('click', () => showTimeFeatureSection(networkTimeSettingsSection, networkTimeFeatureButton));
-    }
-    if (timezonesFeatureButton) {
-        timezonesFeatureButton.addEventListener('click', () => showTimeFeatureSection(timezonesSettingsSection, timezonesFeatureButton));
-    }
+    // Add listeners to "Back to Features" buttons
+    document.querySelectorAll('.back-to-features-btn').forEach(button => {
+        button.addEventListener('click', showFeatureBlocks);
+    });
 
 
     if (closeTimeSettingsButton) {
         closeTimeSettingsButton.addEventListener('click', () => {
             if (timeSettingsView) {
                 timeSettingsView.style.display = 'none';
+                // When closing main settings, ensure feature blocks are conceptually ready to be shown next time
+                // and detailed sections are hidden (showFeatureBlocks does this).
+                showFeatureBlocks();
             }
         });
     }
@@ -790,14 +851,19 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedTimeZone1 = localStorage.getItem('timezone-select-1_selectedZone') || "";
     let selectedTimeZone2 = localStorage.getItem('timezone-select-2_selectedZone') || "";
 
+    // Get references to the new display spans in the feature block
+    const featureTz1Display = document.getElementById('feature-tz1-display');
+    const featureTz2Display = document.getElementById('feature-tz2-display');
+
     /**
      * Formats and displays time for a given IANA timezone.
      * @param {string} timeZone - The IANA timezone string.
      * @param {HTMLElement} displayElement - The HTML element to display the time in.
+     * @param {string} defaultText - Text to show if timezone is not set.
      */
-    function displayTimeForZone(timeZone, displayElement) {
+    function displayTimeForZone(timeZone, displayElement, defaultText = "Select a zone") {
         if (!timeZone || !displayElement) {
-            if(displayElement) displayElement.textContent = "Select a zone";
+            if(displayElement) displayElement.textContent = defaultText;
             return;
         }
         try {
@@ -856,18 +922,34 @@ document.addEventListener('DOMContentLoaded', () => {
         displayTimeForZone(selectedZone, displayElement);
     }
 
+    // Event listeners for dropdowns in the detailed settings section
     if (timezoneSelect1) timezoneSelect1.addEventListener('change', (e) => handleTimeZoneChange(e, timezoneDisplay1));
     if (timezoneSelect2) timezoneSelect2.addEventListener('change', (e) => handleTimeZoneChange(e, timezoneDisplay2));
 
+
     function updateDisplayedZoneTimes() {
-        displayTimeForZone(selectedTimeZone1, timezoneDisplay1);
-        displayTimeForZone(selectedTimeZone2, timezoneDisplay2);
+        // Update the displays within the detailed settings section (if visible)
+        displayTimeForZone(selectedTimeZone1, timezoneDisplay1, "Zone 1: Select");
+        displayTimeForZone(selectedTimeZone2, timezoneDisplay2, "Zone 2: Select");
+
+        // Update the displays within the #timezones-feature-block
+        // Use more descriptive default text for the feature block if zones are not set
+        const defaultFeatureText1 = "Zone 1: --:--:--";
+        const defaultFeatureText2 = "Zone 2: --:--:--";
+
+        if (featureTz1Display) {
+             displayTimeForZone(selectedTimeZone1, featureTz1Display, defaultFeatureText1);
+        }
+        if (featureTz2Display) {
+            displayTimeForZone(selectedTimeZone2, featureTz2Display, defaultFeatureText2);
+        }
     }
 
     // Load initial times for selected zones
     function loadSelectedTimeZones() {
-        populateTimeZoneSelects(); // Populates and sets selected value from stored vars
-        updateDisplayedZoneTimes(); // Initial display of times
+        // Values for selectedTimeZone1 & selectedTimeZone2 are already loaded from localStorage at the top
+        populateTimeZoneSelects(); // Populates <select> elements AND sets their initial values from selectedTimeZone1/2
+        updateDisplayedZoneTimes(); // Initial display of times in both detailed view and feature block
     }
 
 
@@ -1096,27 +1178,30 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Updates the timer display DOM element.
      * @param {number} timeInSeconds - Time in seconds to display.
-     * @param {boolean} isTimerActiveOrPaused - Indicates if the timer is in a running or paused state.
+     * @param {boolean} isTimerRunning - Indicates if the timer is actively running (not paused, not idle).
      */
-    function updateTimerDisplayDOM(timeInSeconds, isTimerActiveOrPaused = false) {
+    function updateTimerDisplayDOM(timeInSeconds, isTimerRunning = false) {
         const formattedTime = formatTime(timeInSeconds);
+        const timerBlockDisplaySpan = document.getElementById('timer-block-display');
 
-        if (timerFeatureButton) {
-            if (isTimerActiveOrPaused || (timeInSeconds > 0 && (timerIntervalId || isTimerPaused))) { // Timer is active, paused with time, or explicitly set as active
-                timerFeatureButton.textContent = formattedTime;
-                timerFeatureButton.classList.add('timer-button-running'); // General active state
-                timerFeatureButton.classList.remove('timer-button-paused'); // Remove paused if running
-            } else { // Timer is reset or not set
-                timerFeatureButton.textContent = "Timer";
-                timerFeatureButton.classList.remove('timer-button-running', 'timer-button-paused');
+        if (timerBlockDisplaySpan) {
+            if (isTimerRunning) {
+                timerBlockDisplaySpan.textContent = formattedTime;
+                if (timerFeatureBlock) timerFeatureBlock.classList.add('timer-block-running');
+                if (timerFeatureBlock) timerFeatureBlock.classList.remove('timer-block-paused');
+            } else if (isTimerPaused && timeInSeconds > 0) { // Specific paused state handled by pauseTimer
+                // This case will be handled by pauseTimer directly setting text and class
+            }
+            else { // Timer is reset, finished and reverted, or not set
+                timerBlockDisplaySpan.textContent = "Set Timer";
+                if (timerFeatureBlock) {
+                    timerFeatureBlock.classList.remove('timer-block-running', 'timer-block-paused');
+                }
             }
         }
 
-        if (timerDisplay) { // This is the display inside the settings section
-            // When timer is not running, it shows 00:00:00 or the set duration.
-            // When running, it could also show countdown, or be static.
-            // For now, let it mirror the main display or show 0 if reset.
-            timerDisplay.textContent = formattedTime;
+        if (timerDisplay) { // This is the display inside the #timer-settings-section
+            timerDisplay.textContent = formattedTime; // Always show current countdown or 00:00:00 here
         }
     }
 
@@ -1131,35 +1216,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (pauseTimerButton) pauseTimerButton.disabled = true;
 
-        if(timerFeatureButton) {
-            timerFeatureButton.textContent = "Timer Done!";
-            timerFeatureButton.classList.remove('timer-button-running', 'timer-button-paused');
+        const timerBlockDisplaySpan = document.getElementById('timer-block-display');
+        if(timerBlockDisplaySpan && timerFeatureBlock) {
+            timerBlockDisplaySpan.textContent = "Timer Done!";
+            timerFeatureBlock.classList.remove('timer-block-running', 'timer-block-paused');
              setTimeout(() => {
                 // Check if still in a finished state (not reset or a new timer started)
                 if (timerTimeRemaining <= 0 && !timerIntervalId && !isTimerPaused) {
-                    timerFeatureButton.textContent = "Timer";
+                    timerBlockDisplaySpan.textContent = "Set Timer";
                 }
             }, 3000);
         }
-        // Ensure inputs are enabled if settings are somehow visible (resetTimer is better for this)
-        // if (timerSettingsSection && timerSettingsSection.style.display !== 'none') {
-        //     enableTimerInputs(true);
-        // }
+        enableTimerInputs(true); // Re-enable inputs when timer is truly done
     }
 
     function tickTimer() {
         if (isTimerPaused) return;
 
         timerTimeRemaining--;
-        // Pass true to indicate timer is active for #timer-feature-button display
-        updateTimerDisplayDOM(timerTimeRemaining, true);
+        updateTimerDisplayDOM(timerTimeRemaining, true); // True indicates timer is running
 
         if (timerTimeRemaining < 0) {
             clearInterval(timerIntervalId);
             timerIntervalId = null;
-            timerFinished(); // Handles UI changes for finished state
+            timerFinished();
             timerTimeRemaining = 0;
-            updateTimerDisplayDOM(timerTimeRemaining, false); // Update to 00:00:00 and not active
+            updateTimerDisplayDOM(timerTimeRemaining, false); // Not active anymore
         }
     }
 
@@ -1186,17 +1268,24 @@ document.addEventListener('DOMContentLoaded', () => {
         isTimerPaused = false;
         if (timerIntervalId) clearInterval(timerIntervalId);
 
-        updateTimerDisplayDOM(timerTimeRemaining, true); // Indicate timer is active for display on feature button
+        updateTimerDisplayDOM(timerTimeRemaining, true); // Update display, indicate timer is running
         timerIntervalId = setInterval(tickTimer, 1000);
 
-        if (timerSettingsSection) { // Hide the detailed settings section
-            timerSettingsSection.style.display = 'none';
+        if (timerSettingsSection) {
+            timerSettingsSection.style.display = 'none'; // Hide detailed settings
         }
-        // Ensure main feature menu is visible if settings were hidden
-        if (timeFeaturesMenu && timeSettingsView && timeSettingsView.style.display === 'block') {
-            timeFeaturesMenu.style.display = 'flex';
+        if (timeFeatureBlocksContainer) { // Ensure feature blocks (including updated timer block) are shown
+            timeFeatureBlocksContainer.style.display = 'flex';
         }
+        // Note: The above might conflict if showDetailedSettingsSection was called by another feature block.
+        // The expectation is that starting timer returns to the "feature blocks" view.
+        // So, it's better to call showFeatureBlocks()
+        showFeatureBlocks(); // This will show all blocks and hide all detailed sections.
 
+        if (timerFeatureBlock) { // Apply running style to the block
+            timerFeatureBlock.classList.add('timer-block-running');
+            timerFeatureBlock.classList.remove('timer-block-paused');
+        }
 
         if (startTimerButton) startTimerButton.disabled = true;
         if (pauseTimerButton) pauseTimerButton.disabled = false;
@@ -1209,12 +1298,13 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(timerIntervalId);
         isTimerPaused = true;
 
-        if (timerFeatureButton) {
-            timerFeatureButton.textContent = `Paused: ${formatTime(timerTimeRemaining)}`;
-            timerFeatureButton.classList.add('timer-button-paused');
-            timerFeatureButton.classList.remove('timer-button-running'); // If running style is different from general active
+        const timerBlockDisplaySpan = document.getElementById('timer-block-display');
+        if (timerBlockDisplaySpan && timerFeatureBlock) {
+            timerBlockDisplaySpan.textContent = `Paused: ${formatTime(timerTimeRemaining)}`;
+            timerFeatureBlock.classList.add('timer-block-paused');
+            timerFeatureBlock.classList.remove('timer-block-running');
         }
-        // Also update the display within settings if it's open
+        // Also update the display within settings if it's open (which it usually won't be on pause via compact click)
         if (timerDisplay) timerDisplay.textContent = formatTime(timerTimeRemaining);
 
 
@@ -1232,14 +1322,11 @@ document.addEventListener('DOMContentLoaded', () => {
         timerIntervalId = null;
         isTimerPaused = false;
         timerTimeRemaining = 0;
-        timerDurationSet = 0; // Also reset the stored duration
+        timerDurationSet = 0;
 
-        updateTimerDisplayDOM(0, false); // Update displays (feature button to "Timer", settings display to 00:00:00)
+        updateTimerDisplayDOM(0, false); // This updates timer-block-display via its logic
 
-        if (timerFeatureButton) { // Ensure it's reset fully
-            timerFeatureButton.textContent = "Timer";
-            timerFeatureButton.classList.remove('timer-button-running', 'timer-button-paused');
-        }
+        // No need to update timerFeatureBlock text/class here, updateTimerDisplayDOM handles it.
 
         if (startTimerButton) {
             startTimerButton.disabled = false;
@@ -1247,7 +1334,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (pauseTimerButton) pauseTimerButton.disabled = true;
 
-        enableTimerInputs(true); // Re-enable input fields
+        enableTimerInputs(true);
         timerHoursInput.disabled = false;
         timerMinutesInput.disabled = false;
         timerSecondsInput.disabled = false;

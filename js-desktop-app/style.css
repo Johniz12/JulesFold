@@ -123,6 +123,22 @@ main {
     background-color: #5a6268;
 }
 
+.back-to-features-btn { /* Added this style earlier, ensuring it's here */
+    display: block;
+    margin-bottom: 15px;
+    padding: 6px 10px;
+    font-size: 0.85em;
+    background-color: #6c757d;
+    color: white;
+    border: 1px solid #6c757d;
+    border-radius: 0.2rem;
+    cursor: pointer;
+    width: auto;
+}
+.back-to-features-btn:hover {
+    background-color: #5a6268;
+}
+
 .calendar-header button#toggle-summary-calendar {
     background-color: #17a2b8; /* Info color */
     margin-right: 5px; /* Space between summary and close */
@@ -343,40 +359,7 @@ main {
     background-color: #5a6268;
 }
 
-#time-features-menu {
-    display: flex;
-    justify-content: space-around; /* Or space-between, or center */
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.time-feature-btn {
-    flex-grow: 1; /* Make buttons share space */
-    padding: 8px 5px; /* Adjust padding */
-    font-size: 0.85em;
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    color: #495057;
-    border-radius: 0.25rem;
-    cursor: pointer;
-    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
-}
-
-.time-feature-btn:hover {
-    background-color: #e9ecef;
-    color: #212529;
-}
-
-.time-feature-btn.active-feature-button {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-}
-
-hr.feature-menu-divider {
-    margin-top: 0;
-    margin-bottom: 15px;
-}
+/* Styles for #time-features-menu, .time-feature-btn, .active-feature-button, hr.feature-menu-divider are removed */
 
 .time-feature-section {
     padding: 10px;
@@ -407,7 +390,8 @@ hr.feature-menu-divider {
     /* border-bottom: none; */
     margin-bottom: 5px;
 }
-.setting-section h4 { /* This was the old style, ensure new .time-feature-section h4 is preferred */
+/* .setting-section h4 style can likely be removed if .setting-section is fully phased out for .time-feature-section */
+.setting-section h4 {
     font-size: 1em;
     color: #555;
     margin-top: 0;
@@ -575,6 +559,80 @@ hr.feature-menu-divider {
     background-color: #007bff;
     margin-top: 5px; /* Space it from the actual element */
 }
+
+
+/* Time Widget Feature Blocks */
+#time-feature-blocks-container {
+    display: flex;
+    flex-direction: column; /* Stack blocks vertically */
+    gap: 10px; /* Space between blocks */
+    margin-bottom: 15px; /* Space before the <hr> or detailed settings */
+}
+
+.time-feature-block {
+    padding: 12px;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    background-color: #f8f9fa;
+    text-align: center;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.time-feature-block.clickable {
+    cursor: pointer;
+}
+
+.time-feature-block.clickable:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.feature-block-title {
+    display: block;
+    font-size: 0.8em;
+    color: #6c757d; /* Muted color for title */
+    margin-bottom: 5px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.feature-block-value {
+    display: block;
+    font-size: 1.2em; /* Larger for the value */
+    color: #212529;
+    font-weight: bold;
+}
+
+/* Specific styles for timer block when active/paused */
+#timer-feature-block.timer-block-running {
+    background-color: #d4edda; /* Light green */
+    border-color: #c3e6cb;
+}
+#timer-feature-block.timer-block-running .feature-block-value {
+    color: #155724; /* Darker green */
+}
+
+#timer-feature-block.timer-block-paused {
+    background-color: #fff3cd; /* Light yellow */
+    border-color: #ffeeba;
+}
+#timer-feature-block.timer-block-paused .feature-block-value {
+    color: #856404; /* Darker yellow/brown */
+}
+
+
+/* Timezone display within its feature block */
+#feature-tz-display-container {
+    display: flex;
+    flex-direction: column; /* Stack timezone 1 and 2 */
+    gap: 3px; /* Small gap between the two timezone lines */
+}
+
+#feature-tz-display-container .tz-value {
+    font-size: 0.95em; /* Slightly smaller if needed, or match feature-block-value */
+    font-weight: normal; /* Values might not need to be as bold as titles */
+}
+
 
 /* Summary Period Selector in Calendar Summary Panel */
 #summary-period-selector {
