@@ -359,11 +359,8 @@ document.addEventListener('DOMContentLoaded', () => {
         summaryPanelContainer.appendChild(summaryPanelContent);
         fullCalendarView.appendChild(summaryPanelContainer);
 
-        // Add event listener for delegated clicks on summary items, if not already added
-        if (!fullCalendarView.dataset.summaryClickListenerAdded) {
-            summaryPanelContent.addEventListener('click', handleSummaryItemClick);
-            fullCalendarView.dataset.summaryClickListenerAdded = 'true';
-        }
+        // Event listener for delegated clicks on summary items is now attached to fullCalendarView once on init.
+        // No longer need to add/check here.
 
         // Add event listener for the "Back to Summary" button (variable backButton already declared when element was created)
         if (backButton) {
@@ -949,6 +946,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateDisplayedZoneTimes, 1000); // Update displayed time zone times every second
 
     loadWidgetOrder(); // Load and apply saved widget order
+
+    // Add the delegated event listener for summary item clicks to fullCalendarView
+    if (fullCalendarView) {
+        fullCalendarView.addEventListener('click', handleSummaryItemClick);
+    }
 
 
     // updateEmojiSummary(); // Summary is now part of full calendar, and updated when shown.
