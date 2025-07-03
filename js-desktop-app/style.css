@@ -405,3 +405,35 @@ main {
     background-color: #e0e0e0;
     border-color: #ccc;
 }
+
+/* Drag and Drop Styles */
+.dragging {
+    opacity: 0.5;
+    border: 2px dashed #007bff; /* Optional: border on the item being dragged */
+}
+
+.drag-over-placeholder {
+    height: 50px; /* Example height, or match widget margins */
+    background-color: #e0e0e0;
+    border: 2px dashed #007bff;
+    margin: 10px 0; /* Similar to widget gaps */
+    border-radius: 5px;
+    display: block; /* Ensure it takes up space */
+}
+
+/* Style for when dragging over a widget to insert before/after */
+.drop-target-highlight-before::before {
+    content: '';
+    display: block;
+    height: 10px; /* Small indicator line */
+    background-color: #007bff;
+    margin-bottom: 5px; /* Space it from the actual element */
+}
+
+.drop-target-highlight-after::after {
+    content: '';
+    display: block;
+    height: 10px; /* Small indicator line */
+    background-color: #007bff;
+    margin-top: 5px; /* Space it from the actual element */
+}

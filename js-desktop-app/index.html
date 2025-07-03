@@ -11,8 +11,8 @@
         <header>
             <h1>My Dashboard</h1>
         </header>
-        <main>
-            <div id="calendar-widget-area"> <!-- Renamed for clarity -->
+        <main id="main-content-area"> <!-- Added ID for easier JS targeting -->
+            <div id="calendar-widget-area" draggable="true">
                 <div id="compact-date-display" class="clickable">
                     <!-- Compact date will be rendered here by JS -->
                     <span id="compact-date-text">Loading...</span>
@@ -22,7 +22,7 @@
                 </div>
             </div>
 
-            <div id="time-widget-area">
+            <div id="time-widget-area" draggable="true">
                 <div id="compact-time-display" class="clickable">
                     <!-- Live clock will be rendered here by JS -->
                     <span id="current-time-text">Loading time...</span>

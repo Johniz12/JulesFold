@@ -1,9 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Main application container
     const appContainer = document.getElementById('app-container');
+    const mainContentArea = document.getElementById('main-content-area'); // Parent of draggable widgets
 
     // Calendar related elements
-    const calendarWidgetArea = document.getElementById('calendar-widget-area'); // Overall area for calendar widget
+    const calendarWidgetArea = document.getElementById('calendar-widget-area');
     const compactDateDisplay = document.getElementById('compact-date-display');
     const compactDateText = document.getElementById('compact-date-text');
     const fullCalendarView = document.getElementById('full-calendar-view'); // Container for full calendar
@@ -581,6 +582,139 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    // --- Drag and Drop Widget Logic ---
+    const draggableWidgets = [calendarWidgetArea, timeWidgetArea].filter(el => el); // Filter out nulls if some elements don't exist
+
+    draggableWidgets.forEach(widget => {
+        if (!widget) return; // Should be filtered, but good practice
+
+        widget.addEventListener('dragstart', (event) => {
+            event.target.classList.add('dragging');
+            event.dataTransfer.setData('text/plain', event.target.id);
+            event.dataTransfer.effectAllowed = 'move'; // Indicate it's a move operation
+        });
+
+        widget.addEventListener('dragend', (event) => {
+            event.target.classList.remove('dragging');
+        });
+    });
+
+    if (mainContentArea) {
+        mainContentArea.addEventListener('dragover', (event) => {
+            event.preventDefault(); // Necessary to allow dropping
+            event.dataTransfer.dropEffect = 'move';
+
+            const draggingElement = document.querySelector('.dragging');
+            if (!draggingElement) return;
+
+            // Remove previous highlights from all widgets
+            draggableWidgets.forEach(widget => {
+                widget.classList.remove('drop-target-highlight-before', 'drop-target-highlight-after');
+            });
+
+            const afterElement = getDragAfterElement(mainContentArea, event.clientY);
+
+            if (afterElement == null) { // Dropping at the end
+                // If you want a specific placeholder for the end, you could add it here.
+                // For now, if it's at the end, no specific highlight on a sibling.
+                // Or, highlight the last element to drop "after" it.
+                const lastWidget = mainContentArea.querySelector('[draggable="true"]:not(.dragging):last-child');
+                if (lastWidget) {
+                    lastWidget.classList.add('drop-target-highlight-after');
+                }
+            } else { // Dropping before 'afterElement'
+                if (afterElement !== draggingElement) { // Don't highlight self
+                    afterElement.classList.add('drop-target-highlight-before');
+                }
+            }
+        });
+
+        // Clean up highlights when dragging leaves the container
+        mainContentArea.addEventListener('dragleave', (event) => {
+            // Check if the relatedTarget (where the mouse is going) is outside mainContentArea
+            if (!mainContentArea.contains(event.relatedTarget) ) {
+                 draggableWidgets.forEach(widget => {
+                    widget.classList.remove('drop-target-highlight-before', 'drop-target-highlight-after');
+                });
+            }
+        });
+    }
+
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('[draggable="true"]:not(.dragging)')];
+
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    if (mainContentArea) {
+        mainContentArea.addEventListener('drop', (event) => {
+            event.preventDefault();
+            const draggedElementId = event.dataTransfer.getData('text/plain');
+            const draggedElement = document.getElementById(draggedElementId);
+
+            if (!draggedElement) return;
+
+            // Remove all highlights first
+            draggableWidgets.forEach(widget => {
+                widget.classList.remove('drop-target-highlight-before', 'drop-target-highlight-after');
+            });
+
+            const afterElement = getDragAfterElement(mainContentArea, event.clientY);
+
+            if (afterElement == null) {
+                mainContentArea.appendChild(draggedElement);
+            } else {
+                mainContentArea.insertBefore(draggedElement, afterElement);
+            }
+
+            saveWidgetOrder();
+        });
+    }
+
+    // --- Widget Order Persistence ---
+    function saveWidgetOrder() {
+        if (!mainContentArea) return;
+        const orderedWidgetIds = Array.from(mainContentArea.children)
+            .filter(child => child.draggable) // Ensure we only save IDs of draggable widgets
+            .map(child => child.id);
+        localStorage.setItem('widgetOrder', JSON.stringify(orderedWidgetIds));
+        console.log("Widget order saved:", orderedWidgetIds);
+    }
+
+    function loadWidgetOrder() {
+        if (!mainContentArea) return;
+        const savedOrder = localStorage.getItem('widgetOrder');
+        if (savedOrder) {
+            const orderedIds = JSON.parse(savedOrder);
+            console.log("Loading saved widget order:", orderedIds);
+
+            // Create a map of current elements by ID for easy lookup
+            const currentWidgetsMap = new Map();
+            Array.from(mainContentArea.children).forEach(child => {
+                if (child.id) {
+                    currentWidgetsMap.set(child.id, child);
+                }
+            });
+
+            // Re-append elements in the saved order
+            orderedIds.forEach(id => {
+                const widget = currentWidgetsMap.get(id);
+                if (widget) {
+                    mainContentArea.appendChild(widget); // Re-appending moves the element
+                }
+            });
+        }
+    }
+
+
     // --- Initialization ---
     renderCompactDateDisplay(); // Display compact date first
     updateLiveClock(); // Initial call to set time immediately
@@ -591,9 +725,11 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSelectedTimeZones(); // Populates dropdowns, loads saved selections, and displays initial times
     setInterval(updateDisplayedZoneTimes, 1000); // Update displayed time zone times every second
 
+    loadWidgetOrder(); // Load and apply saved widget order
+
 
     // updateEmojiSummary(); // Summary is now part of full calendar, and updated when shown.
                              // No need to call it here on initial load as summary panel is hidden.
 
-    console.log("JS Desktop App Initialized: Compact date and time shown.");
+    console.log("JS Desktop App Initialized: Compact date and time shown. Widgets ready for drag/drop setup.");
 });
