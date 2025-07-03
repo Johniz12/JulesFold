@@ -365,13 +365,26 @@ document.addEventListener('DOMContentLoaded', () => {
             fullCalendarView.dataset.summaryClickListenerAdded = 'true';
         }
 
-        // Add event listener for the "Back to Summary" button
-        const backButton = document.getElementById('back-to-summary-list');
-        if (backButton) { // It's created within renderCalendar, so should exist here
+        // Add event listener for the "Back to Summary" button (variable backButton already declared when element was created)
+        if (backButton) {
+            // Ensure the listener is not added multiple times if renderCalendar could be called without full clear
+            // However, fullCalendarView.innerHTML = '' should prevent this issue with current structure.
+            // For safety, could check if a listener already exists or use a flag.
+            // But given the full clear, this direct attachment should be fine.
+            // Check if the listener was already added to this specific button instance
+            // This is a bit tricky since the button is recreated.
+            // A simpler way is to ensure the old one is gone via innerHTML = ''
+            // and then just add it.
+            // Or, ensure backButton reference is fresh if it's fetched by ID after creation.
+            // The current structure: backButton is the newly created element.
             backButton.addEventListener('click', () => {
-                document.getElementById('summary-emoji-dates-detail').style.display = 'none';
-                document.getElementById('summary-list-display').style.display = 'block';
-                document.getElementById('summary-period-selector').style.display = 'flex'; // Show period selector
+                const detailView = document.getElementById('summary-emoji-dates-detail');
+                const summaryListDisplay = document.getElementById('summary-list-display');
+                const periodSelector = document.getElementById('summary-period-selector');
+
+                if (detailView) detailView.style.display = 'none';
+                if (summaryListDisplay) summaryListDisplay.style.display = 'block';
+                if (periodSelector) periodSelector.style.display = 'flex'; // Show period selector
             });
         }
 
