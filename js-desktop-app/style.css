@@ -628,9 +628,24 @@ main {
     gap: 3px; /* Small gap between the two timezone lines */
 }
 
-#feature-tz-display-container .tz-value {
-    font-size: 0.95em; /* Slightly smaller if needed, or match feature-block-value */
-    font-weight: normal; /* Values might not need to be as bold as titles */
+#feature-tz-display-container .tz-value { /* This is for the spans like #feature-tz1-display */
+    font-size: 0.95em;
+    font-weight: normal;
+    display: flex; /* Use flex to position label and time within this span */
+    justify-content: space-between; /* Push label left, time right */
+    padding: 0 5px; /* Some padding if needed */
+}
+
+/* Styles for the inner spans created by JS */
+.tz-label {
+    color: #495057; /* Slightly muted label color */
+    margin-right: 5px; /* Space between label and time */
+    font-weight: normal;
+}
+
+.tz-time {
+    color: #212529; /* Standard text color for time */
+    font-weight: bold; /* Make the time itself bold */
 }
 
 

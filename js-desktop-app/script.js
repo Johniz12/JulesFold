@@ -903,20 +903,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     function updateDisplayedZoneTimes() {
+        // Helper to get the label for a timezone value
+        const getZoneLabel = (zoneValue) => {
+            const zone = SAMPLE_TIMEZONES.find(tz => tz.value === zoneValue);
+            return zone ? zone.label.split(' ')[0] : (zoneValue || "N/A"); // Use first word of label or IANA value or N/A
+        };
+
         // Update the displays within the detailed settings section (if visible)
-        displayTimeForZone(selectedTimeZone1, timezoneDisplay1, "Zone 1: Select");
-        displayTimeForZone(selectedTimeZone2, timezoneDisplay2, "Zone 2: Select");
+        // These displays are simpler, just showing the time or "Select a zone"
+        displayTimeForZone(selectedTimeZone1, timezoneDisplay1, "Select a zone");
+        displayTimeForZone(selectedTimeZone2, timezoneDisplay2, "Select a zone");
 
         // Update the displays within the #timezones-feature-block
-        // Use more descriptive default text for the feature block if zones are not set
-        const defaultFeatureText1 = "Zone 1: --:--:--";
-        const defaultFeatureText2 = "Zone 2: --:--:--";
-
         if (featureTz1Display) {
-             displayTimeForZone(selectedTimeZone1, featureTz1Display, defaultFeatureText1);
+            const label1 = getZoneLabel(selectedTimeZone1);
+            const time1 = selectedTimeZone1 ? formatTimeForZoneDisplay(selectedTimeZone1) : "--:--:--";
+            featureTz1Display.innerHTML = `<span class="tz-label">${label1}:</span> <span class="tz-time">${time1}</span>`;
+        } else { // Fallback if only one display element for both, or for debugging
+            // console.warn("featureTz1Display not found");
         }
+
         if (featureTz2Display) {
-            displayTimeForZone(selectedTimeZone2, featureTz2Display, defaultFeatureText2);
+            const label2 = getZoneLabel(selectedTimeZone2);
+            const time2 = selectedTimeZone2 ? formatTimeForZoneDisplay(selectedTimeZone2) : "--:--:--";
+            featureTz2Display.innerHTML = `<span class="tz-label">${label2}:</span> <span class="tz-time">${time2}</span>`;
+        } else {
+            // console.warn("featureTz2Display not found");
+        }
+    }
+
+    /**
+     * Helper function to get ONLY the formatted time string for a zone, used by updateDisplayedZoneTimes.
+     * Returns "--:--:--" on error or if no zone.
+     */
+    function formatTimeForZoneDisplay(timeZone) {
+        if (!timeZone) return "--:--:--";
+        try {
+            const now = new Date();
+            return now.toLocaleTimeString('en-US', {
+                timeZone: timeZone,
+                hour: '2-digit',
+                minute: '2-digit',
+                // second: '2-digit', // Maybe omit seconds for feature block display for space
+            });
+        } catch (error) {
+            return "Error";
         }
     }
 
