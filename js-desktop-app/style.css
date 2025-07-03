@@ -303,6 +303,40 @@ main {
     background-color: #495057; /* Slightly lighter on hover */
 }
 
+#compact-timer-control {
+    padding: 8px;
+    text-align: center;
+    font-size: 1em; /* Smaller than main clock, but clear */
+    font-weight: normal;
+    background-color: #6c757d; /* Grey, distinct from main clock */
+    color: #fff;
+    border-radius: 4px;
+    margin-top: 10px; /* Space below main clock */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#compact-timer-control:hover {
+    background-color: #5a6268;
+}
+
+#compact-timer-control.timer-active { /* When timer is running/paused */
+    background-color: #28a745; /* Green, similar to timer display */
+    font-weight: bold;
+}
+#compact-timer-control.timer-active:hover {
+    background-color: #218838;
+}
+
+#compact-timer-control.timer-paused { /* Specific style if paused */
+    background-color: #ffc107; /* Yellow for paused */
+    color: #333;
+}
+#compact-timer-control.timer-paused:hover {
+    background-color: #e0a800;
+}
+
+
 #time-settings-view {
     padding: 15px;
     border-top: 1px solid #ccc;
