@@ -437,3 +437,88 @@ main {
     background-color: #007bff;
     margin-top: 5px; /* Space it from the actual element */
 }
+
+/* Summary Period Selector in Calendar Summary Panel */
+#summary-period-selector {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+#summary-period-selector button {
+    padding: 5px 10px;
+    font-size: 0.8em;
+    background-color: #e9ecef;
+    color: #495057;
+    border: 1px solid #ced4da;
+    border-radius: 0.2rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+#summary-period-selector button:hover {
+    background-color: #d6dce1;
+    border-color: #b9c1c8;
+}
+
+#summary-period-selector button.active-period {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+#summary-list-display {
+    /* This div will contain the ul/li for the summary list. */
+}
+
+.clickable-summary-emoji {
+    cursor: pointer;
+    padding: 6px 4px; /* Slightly more padding to indicate clickability */
+    transition: background-color 0.15s ease-in-out;
+    border-radius: 3px;
+}
+
+.clickable-summary-emoji:hover {
+    background-color: #e9ecef; /* Light hover effect */
+}
+
+#summary-emoji-dates-detail {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #ccc;
+}
+
+#summary-emoji-dates-detail h5 { /* Title for this section */
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 1em;
+}
+
+#summary-emoji-dates-detail ul {
+    list-style-type: none;
+    padding-left: 10px;
+    font-size: 0.9em;
+}
+
+#summary-emoji-dates-detail li {
+    padding: 3px 0;
+}
+
+#back-to-summary-list { /* Style for the back button */
+    padding: 5px 10px;
+    font-size: 0.8em;
+    background-color: #6c757d; /* Grey color */
+    color: white;
+    border: 1px solid #6c757d;
+    border-radius: 0.2rem;
+    cursor: pointer;
+    margin-bottom: 10px;
+    display: inline-block; /* Allow margin-bottom */
+}
+
+#back-to-summary-list:hover {
+    background-color: #5a6268;
+}

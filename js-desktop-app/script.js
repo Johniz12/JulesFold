@@ -100,33 +100,84 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Emoji Summary Display ---
-    // const summaryContent = document.getElementById('summary-content'); // Old reference, will be created dynamically
+
+    let currentSummaryPeriod = "all"; // Default period
 
     /**
-     * Updates the emoji summary panel with counts of each emoji.
-     * This function will now target a div within the full calendar view.
+     * Filters emojiData based on the specified period.
+     * @param {string} periodType - "month", "year", or "all".
+     * @param {number} referenceYear - The year for month/year filtering.
+     * @param {number} referenceMonth - The month (0-indexed) for month filtering.
+     * @returns {object} Filtered emoji data.
+     */
+    function getFilteredEmojiData(periodType, referenceYear, referenceMonth) {
+        if (periodType === "all") {
+            return { ...emojiData }; // Return a copy of all data
+        }
+
+        const filtered = {};
+        for (const dateKey in emojiData) {
+            const [year, month] = dateKey.split('-').map(Number); // month is 1-indexed from split
+
+            if (periodType === "year" && year === referenceYear) {
+                filtered[dateKey] = emojiData[dateKey];
+            } else if (periodType === "month" && year === referenceYear && (month - 1) === referenceMonth) {
+                filtered[dateKey] = emojiData[dateKey];
+            }
+        }
+        return filtered;
+    }
+
+    /**
+     * Updates the emoji summary panel with counts of each emoji for the current period.
      */
     function updateEmojiSummary() {
-        const summaryPanel = document.getElementById('calendar-internal-summary-content');
-        if (!summaryPanel) return; // If summary panel isn't visible/created yet
+        const summaryListDisplay = document.getElementById('summary-list-display');
+        if (!summaryListDisplay) {
+            // This can happen if summary panel is not yet fully rendered or is hidden
+            // console.warn("Summary list display area not found.");
+            return;
+        }
 
-        summaryPanel.innerHTML = ''; // Clear previous summary
+        const referenceYear = currentDate.getFullYear();
+        const referenceMonth = currentDate.getMonth(); // 0-indexed
 
-        if (Object.keys(emojiData).length === 0) {
-            summaryPanel.textContent = 'No emojis recorded yet.';
+        const filteredData = getFilteredEmojiData(currentSummaryPeriod, referenceYear, referenceMonth);
+        summaryListDisplay.innerHTML = ''; // Clear previous summary list
+
+        let summaryTitleText = "Emoji Summary - ";
+        const monthNames = ["January", "February", "March", "April", "May", "June",
+                            "July", "August", "September", "October", "November", "December"];
+        if (currentSummaryPeriod === "month") {
+            summaryTitleText += `${monthNames[referenceMonth]} ${referenceYear}`;
+        } else if (currentSummaryPeriod === "year") {
+            summaryTitleText += `${referenceYear}`;
+        } else {
+            summaryTitleText += "All Time";
+        }
+
+        // Update active button style
+        const periodButtons = document.querySelectorAll('#summary-period-selector button');
+        periodButtons.forEach(button => {
+            button.classList.toggle('active-period', button.dataset.period === currentSummaryPeriod);
+        });
+
+
+        if (Object.keys(filteredData).length === 0) {
+            summaryListDisplay.innerHTML = `<h4>${summaryTitleText}</h4><p>No emojis recorded for this period.</p>`;
             return;
         }
 
         const counts = {};
-        for (const dateKey in emojiData) {
-            const emoji = emojiData[dateKey];
+        for (const dateKey in filteredData) {
+            const emoji = filteredData[dateKey];
             if (emoji) {
                 counts[emoji] = (counts[emoji] || 0) + 1;
             }
         }
 
-        if (Object.keys(counts).length === 0) {
-            summaryPanel.textContent = 'No emojis recorded yet.';
+        if (Object.keys(counts).length === 0) { // Should be caught by filteredData check, but good fallback
+            summaryListDisplay.innerHTML = `<h4>${summaryTitleText}</h4><p>No emojis recorded for this period.</p>`;
             return;
         }
 
@@ -137,16 +188,36 @@ document.addEventListener('DOMContentLoaded', () => {
             return b[1] - a[1];
         });
 
-        let summaryHTML = '<h4>Emoji Summary</h4><ul>'; // Add a title to the summary panel
-        sortedSummary.forEach(([emoji, count]) => {
-            summaryHTML += `<li>${emoji} : ${count}</li>`;
-        });
+        let summaryHTML = `<h4>${summaryTitleText}</h4><ul>`;
+        if (sortedSummary.length > 0) {
+            sortedSummary.forEach(([emoji, count]) => {
+                summaryHTML += `<li class="clickable-summary-emoji" data-emoji="${emoji}"
+                                    data-period="${currentSummaryPeriod}"
+                                    data-year="${referenceYear}"
+                                    data-month="${referenceMonth}">
+                                    ${emoji} : ${count}
+                              </li>`;
+            });
+        } else {
+            // This case is already handled by the filteredData check earlier,
+            // but if counts somehow became empty after filtering, this would be a fallback.
+            // summaryHTML += `<li>No specific emojis found for this period.</li>`;
+        }
         summaryHTML += '</ul>';
-        summaryPanel.innerHTML = summaryHTML;
+        summaryListDisplay.innerHTML = summaryHTML;
     }
 
 
     // --- Calendar Rendering Logic ---
+
+    // Event delegation for clickable summary emojis
+    // This listener is added once to a persistent parent, #calendar-internal-summary-content
+    // if it's guaranteed to exist when this code runs, or to fullCalendarView.
+    // Let's ensure #calendar-internal-summary-content exists by the time this is attached,
+    // or attach it when fullCalendarView is created.
+    // For simplicity, will attach it when summary is shown for the first time if not already.
+    // Better: Attach when fullCalendarView is created.
+
     /**
      * Renders the calendar for the given year and month.
      * @param {number} year - The full year (e.g., 2024).
@@ -169,6 +240,11 @@ document.addEventListener('DOMContentLoaded', () => {
         prevButton.addEventListener('click', () => {
             currentDate.setMonth(currentDate.getMonth() - 1);
             renderCalendar(currentDate.getFullYear(), currentDate.getMonth());
+            // If summary is visible and in a relevant period, update it
+            const summaryPanel = document.getElementById('calendar-internal-summary');
+            if (summaryPanel && summaryPanel.style.display !== 'none' && (currentSummaryPeriod === 'month' || currentSummaryPeriod === 'year')) {
+                updateEmojiSummary();
+            }
         });
 
         const monthYearLabel = document.createElement('h3');
@@ -181,6 +257,11 @@ document.addEventListener('DOMContentLoaded', () => {
         nextButton.addEventListener('click', () => {
             currentDate.setMonth(currentDate.getMonth() + 1);
             renderCalendar(currentDate.getFullYear(), currentDate.getMonth());
+            // If summary is visible and in a relevant period, update it
+            const summaryPanel = document.getElementById('calendar-internal-summary');
+            if (summaryPanel && summaryPanel.style.display !== 'none' && (currentSummaryPeriod === 'month' || currentSummaryPeriod === 'year')) {
+                updateEmojiSummary();
+            }
         });
 
         header.appendChild(prevButton);
@@ -202,7 +283,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isHidden = summaryPanel.style.display === 'none';
                 summaryPanel.style.display = isHidden ? 'block' : 'none';
                 if (isHidden) {
-                    updateEmojiSummary(); // Update content when shown
+                    // currentSummaryPeriod = "all"; // Optionally reset to 'all' when opening, or remember last
+                    updateEmojiSummary(); // Update content based on currentSummaryPeriod
                 }
                 summaryButton.textContent = isHidden ? 'Hide Summary' : 'Summary';
             }
@@ -222,10 +304,76 @@ document.addEventListener('DOMContentLoaded', () => {
         summaryPanelContainer.id = 'calendar-internal-summary';
         summaryPanelContainer.style.display = 'none'; // Hidden by default
         // Add a placeholder or content div inside
-        const summaryPanelContent = document.createElement('div');
+        const summaryPanelContent = document.createElement('div'); // This will now hold both buttons and list
         summaryPanelContent.id = 'calendar-internal-summary-content';
+
+        // Create period selection buttons container
+        const periodSelectorContainer = document.createElement('div');
+        periodSelectorContainer.id = 'summary-period-selector';
+
+        const btnMonth = document.createElement('button');
+        btnMonth.dataset.period = "month"; // Store period type in data attribute
+        btnMonth.textContent = "Current Month";
+        periodSelectorContainer.appendChild(btnMonth);
+
+        const btnYear = document.createElement('button');
+        btnYear.dataset.period = "year";
+        btnYear.textContent = "Current Year";
+        periodSelectorContainer.appendChild(btnYear);
+
+        const btnAll = document.createElement('button');
+        btnAll.dataset.period = "all";
+        btnAll.textContent = "All Time";
+        periodSelectorContainer.appendChild(btnAll);
+
+        // Add event listeners to period buttons
+        periodSelectorContainer.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', (event) => {
+                currentSummaryPeriod = event.target.dataset.period;
+                updateEmojiSummary();
+            });
+        });
+
+        summaryPanelContent.appendChild(periodSelectorContainer); // Add buttons first
+
+        // Div for the actual summary list (will be populated by updateEmojiSummary)
+        const summaryListDisplay = document.createElement('div');
+        summaryListDisplay.id = 'summary-list-display';
+        summaryPanelContent.appendChild(summaryListDisplay);
+
+        // Div for displaying specific dates of a clicked emoji (initially hidden)
+        const emojiDatesDetailView = document.createElement('div');
+        emojiDatesDetailView.id = 'summary-emoji-dates-detail';
+        emojiDatesDetailView.style.display = 'none'; // Hidden by default
+        // Add a placeholder and a back button inside it
+        const detailContent = document.createElement('div'); // To hold list of dates
+        detailContent.id = 'summary-emoji-dates-content';
+        const backButton = document.createElement('button');
+        backButton.id = 'back-to-summary-list';
+        backButton.textContent = '← Back to Summary';
+
+        emojiDatesDetailView.appendChild(backButton);
+        emojiDatesDetailView.appendChild(detailContent);
+        summaryPanelContent.appendChild(emojiDatesDetailView); // Add after summary list
+
         summaryPanelContainer.appendChild(summaryPanelContent);
         fullCalendarView.appendChild(summaryPanelContainer);
+
+        // Add event listener for delegated clicks on summary items, if not already added
+        if (!fullCalendarView.dataset.summaryClickListenerAdded) {
+            summaryPanelContent.addEventListener('click', handleSummaryItemClick);
+            fullCalendarView.dataset.summaryClickListenerAdded = 'true';
+        }
+
+        // Add event listener for the "Back to Summary" button
+        const backButton = document.getElementById('back-to-summary-list');
+        if (backButton) { // It's created within renderCalendar, so should exist here
+            backButton.addEventListener('click', () => {
+                document.getElementById('summary-emoji-dates-detail').style.display = 'none';
+                document.getElementById('summary-list-display').style.display = 'block';
+                document.getElementById('summary-period-selector').style.display = 'flex'; // Show period selector
+            });
+        }
 
 
         // Calendar Grid
@@ -712,6 +860,68 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
+    }
+
+
+    function handleSummaryItemClick(event) {
+        const clickedItem = event.target.closest('.clickable-summary-emoji');
+        if (!clickedItem) return;
+
+        const emoji = clickedItem.dataset.emoji;
+        const period = clickedItem.dataset.period;
+        const year = parseInt(clickedItem.dataset.year);
+        const month = parseInt(clickedItem.dataset.month); // 0-indexed
+
+        const detailView = document.getElementById('summary-emoji-dates-detail');
+        const detailContent = document.getElementById('summary-emoji-dates-content');
+        const summaryListDisplay = document.getElementById('summary-list-display');
+        const periodSelector = document.getElementById('summary-period-selector');
+
+        if (!detailView || !detailContent || !summaryListDisplay || !periodSelector) return;
+
+        detailContent.innerHTML = ''; // Clear previous details
+
+        let title = `<h5>Dates for ${emoji}`;
+        const monthNames = ["January", "February", "March", "April", "May", "June",
+                            "July", "August", "September", "October", "November", "December"];
+        if (period === "month") {
+            title += ` in ${monthNames[month]} ${year}`;
+        } else if (period === "year") {
+            title += ` in ${year}`;
+        } else {
+            title += ` (All Time)`;
+        }
+        title += "</h5>";
+        detailContent.innerHTML = title;
+
+        const datesForEmoji = [];
+        const dataToFilter = getFilteredEmojiData(period, year, month); // Get data for the specific period
+
+        for (const dateKey in dataToFilter) {
+            if (dataToFilter[dateKey] === emoji) {
+                datesForEmoji.push(dateKey);
+            }
+        }
+
+        if (datesForEmoji.length > 0) {
+            const ul = document.createElement('ul');
+            // Sort dates chronologically before displaying
+            datesForEmoji.sort((a,b) => new Date(a) - new Date(b));
+            datesForEmoji.forEach(dateStr => {
+                const li = document.createElement('li');
+                // Optionally format dateStr for better readability
+                const d = new Date(dateStr + 'T00:00:00'); // Ensure correct date parsing
+                li.textContent = d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
+                ul.appendChild(li);
+            });
+            detailContent.appendChild(ul);
+        } else {
+            detailContent.innerHTML += '<p>No specific dates found for this emoji in the selected period.</p>';
+        }
+
+        summaryListDisplay.style.display = 'none';
+        periodSelector.style.display = 'none'; // Hide period selector when showing details
+        detailView.style.display = 'block';
     }
 
 
