@@ -24,6 +24,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const timezoneSelect2 = document.getElementById('timezone-select-2');
     const timezoneDisplay2 = document.getElementById('timezone-display-2');
 
+    // Timer UI Elements
+    const timerHoursInput = document.getElementById('timer-hours');
+    const timerMinutesInput = document.getElementById('timer-minutes');
+    const timerSecondsInput = document.getElementById('timer-seconds');
+    const timerDisplay = document.getElementById('timer-display');
+    const startTimerButton = document.getElementById('start-timer');
+    const pauseTimerButton = document.getElementById('pause-timer');
+    const resetTimerButton = document.getElementById('reset-timer');
+
     const SAMPLE_TIMEZONES = [ // A small list for now, can be expanded
         { value: 'UTC', label: 'UTC' },
         { value: 'America/New_York', label: 'New York (EST/EDT)' },
@@ -39,6 +48,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let emojiData = loadEmojiData(); // Holds all emoji data { "YYYY-MM-DD": ["😊", "🎉"] }
 
     const PREDEFINED_EMOJIS = ['😊', '🎉', '⛽', '❤️', '🛒', '💼', '✈️', '🛠️']; // '❌' removed, toggle handles removal
+
+    // --- Timer State ---
+    let timerDurationSet = 0; // Total duration set by user in seconds
+    let timerTimeRemaining = 0; // Current time remaining in seconds
+    let timerIntervalId = null;   // ID for setInterval
+    let isTimerPaused = false;    // Flag for pause state
+
 
     // --- Compact Date Display ---
     /**
@@ -994,6 +1010,144 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    // --- Timer Helper Functions ---
+    /**
+     * Reads timer input fields and returns total duration in seconds.
+     * Also updates timerDurationSet.
+     * @returns {number} Total duration in seconds.
+     */
+    function getTimerDurationFromInputs() {
+        const hours = parseInt(timerHoursInput.value) || 0;
+        const minutes = parseInt(timerMinutesInput.value) || 0;
+        const seconds = parseInt(timerSecondsInput.value) || 0;
+        timerDurationSet = (hours * 3600) + (minutes * 60) + seconds;
+        return timerDurationSet;
+    }
+
+    /**
+     * Formats total seconds into HH:MM:SS string.
+     * @param {number} totalSeconds - Total seconds to format.
+     * @returns {string} Formatted time string (HH:MM:SS).
+     */
+    function formatTime(totalSeconds) {
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = totalSeconds % 60;
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    /**
+     * Updates the timer display DOM element.
+     * @param {number} timeInSeconds - Time in seconds to display.
+     */
+    function updateTimerDisplayDOM(timeInSeconds) {
+        if (timerDisplay) {
+            timerDisplay.textContent = formatTime(timeInSeconds);
+        }
+    }
+
+
+    // --- Timer Core Logic ---
+    function timerFinished() {
+        alert("Timer Finished!");
+        // Future: Play sound, show visual notification
+        // Reset button states after finished, or let resetTimer do it
+        if (startTimerButton) startTimerButton.disabled = false;
+        if (pauseTimerButton) pauseTimerButton.disabled = true;
+    }
+
+    function tickTimer() {
+        timerTimeRemaining--;
+        updateTimerDisplayDOM(timerTimeRemaining);
+
+        if (timerTimeRemaining < 0) {
+            clearInterval(timerIntervalId);
+            timerIntervalId = null;
+            timerFinished();
+            // Optionally call resetTimer() or just update button states
+            // For now, timerFinished handles basic state change, resetTimer is manual.
+            timerTimeRemaining = 0; // Ensure it doesn't show negative
+            updateTimerDisplayDOM(timerTimeRemaining); // Show 00:00:00
+        }
+    }
+
+    function startTimer() {
+        if (!timerHoursInput || !timerMinutesInput || !timerSecondsInput || !startTimerButton || !pauseTimerButton) return;
+
+        if (timerIntervalId && !isTimerPaused) return; // Already running
+
+        if (!isTimerPaused || timerTimeRemaining <= 0) { // Starting fresh or from 0 after pause
+            getTimerDurationFromInputs(); // Read H, M, S inputs and set timerDurationSet
+            timerTimeRemaining = timerDurationSet;
+        }
+
+        if (timerTimeRemaining <= 0) {
+            alert("Please set a timer duration greater than 0.");
+            return;
+        }
+
+        isTimerPaused = false;
+        if (timerIntervalId) clearInterval(timerIntervalId); // Clear if resuming from pause to be safe
+
+        updateTimerDisplayDOM(timerTimeRemaining); // Show current time immediately before interval starts
+        timerIntervalId = setInterval(tickTimer, 1000);
+
+        startTimerButton.disabled = true;
+        pauseTimerButton.disabled = false;
+        // Disable input fields while timer is running
+        timerHoursInput.disabled = true;
+        timerMinutesInput.disabled = true;
+        timerSecondsInput.disabled = true;
+    }
+
+    function pauseTimer() {
+        if (!timerIntervalId || isTimerPaused || !startTimerButton || !pauseTimerButton) return; // Not running or already paused
+
+        clearInterval(timerIntervalId);
+        // timerIntervalId = null; // Keep it to know it was running
+        isTimerPaused = true;
+        startTimerButton.disabled = false;
+        startTimerButton.textContent = "Resume"; // Change Start to Resume
+        pauseTimerButton.disabled = true;
+    }
+
+    function resetTimer() {
+        if (!timerDisplay || !startTimerButton || !pauseTimerButton || !timerHoursInput || !timerMinutesInput || !timerSecondsInput) return;
+
+        clearInterval(timerIntervalId);
+        timerIntervalId = null;
+        isTimerPaused = false;
+        timerTimeRemaining = 0;
+        // timerDurationSet = 0; // Optionally reset the initial set duration
+
+        updateTimerDisplayDOM(0);
+
+        startTimerButton.disabled = false;
+        startTimerButton.textContent = "Start"; // Ensure it's "Start"
+        pauseTimerButton.disabled = true;
+
+        // Re-enable and clear input fields
+        timerHoursInput.disabled = false;
+        timerMinutesInput.disabled = false;
+        timerSecondsInput.disabled = false;
+        timerHoursInput.value = 0;
+        timerMinutesInput.value = 0;
+        timerSecondsInput.value = 0;
+    }
+
+
+    // --- Timer Event Listeners ---
+    if (startTimerButton) {
+        startTimerButton.addEventListener('click', startTimer);
+    }
+    if (pauseTimerButton) {
+        pauseTimerButton.addEventListener('click', pauseTimer);
+    }
+    if (resetTimerButton) {
+        resetTimerButton.addEventListener('click', resetTimer);
+    }
+
+
     // --- Initialization ---
     renderCompactDateDisplay(); // Display compact date first
     updateLiveClock(); // Initial call to set time immediately
@@ -1005,6 +1159,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateDisplayedZoneTimes, 1000); // Update displayed time zone times every second
 
     loadWidgetOrder(); // Load and apply saved widget order
+
+    // Initialize timer display if the element exists
+    if (timerDisplay) {
+        updateTimerDisplayDOM(0);
+    }
 
     // Add the delegated event listener for summary item clicks to fullCalendarView
     if (fullCalendarView) {

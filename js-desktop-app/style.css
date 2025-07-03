@@ -392,6 +392,54 @@ main {
     margin-bottom: 8px;
 }
 
+/* Timer specific styles */
+#timer-inputs {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+#timer-inputs label {
+    font-size: 0.9em;
+    margin-right: 5px;
+}
+
+#timer-inputs input[type="number"] {
+    width: 50px; /* Fixed width for time inputs */
+    padding: 5px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+#timer-display {
+    font-size: 1.8em; /* Larger font for timer countdown */
+    font-weight: bold;
+    color: #28a745; /* Green color for active timer display */
+    margin-bottom: 10px;
+}
+
+#timer-controls {
+    display: flex;
+    justify-content: space-between; /* Distribute buttons */
+    gap: 10px; /* Space between buttons */
+}
+
+#timer-controls button {
+    flex-grow: 1; /* Allow buttons to share space */
+    /* Using general button styles from #time-settings-view button */
+}
+
+#timer-controls button#pause-timer[disabled] {
+    background-color: #adb5bd; /* Grey out disabled pause button */
+    cursor: not-allowed;
+}
+#timer-controls button#start-timer {
+    /* Specific style if needed, e.g., when it becomes "Resume" */
+}
+
 
 /* Emoji Picker Popup */
 #emoji-picker-popup {
