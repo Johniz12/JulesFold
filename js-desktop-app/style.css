@@ -1,0 +1,158 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align to top for longer content */
+    min-height: 100vh;
+    padding-top: 20px; /* Add some space at the top */
+}
+
+#app-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    width: 90%;
+    max-width: 1200px; /* Max width for larger screens */
+}
+
+header h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+main {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping for smaller screens */
+    gap: 20px;
+}
+
+#calendar-container {
+    flex: 2; /* Takes more space */
+    min-width: 300px; /* Minimum width before wrapping */
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+#widgets-container {
+    flex: 1; /* Takes less space */
+    min-width: 250px; /* Minimum width */
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+#emoji-summary-container h2 {
+    text-align: center;
+    font-size: 1.2em;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+/* Placeholder for calendar and summary content styling */
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.calendar-header button {
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.calendar-header button:hover {
+    background-color: #0056b3;
+}
+
+.calendar-header h3 { /* Targeting the month/year label */
+    margin: 0; /* Remove default margins */
+    font-size: 1.3em;
+    color: #333;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    text-align: center;
+}
+
+.calendar-grid div {
+    padding: 10px 5px;
+    border: 1px solid #eee;
+    min-height: 40px; /* Min height for day cells */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    font-size: 0.9em;
+}
+
+.day-name {
+    font-weight: bold;
+    background-color: #e9ecef;
+}
+
+.day-cell {
+    cursor: pointer;
+    background-color: #fff;
+}
+
+.day-cell:hover {
+    background-color: #f0f0f0;
+}
+
+.current-day {
+    background-color: #007bff !important;
+    color: white;
+    font-weight: bold;
+}
+
+.other-month {
+    color: #ccc;
+    background-color: #fdfdfd;
+}
+
+.day-cell .emoji {
+    font-size: 1.1em;
+    margin-top: 4px;
+}
+
+/* Styling for the emoji summary list */
+#summary-content ul {
+    list-style-type: none; /* Remove default bullets */
+    padding-left: 0; /* Remove default padding */
+    margin-top: 0;
+}
+
+#summary-content li {
+    padding: 6px 0;
+    font-size: 0.95em;
+    border-bottom: 1px solid #eee; /* Separator line */
+}
+
+#summary-content li:last-child {
+    border-bottom: none; /* No line for the last item */
+}
+
+/* Ensure day numbers and emojis are spaced nicely */
+.day-cell .day-number {
+    display: block; /* Ensure it takes its own line if emoji is present */
+    font-size: 0.9em;
+    margin-bottom: 2px;
+}
