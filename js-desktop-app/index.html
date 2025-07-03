@@ -12,8 +12,14 @@
             <h1>My Dashboard</h1>
         </header>
         <main>
-            <div id="calendar-container">
-                <!-- Calendar will be generated here by JS -->
+            <div id="calendar-widget-area"> <!-- Renamed for clarity -->
+                <div id="compact-date-display" class="clickable">
+                    <!-- Compact date will be rendered here by JS -->
+                    <span id="compact-date-text">Loading...</span>
+                </div>
+                <div id="full-calendar-view" style="display: none;">
+                    <!-- Full calendar (header + grid) will be rendered here by JS -->
+                </div>
             </div>
             <div id="widgets-container">
                 <div id="emoji-summary-container">

@@ -13,12 +13,22 @@ body {
 
 #app-container {
     background-color: #fff;
-    padding: 20px;
+    padding: 15px; /* Slightly reduced padding for compact view */
     border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    width: 90%;
-    max-width: 1200px; /* Max width for larger screens */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2); /* Enhanced shadow for widget feel */
+    width: 350px; /* Default width for a widget */
+    min-height: 150px; /* Minimum height */
+    transition: width 0.3s ease, height 0.3s ease; /* Smooth transition for size changes */
+    display: flex;
+    flex-direction: column;
 }
+
+#app-container.expanded {
+    width: 90%; /* Expand to take more width */
+    max-width: 1000px; /* Max width when expanded */
+    /* Height will be auto or set by content */
+}
+
 
 header h1 {
     text-align: center;
@@ -30,16 +40,43 @@ main {
     display: flex;
     flex-wrap: wrap; /* Allow wrapping for smaller screens */
     gap: 20px;
+    flex-grow: 1; /* Allow main to take available vertical space in app-container */
 }
 
-#calendar-container {
-    flex: 2; /* Takes more space */
-    min-width: 300px; /* Minimum width before wrapping */
-    padding: 15px;
+/* Container for both compact and full calendar views */
+#calendar-widget-area {
+    flex: 2;
+    min-width: 300px; /* Adjust as needed, especially when expanded */
+    padding: 10px; /* Padding for the area itself */
     border: 1px solid #ddd;
     border-radius: 5px;
     background-color: #f9f9f9;
+    display: flex; /* To manage visibility switch easily if needed, or just for structure */
+    flex-direction: column; /* Stack compact and full views if both were visible */
 }
+
+#compact-date-display {
+    padding: 10px;
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    background-color: #e9ecef;
+    color: #333;
+    border-radius: 4px;
+    margin-bottom: 10px; /* Space before full calendar or other content */
+}
+
+#compact-date-display.clickable {
+    cursor: pointer;
+}
+
+#compact-date-display.clickable:hover {
+    background-color: #dcdcdc;
+}
+
+/* #full-calendar-view will be styled by its content (calendar-header, calendar-grid) */
+/* It's hidden by default via inline style in HTML, will be shown by JS */
+
 
 #widgets-container {
     flex: 1; /* Takes less space */
@@ -78,6 +115,14 @@ main {
 .calendar-header button:hover {
     background-color: #0056b3;
 }
+
+.calendar-header button#close-calendar {
+    background-color: #6c757d; /* A different color for close */
+}
+.calendar-header button#close-calendar:hover {
+    background-color: #5a6268;
+}
+
 
 .calendar-header h3 { /* Targeting the month/year label */
     margin: 0; /* Remove default margins */

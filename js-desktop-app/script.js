@@ -1,7 +1,41 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const calendarContainer = document.getElementById('calendar-container');
-    let currentDate = new Date(); // Tracks the currently displayed month and year
+    // Main application container
+    const appContainer = document.getElementById('app-container');
+
+    // Calendar related elements
+    const calendarWidgetArea = document.getElementById('calendar-widget-area'); // Overall area for calendar widget
+    const compactDateDisplay = document.getElementById('compact-date-display');
+    const compactDateText = document.getElementById('compact-date-text');
+    const fullCalendarView = document.getElementById('full-calendar-view'); // Container for full calendar
+
+    let currentDate = new Date(); // Tracks the currently displayed month and year (for both views)
     let emojiData = loadEmojiData(); // Holds all emoji data { "YYYY-MM-DD": "😊" }
+
+    // --- Compact Date Display ---
+    /**
+     * Renders the current date in a compact format.
+     */
+    function renderCompactDateDisplay() {
+        const options = { weekday: 'short', month: 'short', day: 'numeric' };
+        compactDateText.textContent = new Date().toLocaleDateString(undefined, options); // Use current real-time date
+    }
+
+    // --- Expand/Collapse Calendar ---
+    compactDateDisplay.addEventListener('click', () => {
+        appContainer.classList.add('expanded');
+        compactDateDisplay.style.display = 'none';
+        fullCalendarView.style.display = 'block'; // Or 'flex' if it's a flex container
+        renderCalendar(currentDate.getFullYear(), currentDate.getMonth()); // Render full calendar
+    });
+
+    function closeFullCalendar() {
+        appContainer.classList.remove('expanded');
+        fullCalendarView.style.display = 'none';
+        fullCalendarView.innerHTML = ''; // Clear the full calendar content
+        compactDateDisplay.style.display = 'block'; // Or 'flex'
+        renderCompactDateDisplay(); // Refresh compact display, e.g., if date changed while open
+    }
+
 
     // --- LocalStorage Persistence ---
     /**
@@ -87,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {number} month - The month index (0-11).
      */
     function renderCalendar(year, month) {
-        calendarContainer.innerHTML = ''; // Clear previous calendar content
+        fullCalendarView.innerHTML = ''; // Target the new container and clear it
 
         const monthNames = ["January", "February", "March", "April", "May", "June",
                             "July", "August", "September", "October", "November", "December"];
@@ -120,7 +154,15 @@ document.addEventListener('DOMContentLoaded', () => {
         header.appendChild(prevButton);
         header.appendChild(monthYearLabel);
         header.appendChild(nextButton);
-        calendarContainer.appendChild(header);
+
+        const closeButton = document.createElement('button');
+        closeButton.id = 'close-calendar';
+        closeButton.textContent = 'Close';
+        closeButton.style.marginLeft = 'auto'; // Push to the right
+        closeButton.addEventListener('click', closeFullCalendar);
+        header.appendChild(closeButton);
+
+        fullCalendarView.appendChild(header);
 
         // Calendar Grid
         const grid = document.createElement('div');
@@ -200,13 +242,13 @@ document.addEventListener('DOMContentLoaded', () => {
             grid.appendChild(emptyCell);
         }
 
-        calendarContainer.appendChild(grid);
+        fullCalendarView.appendChild(grid); // Append grid to the full calendar view
     }
 
     // --- Initialization ---
-    // Initial rendering of calendar and summary when the DOM is fully loaded.
-    renderCalendar(currentDate.getFullYear(), currentDate.getMonth());
+    renderCompactDateDisplay(); // Display compact date first
+    // renderCalendar(currentDate.getFullYear(), currentDate.getMonth()); // Defer full calendar rendering
     updateEmojiSummary();
 
-    console.log("JS Desktop App Initialized: Calendar and Emoji Summary are active.");
+    console.log("JS Desktop App Initialized: Compact date shown, full calendar ready for expansion.");
 });
