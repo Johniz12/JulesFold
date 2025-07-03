@@ -86,6 +86,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Alarm State & Data ---
     let alarms = []; // Array to hold alarm objects: { id: number, time: "HH:MM", label: string, enabled: boolean }
     const ALARMS_STORAGE_KEY = 'userAlarms';
+    const DEFAULT_ALARM_SOUNDS = [
+        { name: "Default Beep", file: "assets/sounds/default_alarm.mp3" }, // Placeholder paths
+        { name: "Chime", file: "assets/sounds/chime.mp3" },
+        { name: "Bell", file: "assets/sounds/bell.mp3" },
+        { name: "Digital", file: "assets/sounds/digital_alarm.mp3" }
+    ];
+    const ALARM_SOUND_STORAGE_KEY = 'selectedAlarmSoundFile';
+    // Initialize currentSelectedAlarmSound by loading from storage or using the first default
+    let currentSelectedAlarmSound = localStorage.getItem(ALARM_SOUND_STORAGE_KEY) || DEFAULT_ALARM_SOUNDS[0].file;
+
+    // DOM Ref for alarm sound selector
+    const alarmSoundSelect = document.getElementById('alarm-sound-select');
+
 
     /**
      * Loads alarms from localStorage.
@@ -1575,9 +1588,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (alarm.enabled) {
                 const [alarmHours, alarmMinutes] = alarm.time.split(':').map(Number);
                 if (alarmHours === currentHours && alarmMinutes === currentMinutes) {
-                    console.log(`Alarm Triggered: ${alarm.time} - ${alarm.label || 'Alarm'}`); // Debug log
+                    console.log(`Alarm Triggered: ${alarm.time} - ${alarm.label || 'Alarm'} using sound: ${currentSelectedAlarmSound}`); // Debug log
 
-                    playSound('assets/sounds/alarm_default.mp3'); // Placeholder path
+                    playSound(currentSelectedAlarmSound); // Use the selected sound
                     // Use alarm label in notification if available, or a default message
                     const visualNotificationMessage = alarm.label ? `Alarm: ${alarm.label}` : "Alarm Triggered!";
                     // For now, showVisualNotification takes an image URL. We might need to adapt it
@@ -1601,6 +1614,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+
+    // --- Alarm Sound Selector Logic ---
+    function populateAlarmSoundSelector() {
+        if (!alarmSoundSelect) return;
+
+        DEFAULT_ALARM_SOUNDS.forEach(sound => {
+            const option = document.createElement('option');
+            option.value = sound.file;
+            option.textContent = sound.name;
+            alarmSoundSelect.appendChild(option);
+        });
+
+        // Set the dropdown to the currently selected (or default/loaded) sound
+        alarmSoundSelect.value = currentSelectedAlarmSound;
+    }
+
+    if (alarmSoundSelect) {
+        alarmSoundSelect.addEventListener('change', (event) => {
+            currentSelectedAlarmSound = event.target.value;
+            localStorage.setItem(ALARM_SOUND_STORAGE_KEY, currentSelectedAlarmSound);
+            console.log("Alarm sound changed to:", currentSelectedAlarmSound); // DEBUG
+        });
+    }
+
+
+    // --- Alarm Sound Selector Logic ---
+    // ... (populateAlarmSoundSelector and change listener for alarmSoundSelect remain the same) ...
+
+    const previewAlarmSoundBtn = document.getElementById('preview-alarm-sound-btn');
+    if (previewAlarmSoundBtn) {
+        previewAlarmSoundBtn.addEventListener('click', () => {
+            if (currentSelectedAlarmSound) {
+                console.log("Previewing sound:", currentSelectedAlarmSound); // DEBUG
+                playSound(currentSelectedAlarmSound);
+            } else {
+                alert("No alarm sound selected to preview.");
+            }
+        });
+    }
 
     // --- Alarm Event Listeners & Setup ---
     if (addAlarmButton) {
@@ -1701,6 +1753,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadAlarms(); // Load saved alarms on startup
     renderAlarmsList(); // Render initially loaded alarms
     updateAlarmFeatureBlockDisplay(); // Set initial status on feature block
+    populateAlarmSoundSelector(); // Populate alarm sound dropdown
 
     // Add the delegated event listener for summary item clicks to fullCalendarView
     if (fullCalendarView) {

@@ -123,6 +123,50 @@ main {
     background-color: #5a6268;
 }
 
+/* Subsection styling for within feature sections (generic) */
+.setting-subsection {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #fdfdfd;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
+.setting-subsection label { /* General label style within subsections */
+    margin-right: 8px;
+    font-size: 0.9em;
+    color: #333;
+    font-weight: bold;
+}
+
+/* Specifics for Alarm Sound Selector */
+#alarm-sound-settings { /* This is the .setting-subsection for alarm sounds */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    /* background-color: #f0f0f0; */ /* Optional: slightly different bg for this specific subsection */
+}
+
+#alarm-sound-select {
+    flex-grow: 1;
+    padding: 7px; /* Slightly more padding */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.95em; /* Slightly larger font */
+    background-color: #fff;
+}
+
+#preview-alarm-sound-btn {
+    width: auto;
+    padding: 7px 14px; /* Adjusted padding */
+    font-size: 0.9em; /* Consistent font size */
+    background-color: #6c757d;
+    /* color: white; Is inherited from general button style if not overridden */
+}
+#preview-alarm-sound-btn:hover {
+    background-color: #5a6268;
+}
+
 /* Visual Notification Overlay */
 #visual-notification-overlay {
     position: fixed;
