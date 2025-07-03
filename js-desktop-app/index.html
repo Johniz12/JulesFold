@@ -48,6 +48,10 @@
                                 <span id="feature-tz2-display" class="feature-block-value tz-value">Zone 2: --:--</span>
                             </div>
                         </div>
+                    <div id="alarm-feature-block" class="time-feature-block clickable">
+                        <span class="feature-block-title">Alarms</span>
+                        <span id="alarm-block-status" class="feature-block-value">No Alarms Set</span>
+                    </div>
                     </div>
                     <hr> <!-- Separator between blocks and detailed settings sections -->
 
@@ -96,8 +100,24 @@
                         </div>
                     </div>
 
-                    <!-- This HR might be redundant if sections have their own bottom borders or spacing -->
-                    <!-- <hr> -->
+                    <div id="alarm-settings-section" class="time-feature-section" style="display:none;">
+                        <button class="back-to-features-btn">← Back to Features</button>
+                        <h4>Manage Alarms</h4>
+                        <div id="add-alarm-form">
+                            <label for="new-alarm-time">Time:</label>
+                            <input type="time" id="new-alarm-time" required>
+                            <label for="new-alarm-label">Label (optional):</label>
+                            <input type="text" id="new-alarm-label" placeholder="Alarm description">
+                            <button id="add-alarm-button">Add Alarm</button>
+                        </div>
+                        <hr>
+                        <h5>Current Alarms</h5>
+                        <div id="alarms-list">
+                            <!-- Alarms will be listed here by JS -->
+                            <p>No alarms set.</p>
+                        </div>
+                    </div>
+
                     <button id="close-time-settings" style="margin-top: 15px;">Close Settings</button>
                 </div>
             </div>

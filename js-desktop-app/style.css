@@ -123,6 +123,130 @@ main {
     background-color: #5a6268;
 }
 
+/* Alarm Specific Styles */
+#alarm-feature-block .feature-block-value { /* e.g., "No Alarms Set" or "Next: 07:30" */
+    font-size: 1em; /* Adjusted for potentially more text like "Next: HH:MM" */
+    /* Other styles inherited from .feature-block-value */
+}
+
+#alarm-settings-section #add-alarm-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #f9f9f9; /* Light background for form area */
+    border-radius: 4px;
+}
+
+#alarm-settings-section #add-alarm-form label {
+    font-size: 0.9em;
+    margin-right: 5px;
+    flex-basis: auto; /* Allow label to take its content width */
+}
+
+#alarm-settings-section #new-alarm-time {
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.95em;
+}
+
+#alarm-settings-section #new-alarm-label {
+    flex-grow: 1;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    min-width: 100px; /* Ensure it has some width */
+}
+
+#alarm-settings-section #add-alarm-button {
+    padding: 7px 15px;
+    width: auto;
+    flex-shrink: 0;
+    font-size: 0.9em;
+    /* Inherits general button style from #time-settings-view button, which is blue */
+}
+
+#alarm-settings-section h5 { /* "Current Alarms" title */
+    font-size: 1.05em;
+    margin-top: 20px; /* More space above list */
+    margin-bottom: 10px;
+    color: #333;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 15px;
+}
+
+#alarms-list {
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 0; /* Remove padding if .alarm-item has its own */
+    background-color: transparent; /* Let section background show */
+    border: none; /* Remove border if items have their own */
+}
+
+.alarm-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 8px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9em;
+    background-color: #fff; /* Give items a background if list is transparent */
+    border-radius: 3px; /* Optional: rounded corners for items */
+    margin-bottom: 5px; /* Space between alarm items */
+}
+.alarm-item:last-child {
+    border-bottom: none;
+}
+
+.alarm-item .alarm-details {
+    display: flex;
+    flex-direction: column; /* Stack time and label */
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.alarm-item .alarm-time {
+    font-weight: bold;
+    font-size: 1.1em; /* Make time more prominent */
+}
+
+.alarm-item .alarm-label {
+    font-size: 0.85em;
+    color: #555;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-top: 2px;
+}
+
+.alarm-item .alarm-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.alarm-item .alarm-toggle-switch {
+    /* Basic checkbox styling for now */
+    transform: scale(1.2); /* Make checkbox slightly larger */
+    margin-right: 5px; /* Consistent margin */
+}
+
+.alarm-item .delete-alarm-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    font-size: 0.85em;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.alarm-item .delete-alarm-btn:hover {
+    background-color: #c82333;
+}
+
 .back-to-features-btn { /* Added this style earlier, ensuring it's here */
     display: block;
     margin-bottom: 15px;

@@ -39,12 +39,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const timerFeatureBlock = document.getElementById('timer-feature-block');
     const networkTimeFeatureBlock = document.getElementById('network-time-feature-block');
     const timezonesFeatureBlock = document.getElementById('timezones-feature-block');
-    const allTimeFeatureBlocks = [timerFeatureBlock, networkTimeFeatureBlock, timezonesFeatureBlock].filter(el => el);
+    const alarmFeatureBlock = document.getElementById('alarm-feature-block'); // Moved up for grouping
+    const allTimeFeatureBlocks = [timerFeatureBlock, networkTimeFeatureBlock, timezonesFeatureBlock, alarmFeatureBlock].filter(el => el);
 
     const timerSettingsSection = document.getElementById('timer-settings-section');
     const networkTimeSettingsSection = document.getElementById('network-time-settings-section');
     const timezonesSettingsSection = document.getElementById('timezones-settings-section');
-    const allTimeFeatureSections = [timerSettingsSection, networkTimeSettingsSection, timezonesSettingsSection].filter(el => el);
+    const alarmSettingsSection = document.getElementById('alarm-settings-section'); // Moved up for grouping
+    // Alarm-specific detail elements
+    const alarmBlockStatus = document.getElementById('alarm-block-status');
+    const newAlarmTimeInput = document.getElementById('new-alarm-time');
+    const newAlarmLabelInput = document.getElementById('new-alarm-label');
+    const addAlarmButton = document.getElementById('add-alarm-button');
+    const alarmsListDiv = document.getElementById('alarms-list');
+
+    const allTimeFeatureSections = [timerSettingsSection, networkTimeSettingsSection, timezonesSettingsSection, alarmSettingsSection].filter(el => el);
+    // Add alarmFeatureBlock to allTimeFeatureBlocks if it wasn't captured by a querySelectorAll elsewhere
+    // For now, individual const is fine.
 
 
     const SAMPLE_TIMEZONES = [ // A small list for now, can be expanded
@@ -68,6 +79,174 @@ document.addEventListener('DOMContentLoaded', () => {
     let timerTimeRemaining = 0; // Current time remaining in seconds
     let timerIntervalId = null;   // ID for setInterval
     let isTimerPaused = false;    // Flag for pause state
+
+    // --- Alarm State & Data ---
+    let alarms = []; // Array to hold alarm objects: { id: number, time: "HH:MM", label: string, enabled: boolean }
+    const ALARMS_STORAGE_KEY = 'userAlarms';
+
+    /**
+     * Loads alarms from localStorage.
+     */
+    function loadAlarms() {
+        const storedAlarms = localStorage.getItem(ALARMS_STORAGE_KEY);
+        if (storedAlarms) {
+            alarms = JSON.parse(storedAlarms);
+        } else {
+            alarms = [];
+        }
+        // console.log("Alarms loaded:", alarms); // DEBUG
+    }
+
+    /**
+     * Saves the current alarms array to localStorage.
+     */
+    function saveAlarms() {
+        localStorage.setItem(ALARMS_STORAGE_KEY, JSON.stringify(alarms));
+        // console.log("Alarms saved:", alarms); // DEBUG
+    }
+
+
+    // --- Alarm List Rendering & Management ---
+    /**
+     * Updates the display of the alarm feature block based on current alarms.
+     */
+    function updateAlarmFeatureBlockDisplay() {
+        if (!alarmBlockStatus) return;
+
+        const enabledAlarms = alarms.filter(alarm => alarm.enabled);
+
+        if (enabledAlarms.length === 0) {
+            alarmBlockStatus.textContent = "No Alarms Set";
+            if (alarmFeatureBlock) alarmFeatureBlock.classList.remove('alarms-active-indicator'); // Optional: class for styling if alarms are set
+            return;
+        }
+
+        // Find the next upcoming alarm today (simplistic: doesn't handle alarms for "tomorrow" if current time is past all today's alarms)
+        // For a more robust "next alarm" display, more complex date/time logic is needed.
+        // For now, just show count or first enabled alarm's time.
+
+        // Sort enabled alarms by time
+        enabledAlarms.sort((a, b) => {
+            const timeA = a.time.split(':').map(Number);
+            const timeB = b.time.split(':').map(Number);
+            if (timeA[0] !== timeB[0]) return timeA[0] - timeB[0]; // Compare hours
+            return timeA[1] - timeB[1]; // Compare minutes
+        });
+
+        const now = new Date();
+        const currentHours = now.getHours();
+        const currentMinutes = now.getMinutes();
+
+        let nextAlarmToday = null;
+        for (const alarm of enabledAlarms) {
+            const [alarmHours, alarmMinutes] = alarm.time.split(':').map(Number);
+            if (alarmHours > currentHours || (alarmHours === currentHours && alarmMinutes > currentMinutes)) {
+                nextAlarmToday = alarm;
+                break;
+            }
+        }
+
+        if (alarmFeatureBlock) alarmFeatureBlock.classList.add('alarms-active-indicator');
+
+        if (nextAlarmToday) {
+            const timeParts = nextAlarmToday.time.split(':');
+            const alarmDate = new Date();
+            alarmDate.setHours(parseInt(timeParts[0]), parseInt(timeParts[1]),0,0);
+            alarmBlockStatus.textContent = `Next: ${alarmDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        } else if (enabledAlarms.length > 0) {
+            // All enabled alarms for today have passed, or there are alarms for other days (not handled yet)
+            // Show the time of the earliest alarm (which would be for "tomorrow" effectively)
+            const earliestAlarm = enabledAlarms[0]; // First in sorted list
+            const timeParts = earliestAlarm.time.split(':');
+            const alarmDate = new Date();
+            alarmDate.setHours(parseInt(timeParts[0]), parseInt(timeParts[1]),0,0);
+            alarmBlockStatus.textContent = `Next: ${alarmDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} (tomorrow/past)`;
+            // A more sophisticated version would compare dates if alarms could be set for specific dates.
+            // For now, all alarms are daily.
+        } else { // Should be caught by the first check, but as a fallback
+             alarmBlockStatus.textContent = `${enabledAlarms.length} Active`;
+        }
+    }
+
+    /**
+     * Renders the list of alarms in the #alarms-list div.
+     */
+    function renderAlarmsList() {
+        if (!alarmsListDiv) return;
+        alarmsListDiv.innerHTML = ''; // Clear previous list
+
+        if (alarms.length === 0) {
+            alarmsListDiv.innerHTML = '<p>No alarms set.</p>';
+            updateAlarmFeatureBlockDisplay(); // Update feature block too
+            return;
+        }
+
+        const ul = document.createElement('ul');
+        ul.className = 'alarm-items-ul'; // Add class for potential specific ul styling
+        alarms.forEach(alarm => {
+            const li = document.createElement('li');
+            li.className = 'alarm-item';
+            li.dataset.alarmId = alarm.id;
+
+            // Basic structure: Time - Label [Toggle] [Delete]
+            // More detailed structure with separate elements for time, label, actions to be added
+            // in the next step when implementing toggle/delete.
+
+            const detailsDiv = document.createElement('div');
+            detailsDiv.className = 'alarm-details';
+
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'alarm-time';
+            // Format HH:MM from "HH:MM" string (input type=time gives this)
+            const timeParts = alarm.time.split(':');
+            const alarmDate = new Date();
+            alarmDate.setHours(parseInt(timeParts[0]), parseInt(timeParts[1]), 0, 0);
+            timeSpan.textContent = alarmDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            const labelSpan = document.createElement('span');
+            labelSpan.className = 'alarm-label';
+            labelSpan.textContent = alarm.label || '(No label)';
+
+            detailsDiv.appendChild(timeSpan);
+            detailsDiv.appendChild(labelSpan);
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'alarm-actions';
+
+            const toggleSwitch = document.createElement('input');
+            toggleSwitch.type = 'checkbox';
+            toggleSwitch.checked = alarm.enabled;
+            toggleSwitch.className = 'alarm-toggle-switch';
+            toggleSwitch.addEventListener('change', () => {
+                alarm.enabled = toggleSwitch.checked;
+                saveAlarms();
+                renderAlarmsList(); // Re-render to reflect change and update feature block
+                // Or, for minor style change: li.classList.toggle('disabled-alarm', !alarm.enabled);
+                // And call updateAlarmFeatureBlockDisplay() separately.
+            });
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.className = 'delete-alarm-btn';
+            deleteBtn.addEventListener('click', () => {
+                // Confirm before deleting
+                if (confirm(`Are you sure you want to delete the alarm for ${alarm.time}${alarm.label ? ` (${alarm.label})` : ''}?`)) {
+                    alarms = alarms.filter(a => a.id !== alarm.id);
+                    saveAlarms();
+                    renderAlarmsList();
+                }
+            });
+
+            actionsDiv.appendChild(toggleSwitch);
+            actionsDiv.appendChild(deleteBtn);
+
+            li.appendChild(detailsDiv);
+            li.appendChild(actionsDiv);
+            ul.appendChild(li);
+        });
+        alarmsListDiv.appendChild(ul);
+        updateAlarmFeatureBlockDisplay(); // Update feature block after rendering list
+    }
 
 
     // --- Compact Date Display ---
@@ -732,6 +911,13 @@ document.addEventListener('DOMContentLoaded', () => {
             showDetailedSettingsSection(timezonesSettingsSection);
         });
     }
+    if (alarmFeatureBlock) {
+        alarmFeatureBlock.addEventListener('click', () => {
+            console.log("[DEBUG] Alarm Feature Block clicked.");
+            showDetailedSettingsSection(alarmSettingsSection);
+            renderAlarmsList(); // Ensure list is up-to-date when viewing
+        });
+    }
 
     // Event listeners for "Back to Features" buttons
     document.querySelectorAll('.back-to-features-btn').forEach(button => {
@@ -1361,6 +1547,72 @@ document.addEventListener('DOMContentLoaded', () => {
         resetTimerButton.addEventListener('click', resetTimer);
     }
 
+    // --- Alarm Checking Logic ---
+    let lastCheckedMinute = -1; // To ensure alarm only triggers once per minute
+
+    function checkAlarms() {
+        const now = new Date();
+        const currentHours = now.getHours();
+        const currentMinutes = now.getMinutes();
+
+        // Avoid re-triggering for the same minute if checkAlarms runs frequently
+        if (currentMinutes === lastCheckedMinute) {
+            return;
+        }
+        lastCheckedMinute = currentMinutes;
+
+        // console.log(`Checking alarms at ${currentHours}:${currentMinutes}`); // DEBUG
+
+        let alarmsChanged = false;
+        alarms.forEach(alarm => {
+            if (alarm.enabled) {
+                const [alarmHours, alarmMinutes] = alarm.time.split(':').map(Number);
+                if (alarmHours === currentHours && alarmMinutes === currentMinutes) {
+                    alert(`Alarm! ${alarm.time} - ${alarm.label || 'Alarm'}`);
+                    alarm.enabled = false; // Disable alarm after it rings
+                    // Or, implement snooze or more complex recurrence later
+                    alarmsChanged = true;
+                }
+            }
+        });
+
+        if (alarmsChanged) {
+            saveAlarms();
+            renderAlarmsList(); // This will also update the feature block display
+        }
+    }
+
+
+    // --- Alarm Event Listeners & Setup ---
+    if (addAlarmButton) {
+        addAlarmButton.addEventListener('click', () => {
+            if (!newAlarmTimeInput || !newAlarmLabelInput) return;
+
+            const timeValue = newAlarmTimeInput.value;
+            const labelValue = newAlarmLabelInput.value.trim();
+
+            if (!timeValue) {
+                alert("Please select a time for the alarm.");
+                return;
+            }
+
+            const newAlarm = {
+                id: Date.now(), // Simple unique ID
+                time: timeValue, // HH:MM format from input type="time"
+                label: labelValue,
+                enabled: true
+            };
+
+            alarms.push(newAlarm);
+            saveAlarms();
+            renderAlarmsList();
+
+            // Clear inputs
+            newAlarmTimeInput.value = '';
+            newAlarmLabelInput.value = '';
+        });
+    }
+
 
     // --- Initialization ---
     renderCompactDateDisplay(); // Display compact date first
@@ -1378,11 +1630,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (timerDisplay) {
         updateTimerDisplayDOM(0);
     }
+    loadAlarms(); // Load saved alarms on startup
+    renderAlarmsList(); // Render initially loaded alarms
+    updateAlarmFeatureBlockDisplay(); // Set initial status on feature block
 
     // Add the delegated event listener for summary item clicks to fullCalendarView
     if (fullCalendarView) {
         fullCalendarView.addEventListener('click', handleSummaryItemClick);
     }
+
+    // Start checking alarms periodically
+    // Check more frequently than once a minute to catch the exact minute,
+    // but the lastCheckedMinute logic prevents multiple alerts for the same minute.
+    // E.g., check every 10 seconds.
+    setInterval(checkAlarms, 10000);
 
 
     // updateEmojiSummary(); // Summary is now part of full calendar, and updated when shown.
