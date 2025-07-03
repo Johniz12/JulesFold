@@ -123,6 +123,20 @@ main {
     background-color: #5a6268;
 }
 
+.calendar-header button#toggle-summary-calendar {
+    background-color: #17a2b8; /* Info color */
+    margin-right: 5px; /* Space between summary and close */
+}
+.calendar-header button#toggle-summary-calendar:hover {
+    background-color: #138496;
+}
+
+.calendar-action-buttons {
+    margin-left: auto; /* Pushes this group to the right */
+    display: flex;
+    align-items: center;
+}
+
 
 .calendar-header h3 { /* Targeting the month/year label */
     margin: 0; /* Remove default margins */
@@ -200,4 +214,67 @@ main {
     display: block; /* Ensure it takes its own line if emoji is present */
     font-size: 0.9em;
     margin-bottom: 2px;
+}
+
+/* Styles for the internal summary panel */
+#calendar-internal-summary {
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #ddd;
+    border-radius: 0 0 5px 5px; /* Match bottom corners of calendar area if it's the last element */
+}
+
+#calendar-internal-summary h4 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 1.1em;
+    color: #333;
+}
+
+#calendar-internal-summary ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+
+#calendar-internal-summary li {
+    padding: 4px 0;
+    font-size: 0.9em;
+    border-bottom: 1px solid #eee;
+}
+
+#calendar-internal-summary li:last-child {
+    border-bottom: none;
+}
+
+/* Emoji Picker Popup */
+#emoji-picker-popup {
+    position: absolute; /* Will be positioned by JS */
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    border-radius: 5px;
+    padding: 8px;
+    z-index: 100; /* Ensure it's above other elements */
+    display: flex; /* For arranging emojis if needed, e.g., in a grid */
+    flex-wrap: wrap;
+    gap: 5px;
+    width: auto; /* Shrink to content */
+    min-width: 120px; /* Minimum sensible width */
+    max-width: 200px; /* Allow a bit more width for more emojis */
+}
+
+#emoji-picker-popup button { /* Style for emoji buttons inside picker */
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+}
+
+#emoji-picker-popup button:hover {
+    background-color: #e0e0e0;
+    border-color: #ccc;
 }

@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentDate = new Date(); // Tracks the currently displayed month and year (for both views)
     let emojiData = loadEmojiData(); // Holds all emoji data { "YYYY-MM-DD": "😊" }
 
+    const PREDEFINED_EMOJIS = ['😊', '🎉', '⛽', '❤️', '🛒', '💼', '✈️', '🛠️', '❌']; // '❌' for remove
+
     // --- Compact Date Display ---
     /**
      * Renders the current date in a compact format.
@@ -71,46 +73,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Emoji Summary Display ---
-    const summaryContent = document.getElementById('summary-content'); // Reference to the summary display area
+    // const summaryContent = document.getElementById('summary-content'); // Old reference, will be created dynamically
 
     /**
      * Updates the emoji summary panel with counts of each emoji.
+     * This function will now target a div within the full calendar view.
      */
     function updateEmojiSummary() {
-        summaryContent.innerHTML = ''; // Clear previous summary
+        const summaryPanel = document.getElementById('calendar-internal-summary-content');
+        if (!summaryPanel) return; // If summary panel isn't visible/created yet
+
+        summaryPanel.innerHTML = ''; // Clear previous summary
 
         if (Object.keys(emojiData).length === 0) {
-            summaryContent.textContent = 'No emojis recorded yet.';
+            summaryPanel.textContent = 'No emojis recorded yet.';
             return;
         }
 
         const counts = {};
         for (const dateKey in emojiData) {
             const emoji = emojiData[dateKey];
-            if (emoji) { // Ensure it's not an empty string if that was ever stored
+            if (emoji) {
                 counts[emoji] = (counts[emoji] || 0) + 1;
             }
         }
 
         if (Object.keys(counts).length === 0) {
-            summaryContent.textContent = 'No emojis recorded yet.';
+            summaryPanel.textContent = 'No emojis recorded yet.';
             return;
         }
 
-        // Sort by count descending, then by emoji
         const sortedSummary = Object.entries(counts).sort((a, b) => {
             if (b[1] === a[1]) {
-                return a[0].localeCompare(b[0]); // Sort by emoji string if counts are equal
+                return a[0].localeCompare(b[0]);
             }
-            return b[1] - a[1]; // Sort by count descending
+            return b[1] - a[1];
         });
 
-        let summaryHTML = '<ul>';
+        let summaryHTML = '<h4>Emoji Summary</h4><ul>'; // Add a title to the summary panel
         sortedSummary.forEach(([emoji, count]) => {
             summaryHTML += `<li>${emoji} : ${count}</li>`;
         });
         summaryHTML += '</ul>';
-        summaryContent.innerHTML = summaryHTML;
+        summaryPanel.innerHTML = summaryHTML;
     }
 
 
@@ -158,11 +163,43 @@ document.addEventListener('DOMContentLoaded', () => {
         const closeButton = document.createElement('button');
         closeButton.id = 'close-calendar';
         closeButton.textContent = 'Close';
-        closeButton.style.marginLeft = 'auto'; // Push to the right
+        // closeButton.style.marginLeft = 'auto'; // Let flexbox handle spacing
         closeButton.addEventListener('click', closeFullCalendar);
-        header.appendChild(closeButton);
 
+        const summaryButton = document.createElement('button');
+        summaryButton.id = 'toggle-summary-calendar';
+        summaryButton.textContent = 'Summary';
+        summaryButton.addEventListener('click', () => {
+            const summaryPanel = document.getElementById('calendar-internal-summary');
+            if (summaryPanel) {
+                const isHidden = summaryPanel.style.display === 'none';
+                summaryPanel.style.display = isHidden ? 'block' : 'none';
+                if (isHidden) {
+                    updateEmojiSummary(); // Update content when shown
+                }
+                summaryButton.textContent = isHidden ? 'Hide Summary' : 'Summary';
+            }
+        });
+
+        // Group navigation and action buttons
+        const actionButtonsGroup = document.createElement('div');
+        actionButtonsGroup.className = 'calendar-action-buttons';
+        actionButtonsGroup.appendChild(summaryButton);
+        actionButtonsGroup.appendChild(closeButton);
+
+        header.appendChild(actionButtonsGroup); // Add the group to the header
         fullCalendarView.appendChild(header);
+
+        // Container for the summary panel (initially hidden)
+        const summaryPanelContainer = document.createElement('div');
+        summaryPanelContainer.id = 'calendar-internal-summary';
+        summaryPanelContainer.style.display = 'none'; // Hidden by default
+        // Add a placeholder or content div inside
+        const summaryPanelContent = document.createElement('div');
+        summaryPanelContent.id = 'calendar-internal-summary-content';
+        summaryPanelContainer.appendChild(summaryPanelContent);
+        fullCalendarView.appendChild(summaryPanelContainer);
+
 
         // Calendar Grid
         const grid = document.createElement('div');
@@ -218,17 +255,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Event listener for adding/editing emojis
             dayCell.addEventListener('click', (event) => {
                 const clickedDateKey = event.currentTarget.dataset.date;
-                const currentEmoji = emojiData[clickedDateKey] || '';
-                const newEmoji = prompt(`Enter emoji for ${clickedDateKey} (leave empty to remove):`, currentEmoji);
-
-                if (newEmoji !== null) { // User did not cancel prompt
-                    // Basic validation: allow one or two characters (for emojis like flags or skin tone modifiers), or empty to remove
-                    if (newEmoji === '' || (newEmoji.length >= 1 && newEmoji.length <= 2)) {
-                         addEmojiToDate(clickedDateKey, newEmoji);
-                    } else {
-                        alert("Invalid input. Please enter a single emoji character (or a 2-char flag/modifier), or leave empty to remove.");
-                    }
-                }
+                const targetElement = event.currentTarget;
+                // Close any existing picker first
+                closeEmojiPicker();
+                // console.log(`Date cell clicked: ${clickedDateKey}. Will open emoji picker.`);
+                openEmojiPicker(clickedDateKey, targetElement); // To be fully implemented in next step
             });
             grid.appendChild(dayCell);
         }
@@ -245,10 +276,97 @@ document.addEventListener('DOMContentLoaded', () => {
         fullCalendarView.appendChild(grid); // Append grid to the full calendar view
     }
 
+    // --- Emoji Picker Logic ---
+    let activeEmojiPicker = null; // To keep track of the currently open picker
+
+    /**
+     * Creates and displays an emoji picker near the target element.
+     * @param {string} dateKey - The date key (YYYY-MM-DD) for which to pick an emoji.
+     * @param {HTMLElement} targetElement - The HTML element (date cell) that was clicked.
+     */
+    function openEmojiPicker(dateKey, targetElement) {
+        closeEmojiPicker(); // Ensure only one picker is open at a time
+
+        const picker = document.createElement('div');
+        picker.id = 'emoji-picker-popup';
+
+        PREDEFINED_EMOJIS.forEach(emoji => {
+            const emojiButton = document.createElement('button');
+            emojiButton.textContent = emoji;
+            emojiButton.addEventListener('click', () => {
+                const emojiToSave = (emoji === '❌') ? '' : emoji;
+                addEmojiToDate(dateKey, emojiToSave);
+                closeEmojiPicker();
+            });
+            picker.appendChild(emojiButton);
+        });
+
+        // Positioning logic (relative to fullCalendarView for simplicity)
+        const calendarView = targetElement.closest('#full-calendar-view');
+        if (!calendarView) {
+            console.error("Could not find full-calendar-view to append emoji picker.");
+            return;
+        }
+        calendarView.appendChild(picker);
+        picker.style.position = 'absolute';
+
+        // Position below the target element, trying to stay within calendar view bounds
+        let top = targetElement.offsetTop + targetElement.offsetHeight + 2; // +2 for a small gap
+        let left = targetElement.offsetLeft;
+
+        // Basic boundary check (very simplified) - ensure it doesn't go too far right
+        if (left + picker.offsetWidth > calendarView.offsetWidth) {
+            left = calendarView.offsetWidth - picker.offsetWidth - 5; // Adjust left
+        }
+        if (left < 0) left = 5; // Ensure it's not off-screen left
+
+        // (A more robust solution would also check bottom boundary and flip if needed)
+
+        picker.style.top = `${top}px`;
+        picker.style.left = `${left}px`;
+
+        activeEmojiPicker = picker;
+
+        // Add a one-time event listener to handle clicks outside the picker
+        // Use setTimeout to allow the current click event (that opened the picker) to complete
+        setTimeout(() => {
+            document.addEventListener('click', handleClickOutsidePicker, { capture: true, once: true });
+        }, 0);
+    }
+
+    /**
+     * Handles clicks outside the emoji picker to close it.
+     * @param {Event} event - The click event.
+     */
+    function handleClickOutsidePicker(event) {
+        if (activeEmojiPicker && !activeEmojiPicker.contains(event.target)) {
+            // Check if the click was on a day-cell. If so, the day-cell's own click
+            // handler will call openEmojiPicker, which calls closeEmojiPicker first.
+            // So, we only need to close if the click is NOT on a day-cell that would reopen it.
+            if (!event.target.closest('.day-cell')) {
+                 closeEmojiPicker();
+            }
+        }
+        // Listener is {once: true}, so it's automatically removed.
+        // If not using {once: true}, ensure to remove it in closeEmojiPicker or here.
+    }
+
+    /**
+     * Closes the currently active emoji picker, if any.
+     */
+    function closeEmojiPicker() {
+        // If we weren't using {once: true} for handleClickOutsidePicker, we'd remove it here:
+        // document.removeEventListener('click', handleClickOutsidePicker, { capture: true });
+        if (activeEmojiPicker) {
+            activeEmojiPicker.remove();
+            activeEmojiPicker = null;
+        }
+    }
+
     // --- Initialization ---
     renderCompactDateDisplay(); // Display compact date first
-    // renderCalendar(currentDate.getFullYear(), currentDate.getMonth()); // Defer full calendar rendering
-    updateEmojiSummary();
+    // updateEmojiSummary(); // Summary is now part of full calendar, and updated when shown.
+                             // No need to call it here on initial load as summary panel is hidden.
 
     console.log("JS Desktop App Initialized: Compact date shown, full calendar ready for expansion.");
 });
