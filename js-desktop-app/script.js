@@ -698,7 +698,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Timer Core Logic ---
     function timerFinished() {
         console.log("Timer Finished!");
-        playSound(currentSelectedAlarmSound); // Use alarm sound for timer finish too, or a specific timer sound
+        playSound(currentSelectedAlarmSound);
         showVisualNotification('assets/images/timer_done_animation.gif');
         if (startTimerButton) { startTimerButton.disabled = false; startTimerButton.textContent = "Start"; }
         if (pauseTimerButton) pauseTimerButton.disabled = true;
@@ -871,7 +871,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function updateStopwatchDisplay(currentTimeMs) {
         const formattedTimeCompact = formatStopwatchTime(currentTimeMs, 1);
-        const formattedTimeDetailed = formatStopwatchTime(currentTimeMs, 3); // Changed to 3 for .mmm
+        const formattedTimeDetailed = formatStopwatchTime(currentTimeMs, 3);
         if (stopwatchBlockDisplay) stopwatchBlockDisplay.textContent = formattedTimeCompact;
         if (stopwatchMainDisplay) stopwatchMainDisplay.textContent = formattedTimeDetailed;
     }
@@ -917,7 +917,7 @@ document.addEventListener('DOMContentLoaded', () => {
         laps.forEach((lapTime, index) => {
             const li = document.createElement('li');
             const numSpan = document.createElement('span'); numSpan.className = 'lap-number'; numSpan.textContent = `Lap ${index + 1}: `;
-            const timeSpan = document.createElement('span'); timeSpan.className = 'lap-time-value'; timeSpan.textContent = formatStopwatchTime(lapTime, 3); // Changed to 3 for .mmm
+            const timeSpan = document.createElement('span'); timeSpan.className = 'lap-time-value'; timeSpan.textContent = formatStopwatchTime(lapTime, 3);
             li.appendChild(numSpan); li.appendChild(timeSpan); lapsList.appendChild(li);
         });
     }
@@ -945,15 +945,3 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(checkAlarms, 10000);
     console.log("JS Desktop App Initialized: Compact date and time shown. Widgets ready for drag/drop setup.");
 });
-
-[end of js-desktop-app/script.js]
-
-[end of js-desktop-app/script.js]
-
-[end of js-desktop-app/script.js]
-
-[end of js-desktop-app/script.js]
-
-[end of js-desktop-app/script.js]
-
-[end of js-desktop-app/script.js]
