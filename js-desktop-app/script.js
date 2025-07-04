@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addAlarmButton = document.getElementById('add-alarm-button');
     const alarmsListDiv = document.getElementById('alarms-list');
     const alarmSoundSelect = document.getElementById('alarm-sound-select');
-    const previewAlarmSoundBtn = document.getElementById('preview-alarm-sound-btn'); // SINGLE DECLARATION
+    const previewAlarmSoundBtn = document.getElementById('preview-alarm-sound-btn');
 
     // Stopwatch specific
     const stopwatchBlockDisplay = document.getElementById('stopwatch-block-display'); // In stopwatch feature block
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const timezonesSettingsSection = document.getElementById('timezones-settings-section');
     const alarmSettingsSection = document.getElementById('alarm-settings-section');
     const stopwatchSettingsSection = document.getElementById('stopwatch-settings-section');
-    const allTimeFeatureSections = [ // SINGLE DECLARATION
+    const allTimeFeatureSections = [
         timerSettingsSection,
         networkTimeSettingsSection,
         timezonesSettingsSection,
@@ -127,14 +127,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Compact Date Display (Calendar) ---
     function renderCompactDateDisplay() {
-        if (compactDateText) { // compactDateText is for the Calendar's compact display
+        if (compactDateText) {
             const options = { weekday: 'short', month: 'short', day: 'numeric' };
             compactDateText.textContent = new Date().toLocaleDateString(undefined, options);
         }
     }
 
     // --- Expand/Collapse Calendar ---
-    if (compactDateDisplay) { // This is the Calendar's compact display
+    if (compactDateDisplay) {
         compactDateDisplay.addEventListener('click', () => {
             if (appContainer) appContainer.classList.add('expanded');
             if (compactDateDisplay) compactDateDisplay.style.display = 'none';
@@ -510,7 +510,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) { console.error(`Error formatting time for zone ${timeZone}:`, error); displayElement.textContent = "Invalid zone"; }
     }
 
-    function populateTimeZoneSelects() { // SINGLE CORRECT DEFINITION
+    function populateTimeZoneSelects() {
         [timezoneSelect1, timezoneSelect2].forEach((selectElement, index) => {
             if (!selectElement) return;
             selectElement.innerHTML = '';
@@ -945,6 +945,10 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(checkAlarms, 10000);
     console.log("JS Desktop App Initialized: Compact date and time shown. Widgets ready for drag/drop setup.");
 });
+
+[end of js-desktop-app/script.js]
+
+[end of js-desktop-app/script.js]
 
 [end of js-desktop-app/script.js]
 
