@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addAlarmButton = document.getElementById('add-alarm-button');
     const alarmsListDiv = document.getElementById('alarms-list');
     const alarmSoundSelect = document.getElementById('alarm-sound-select');
-    const previewAlarmSoundBtn = document.getElementById('preview-alarm-sound-btn');
+    const previewAlarmSoundBtn = document.getElementById('preview-alarm-sound-btn'); // SINGLE DECLARATION
 
     // Stopwatch specific
     const stopwatchBlockDisplay = document.getElementById('stopwatch-block-display'); // In stopwatch feature block
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const timezonesSettingsSection = document.getElementById('timezones-settings-section');
     const alarmSettingsSection = document.getElementById('alarm-settings-section');
     const stopwatchSettingsSection = document.getElementById('stopwatch-settings-section');
-    const allTimeFeatureSections = [
+    const allTimeFeatureSections = [ // SINGLE DECLARATION
         timerSettingsSection,
         networkTimeSettingsSection,
         timezonesSettingsSection,
@@ -509,6 +509,8 @@ document.addEventListener('DOMContentLoaded', () => {
             displayElement.textContent = now.toLocaleTimeString('en-US', { timeZone: timeZone, hour: '2-digit', minute: '2-digit', second: '2-digit' });
         } catch (error) { console.error(`Error formatting time for zone ${timeZone}:`, error); displayElement.textContent = "Invalid zone"; }
     }
+
+    // SINGLE DECLARATION of populateTimeZoneSelects
     function populateTimeZoneSelects() {
         [timezoneSelect1, timezoneSelect2].forEach((selectElement, index) => {
             if (!selectElement) return;
@@ -798,7 +800,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Alarm Sound Selector Logic ---
-    function populateAlarmSoundSelector() {
+    // THIS IS THE DUPLICATE FUNCTION - WILL BE REMOVED
+    // function populateTimeZoneSelects() {
+    //     [timezoneSelect1, timezoneSelect2].forEach(selectElement => {
+    //         if (!selectElement) return;
+    //         const defaultOption = document.createElement('option');
+    //         defaultOption.value = "";
+    //         defaultOption.textContent = "Select a time zone...";
+    //         defaultOption.disabled = true;
+    //         defaultOption.selected = true;
+    //         selectElement.appendChild(defaultOption);
+    //         SAMPLE_TIMEZONES.forEach(tz => {
+    //             const option = document.createElement('option');
+    //             option.value = tz.value;
+    //             option.textContent = tz.label;
+    //             selectElement.appendChild(option);
+    //         });
+    //     });
+    // }
+
+    function populateAlarmSoundSelector() { // THIS IS THE CORRECT ONE TO KEEP
         if (!alarmSoundSelect) return;
         alarmSoundSelect.innerHTML = ''; // Clear previous before populating
         DEFAULT_ALARM_SOUNDS.forEach(sound => {
@@ -814,8 +835,8 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem(ALARM_SOUND_STORAGE_KEY, currentSelectedAlarmSound);
         });
     }
-    const previewAlarmSoundBtn = document.getElementById('preview-alarm-sound-btn');
-    if (previewAlarmSoundBtn) {
+    // const previewAlarmSoundBtn = document.getElementById('preview-alarm-sound-btn'); // THIS IS THE DUPLICATE CONST - REMOVE
+    if (previewAlarmSoundBtn) { // Use the one from top
         previewAlarmSoundBtn.addEventListener('click', () => {
             if (currentSelectedAlarmSound) playSound(currentSelectedAlarmSound);
             else alert("No alarm sound selected to preview.");
@@ -940,10 +961,12 @@ document.addEventListener('DOMContentLoaded', () => {
     loadAlarms();
     renderAlarmsList();
     updateAlarmFeatureBlockDisplay();
-    populateAlarmSoundSelector();
+    populateAlarmSoundSelector(); // CORRECT SINGLE CALL
     if (fullCalendarView) fullCalendarView.addEventListener('click', handleSummaryItemClick);
     setInterval(checkAlarms, 10000);
     console.log("JS Desktop App Initialized: Compact date and time shown. Widgets ready for drag/drop setup.");
 });
+
+[end of js-desktop-app/script.js]
 
 [end of js-desktop-app/script.js]
