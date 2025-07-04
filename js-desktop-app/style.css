@@ -123,6 +123,76 @@ main {
     background-color: #5a6268;
 }
 
+/* Crypto Widget Styles */
+#crypto-widget-area {
+    flex: 1; /* Allow it to take space like other widgets */
+    min-width: 220px; /* Minimum width */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9; /* Consistent with other widget areas */
+    display: flex;
+    flex-direction: column;
+    /* margin-top will be handled by flex gap in main or specific rules if needed */
+}
+
+#compact-crypto-display {
+    padding: 10px;
+    background-color: #2a2e30; /* Darker background for crypto prices */
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 5px; /* Space between price slots */
+}
+
+.crypto-slot {
+    font-size: 0.9em;
+    padding: 2px 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* In case pair name + price is too long */
+    text-align: left; /* Align text to left within slot */
+}
+.crypto-slot .pair-name { /* Assuming JS will wrap pair name in a span */
+    color: #adb5bd; /* Lighter color for pair name */
+    margin-right: 5px;
+}
+.crypto-slot .pair-price { /* Assuming JS will wrap price in a span */
+    font-weight: bold;
+}
+
+
+#full-crypto-chart-view {
+    display: flex; /* Will be set to flex or block by JS */
+    flex-direction: column;
+    gap: 10px; /* Space between close button, selector, and chart */
+    padding-top: 10px; /* Space above the close button */
+}
+
+#close-crypto-chart {
+    width: auto; /* Don't make it full width */
+    align-self: flex-start; /* Align to left */
+}
+
+#crypto-pair-selector {
+    padding: 8px;
+    font-size: 1em;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    margin: 0 auto 10px auto; /* Center it and add margin */
+    max-width: 250px; /* Max width for selector */
+    display: block; /* Ensure margin auto works */
+}
+
+#tv-chart-container-crypto {
+    width: 100%;
+    height: 450px; /* Default height, can be adjusted */
+    /* TradingView widget might override this or use it as a basis */
+}
+
 /* Stopwatch Specific Styles */
 #stopwatch-feature-block .feature-block-value { /* For "00:00.0" display */
     font-size: 1.1em; /* Slightly adjusted if needed */

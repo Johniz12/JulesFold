@@ -47,13 +47,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewAlarmSoundBtn = document.getElementById('preview-alarm-sound-btn');
 
     // Stopwatch specific
-    const stopwatchBlockDisplay = document.getElementById('stopwatch-block-display'); // In stopwatch feature block
-    const stopwatchMainDisplay = document.getElementById('stopwatch-main-display'); // In detailed settings
+    const stopwatchBlockDisplay = document.getElementById('stopwatch-block-display');
+    const stopwatchMainDisplay = document.getElementById('stopwatch-main-display');
     const startStopwatchButton = document.getElementById('start-stopwatch');
     const stopStopwatchButton = document.getElementById('stop-stopwatch');
     const lapStopwatchButton = document.getElementById('lap-stopwatch');
     const resetStopwatchButton = document.getElementById('reset-stopwatch');
     const lapsList = document.getElementById('laps-list');
+
+    // Crypto Widget Elements
+    const cryptoWidgetArea = document.getElementById('crypto-widget-area');
+    const compactCryptoDisplay = document.getElementById('compact-crypto-display');
+    const cryptoSlot1 = document.getElementById('crypto-slot-1');
+    const cryptoSlot2 = document.getElementById('crypto-slot-2');
+    const cryptoSlot3 = document.getElementById('crypto-slot-3');
+    const fullCryptoChartView = document.getElementById('full-crypto-chart-view');
+    const closeCryptoChartButton = document.getElementById('close-crypto-chart');
+    const cryptoPairSelector = document.getElementById('crypto-pair-selector');
+    // const tvChartContainerCrypto = document.getElementById('tv-chart-container-crypto'); // ID is in HTML
 
     // Time Settings Sectioning Elements
     const timeFeatureBlocksContainer = document.getElementById('time-feature-blocks-container');
@@ -99,17 +110,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let emojiData = loadEmojiData();
     const PREDEFINED_EMOJIS = ['😊', '🎉', '⛽', '❤️', '🛒', '💼', '✈️', '🛠️'];
 
+    // --- Timer State ---
     let timerDurationSet = 0;
     let timerTimeRemaining = 0;
     let timerIntervalId = null;
     let isTimerPaused = false;
 
+    // --- Stopwatch State ---
     let stopwatchStartTime = 0;
     let stopwatchElapsedTime = 0;
-    let stopwatchIntervalId = null;
+    let stopwatchIntervalId = null; // Note: This is distinct from timerIntervalId
     let isStopwatchRunning = false;
     let laps = [];
 
+    // --- Alarm State & Data ---
     let alarms = [];
     const ALARMS_STORAGE_KEY = 'userAlarms';
     const DEFAULT_ALARM_SOUNDS = [
@@ -120,6 +134,22 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
     const ALARM_SOUND_STORAGE_KEY = 'selectedAlarmSoundFile';
     let currentSelectedAlarmSound = localStorage.getItem(ALARM_SOUND_STORAGE_KEY) || DEFAULT_ALARM_SOUNDS[0].file;
+
+    // --- Crypto Widget State & Data ---
+    const CRYPTO_PAIRS = [
+        { tvSymbol: "BINANCE:BTCUSDT", name: "BTC/USDT", binanceSymbol: "BTCUSDT" },
+        { tvSymbol: "BINANCE:ETHUSDT", name: "ETH/USDT", binanceSymbol: "ETHUSDT" },
+        { tvSymbol: "BINANCE:DOGEUSDT", name: "DOGE/USDT", binanceSymbol: "DOGEUSDT" },
+        { tvSymbol: "BINANCE:BNBUSDT", name: "BNB/USDT", binanceSymbol: "BNBUSDT" },
+        { tvSymbol: "BINANCE:MATICUSDT", name: "MATIC/USDT", binanceSymbol: "MATICUSDT" },
+        // Add more pairs as desired
+    ];
+    const COMPACT_CRYPTO_PAIRS_KEY = 'compactCryptoPairs';
+    const LAST_VIEWED_TV_SYMBOL_KEY = 'lastViewedTVSymbol';
+    let selectedCompactPairs = JSON.parse(localStorage.getItem(COMPACT_CRYPTO_PAIRS_KEY)) ||
+                               [CRYPTO_PAIRS[0]?.binanceSymbol, CRYPTO_PAIRS[1]?.binanceSymbol, CRYPTO_PAIRS[2]?.binanceSymbol].filter(Boolean);
+    let tradingViewWidget = null; // To hold the TradingView widget instance
+
 
     let currentSummaryPeriod = "all";
     let lastCheckedMinute = -1;
@@ -564,7 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Drag and Drop Widget Logic ---
-    const draggableWidgets = [calendarWidgetArea, timeWidgetArea].filter(el => el);
+    const draggableWidgets = [calendarWidgetArea, timeWidgetArea, cryptoWidgetArea].filter(el => el);
     draggableWidgets.forEach(widget => {
         if (!widget) return;
         widget.addEventListener('dragstart', (event) => {
@@ -927,6 +957,151 @@ document.addEventListener('DOMContentLoaded', () => {
         laps.push(currentElapsedTime); renderLapsList();
     }
 
+    // --- Crypto Price Fetching & Compact Display Update ---
+    /**
+     * Fetches the current price for a given Binance symbol.
+     * @param {string} binanceSymbol - e.g., "BTCUSDT"
+     * @returns {Promise<string|null>} Price string or null if error.
+     */
+    async function fetchCryptoPrice(binanceSymbol) {
+        if (!binanceSymbol) return null;
+        const apiUrl = `https://api.binance.com/api/v3/ticker/price?symbol=${binanceSymbol}`;
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+                console.error(`Error fetching price for ${binanceSymbol}: ${response.status} ${response.statusText}`);
+                return null;
+            }
+            const data = await response.json();
+            return parseFloat(data.price).toFixed(2); // Format to 2 decimal places
+        } catch (error) {
+            console.error(`Error fetching price for ${binanceSymbol}:`, error);
+            return null;
+        }
+    }
+
+    /**
+     * Updates the compact crypto display slots with current prices.
+     */
+    async function updateCompactCryptoDisplay() {
+        const slots = [cryptoSlot1, cryptoSlot2, cryptoSlot3];
+        if (!compactCryptoDisplay) return;
+
+        for (let i = 0; i < slots.length; i++) {
+            const slot = slots[i];
+            const binancePairSymbol = selectedCompactPairs[i]; // This is just "BTCUSDT", etc.
+
+            if (slot) {
+                if (binancePairSymbol) {
+                    // Find the full pair object to get the display name (e.g., "BTC/USDT")
+                    const pairObject = CRYPTO_PAIRS.find(p => p.binanceSymbol === binancePairSymbol);
+                    const displayName = pairObject ? pairObject.name.split('/')[0] : binancePairSymbol; // Show just "BTC" or full "BTC/USDT"
+
+                    slot.innerHTML = `<span class="pair-name">${displayName}:</span> <span class="pair-price">Loading...</span>`;
+                    const price = await fetchCryptoPrice(binancePairSymbol);
+                    if (price !== null) {
+                        slot.innerHTML = `<span class="pair-name">${displayName}:</span> <span class="pair-price">$${price}</span>`;
+                    } else {
+                        slot.innerHTML = `<span class="pair-name">${displayName}:</span> <span class="pair-price">Error</span>`;
+                    }
+                } else {
+                    slot.textContent = "Not Set";
+                }
+            }
+        }
+    }
+
+    // Function to save selected compact pairs to localStorage
+    function saveCompactCryptoPairs() {
+        localStorage.setItem(COMPACT_CRYPTO_PAIRS_KEY, JSON.stringify(selectedCompactPairs));
+    }
+    // Note: UI for *selecting* these compact pairs is deferred. For now, it uses defaults or loaded values.
+
+    // --- Crypto Charting Logic ---
+    function populateCryptoPairSelector() {
+        if (!cryptoPairSelector) return;
+        cryptoPairSelector.innerHTML = ''; // Clear existing options
+
+        CRYPTO_PAIRS.forEach(pair => {
+            const option = document.createElement('option');
+            option.value = pair.tvSymbol; // Use TradingView symbol for value
+            option.textContent = pair.name; // User-friendly name
+            cryptoPairSelector.appendChild(option);
+        });
+    }
+
+    function loadTradingViewChart(tvSymbol) {
+        if (!tvSymbol || typeof TradingView === 'undefined' || !document.getElementById('tv-chart-container-crypto')) {
+            console.error("TradingView library not loaded, symbol missing, or chart container not found.");
+            return;
+        }
+
+        // Clear previous widget if exists to avoid conflicts
+        if (tradingViewWidget) {
+            try {
+                tradingViewWidget.remove(); // TradingView remove method
+            } catch(e) { console.warn("Error removing previous TradingView widget:", e); }
+            tradingViewWidget = null;
+        }
+        document.getElementById('tv-chart-container-crypto').innerHTML = ''; // Ensure container is empty
+
+        tradingViewWidget = new TradingView.widget({
+            "container_id": "tv-chart-container-crypto",
+            "width": "100%",
+            "height": 450, // Matches CSS, or use "100%" if container has fixed height
+            "symbol": tvSymbol,
+            "interval": "60", // 1 hour
+            "timezone": "Etc/UTC", // Or use a configurable one, e.g. Intl.DateTimeFormat().resolvedOptions().timeZone
+            "theme": "light",
+            "style": "1",
+            "locale": "en",
+            "toolbar_bg": "#f1f3f6",
+            "enable_publishing": false,
+            "allow_symbol_change": true, // Allow user to change symbol from chart UI
+            "details": true,
+            "autosize": true,
+            // "hide_top_toolbar": false, // Show top toolbar
+            // "hide_side_toolbar": true, // Hide side drawing toolbar
+        });
+        localStorage.setItem(LAST_VIEWED_TV_SYMBOL_KEY, tvSymbol);
+        if(cryptoPairSelector) cryptoPairSelector.value = tvSymbol; // Sync dropdown
+    }
+
+    // Event Listeners for Crypto Widget Expand/Collapse and Chart Controls
+    if (compactCryptoDisplay) {
+        compactCryptoDisplay.addEventListener('click', () => {
+            if (appContainer) appContainer.classList.add('expanded');
+            if (compactCryptoDisplay) compactCryptoDisplay.style.display = 'none';
+            if (fullCryptoChartView) fullCryptoChartView.style.display = 'flex'; // Show chart view
+
+            const lastViewedSymbol = localStorage.getItem(LAST_VIEWED_TV_SYMBOL_KEY);
+            let initialSymbol = CRYPTO_PAIRS[0]?.tvSymbol; // Default to first in list
+            if (selectedCompactPairs.length > 0 && selectedCompactPairs[0]) {
+                 const firstCompactPairObj = CRYPTO_PAIRS.find(p => p.binanceSymbol === selectedCompactPairs[0]);
+                 if(firstCompactPairObj) initialSymbol = firstCompactPairObj.tvSymbol;
+            }
+            loadTradingViewChart(lastViewedSymbol || initialSymbol);
+            if(cryptoPairSelector && (lastViewedSymbol || initialSymbol)) {
+                cryptoPairSelector.value = lastViewedSymbol || initialSymbol;
+            }
+        });
+    }
+
+    if (closeCryptoChartButton) {
+        closeCryptoChartButton.addEventListener('click', () => {
+            if (appContainer) appContainer.classList.remove('expanded');
+            if (fullCryptoChartView) fullCryptoChartView.style.display = 'none';
+            if (compactCryptoDisplay) compactCryptoDisplay.style.display = 'flex'; // Or 'block'
+        });
+    }
+
+    if (cryptoPairSelector) {
+        cryptoPairSelector.addEventListener('change', function() {
+            loadTradingViewChart(this.value);
+        });
+    }
+
+
     // --- Initialization ---
     renderCompactDateDisplay();
     updateLiveClock();
@@ -941,6 +1116,11 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAlarmsList();
     updateAlarmFeatureBlockDisplay();
     populateAlarmSoundSelector();
+    populateCryptoPairSelector(); // Populate crypto pair dropdown
+
+    updateCompactCryptoDisplay(); // Initial call for crypto prices
+    setInterval(updateCompactCryptoDisplay, 15000); // Update crypto prices every 15 seconds
+
     if (fullCalendarView) fullCalendarView.addEventListener('click', handleSummaryItemClick);
     setInterval(checkAlarms, 10000);
     console.log("JS Desktop App Initialized: Compact date and time shown. Widgets ready for drag/drop setup.");

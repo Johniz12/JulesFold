@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JS Desktop App</title>
     <link rel="stylesheet" href="style.css">
+    <!-- TradingView Widget Script -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 </head>
 <body>
     <div id="app-container">
@@ -149,6 +151,23 @@
                     </div>
 
                     <button id="close-time-settings" style="margin-top: 15px;">Close Settings</button>
+                </div>
+            </div>
+
+            <div id="crypto-widget-area" class="widget-area" draggable="true">
+                <div id="compact-crypto-display" class="clickable">
+                    <div class="crypto-slot" id="crypto-slot-1">Pair 1: Loading...</div>
+                    <div class="crypto-slot" id="crypto-slot-2">Pair 2: Loading...</div>
+                    <div class="crypto-slot" id="crypto-slot-3">Pair 3: Loading...</div>
+                </div>
+                <div id="full-crypto-chart-view" style="display: none;">
+                    <button id="close-crypto-chart" class="back-to-features-btn">← Close Chart</button>
+                    <!-- Re-using back-to-features-btn style for close button -->
+                    <select id="crypto-pair-selector">
+                        <!-- Options populated by JS -->
+                    </select>
+                    <div id="tv-chart-container-crypto"></div>
+                    <!-- Configure compact pairs button deferred -->
                 </div>
             </div>
         </main>
