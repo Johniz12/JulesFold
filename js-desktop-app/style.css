@@ -123,6 +123,89 @@ main {
     background-color: #5a6268;
 }
 
+/* Stopwatch Specific Styles */
+#stopwatch-feature-block .feature-block-value { /* For "00:00.0" display */
+    font-size: 1.1em; /* Slightly adjusted if needed */
+    letter-spacing: 0.5px;
+}
+
+#stopwatch-feature-block.stopwatch-running .feature-block-value {
+    color: #28a745; /* Green when running, similar to timer */
+}
+
+#stopwatch-settings-section #stopwatch-main-display {
+    font-size: 2em; /* Larger font for main stopwatch display */
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+#stopwatch-controls {
+    display: flex;
+    justify-content: center; /* Center buttons */
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+#stopwatch-controls button {
+    width: auto; /* Allow buttons to size to content */
+    flex-grow: 0; /* Don't grow to fill space, unless desired */
+    padding: 8px 15px; /* Decent padding for control buttons */
+    /* General button styles from #time-settings-view button will apply for color, etc. */
+}
+
+/* Specific styling for button states if needed */
+#stopwatch-controls button#start-stopwatch {
+    /* background-color: #28a745; Green for start */
+}
+#stopwatch-controls button#stop-stopwatch {
+    background-color: #dc3545; /* Red for stop */
+}
+#stopwatch-controls button#stop-stopwatch:hover {
+    background-color: #c82333;
+}
+
+
+#laps-list-container {
+    margin-top: 10px;
+}
+
+#laps-list-container h5 {
+    font-size: 1em;
+    margin-bottom: 8px;
+    color: #444;
+    text-align: left; /* Align laps title left */
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+#laps-list {
+    list-style-type: decimal; /* Numbered laps */
+    padding-left: 20px; /* Indent for numbers */
+    max-height: 120px; /* Scrollable lap list */
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+#laps-list li {
+    padding: 5px 8px;
+    border-bottom: 1px dotted #dee2e6;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+}
+#laps-list li:last-child {
+    border-bottom: none;
+}
+#laps-list li .lap-number {
+    margin-right: 10px;
+    color: #6c757d;
+}
+
 /* Subsection styling for within feature sections (generic) */
 .setting-subsection {
     margin-top: 15px;

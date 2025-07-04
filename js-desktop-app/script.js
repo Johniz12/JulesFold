@@ -39,13 +39,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const timerFeatureBlock = document.getElementById('timer-feature-block');
     const networkTimeFeatureBlock = document.getElementById('network-time-feature-block');
     const timezonesFeatureBlock = document.getElementById('timezones-feature-block');
-    const alarmFeatureBlock = document.getElementById('alarm-feature-block'); // Moved up for grouping
-    const allTimeFeatureBlocks = [timerFeatureBlock, networkTimeFeatureBlock, timezonesFeatureBlock, alarmFeatureBlock].filter(el => el);
+    const alarmFeatureBlock = document.getElementById('alarm-feature-block');
+    const stopwatchFeatureBlock = document.getElementById('stopwatch-feature-block'); // New
+    const allTimeFeatureBlocks = [timerFeatureBlock, networkTimeFeatureBlock, timezonesFeatureBlock, alarmFeatureBlock, stopwatchFeatureBlock].filter(el => el);
 
     const timerSettingsSection = document.getElementById('timer-settings-section');
     const networkTimeSettingsSection = document.getElementById('network-time-settings-section');
     const timezonesSettingsSection = document.getElementById('timezones-settings-section');
-    const alarmSettingsSection = document.getElementById('alarm-settings-section'); // Moved up for grouping
+    const alarmSettingsSection = document.getElementById('alarm-settings-section');
+    const stopwatchSettingsSection = document.getElementById('stopwatch-settings-section'); // New
+    const allTimeFeatureSections = [timerSettingsSection, networkTimeSettingsSection, timezonesSettingsSection, alarmSettingsSection, stopwatchSettingsSection].filter(el => el);
+
     // Alarm-specific detail elements
     const alarmBlockStatus = document.getElementById('alarm-block-status');
     const newAlarmTimeInput = document.getElementById('new-alarm-time');
@@ -78,13 +82,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const PREDEFINED_EMOJIS = ['😊', '🎉', '⛽', '❤️', '🛒', '💼', '✈️', '🛠️']; // '❌' removed, toggle handles removal
 
     // --- Timer State ---
-    let timerDurationSet = 0; // Total duration set by user in seconds
-    let timerTimeRemaining = 0; // Current time remaining in seconds
-    let timerIntervalId = null;   // ID for setInterval
-    let isTimerPaused = false;    // Flag for pause state
+    let timerDurationSet = 0;
+    let timerTimeRemaining = 0;
+    let timerIntervalId = null;
+    let isTimerPaused = false;
+
+    // --- Stopwatch State ---
+    let stopwatchStartTime = 0;
+    let stopwatchElapsedTime = 0; // Stores elapsed time when stopwatch is paused
+    let stopwatchIntervalId = null;
+    let isStopwatchRunning = false;
+    let laps = [];
 
     // --- Alarm State & Data ---
-    let alarms = []; // Array to hold alarm objects: { id: number, time: "HH:MM", label: string, enabled: boolean }
+    let alarms = [];
     const ALARMS_STORAGE_KEY = 'userAlarms';
     const DEFAULT_ALARM_SOUNDS = [
         { name: "Default Beep", file: "assets/sounds/default_alarm.mp3" }, // Placeholder paths
@@ -98,6 +109,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // DOM Ref for alarm sound selector
     const alarmSoundSelect = document.getElementById('alarm-sound-select');
+
+    // Stopwatch UI Elements
+    const stopwatchBlockDisplay = document.getElementById('stopwatch-block-display');
+    const stopwatchMainDisplay = document.getElementById('stopwatch-main-display');
+    const startStopwatchButton = document.getElementById('start-stopwatch');
+    const stopStopwatchButton = document.getElementById('stop-stopwatch');
+    const lapStopwatchButton = document.getElementById('lap-stopwatch');
+    const resetStopwatchButton = document.getElementById('reset-stopwatch');
+    const lapsList = document.getElementById('laps-list');
 
 
     /**
@@ -934,6 +954,17 @@ document.addEventListener('DOMContentLoaded', () => {
             renderAlarmsList(); // Ensure list is up-to-date when viewing
         });
     }
+    if (stopwatchFeatureBlock) {
+        stopwatchFeatureBlock.addEventListener('click', () => {
+            console.log("[DEBUG] Stopwatch Feature Block clicked.");
+            showDetailedSettingsSection(stopwatchSettingsSection);
+            // No specific data rendering needed here when just opening settings,
+            // stopwatch display is live or shows 00:00.0 / 00:00:00.000
+        });
+        // Note: Stopwatch feature block doesn't have single/double click for start/stop
+        // like the timer block. Control is via buttons in its settings section.
+        // The block itself will just show the time when running.
+    }
 
     // Event listeners for "Back to Features" buttons
     document.querySelectorAll('.back-to-features-btn').forEach(button => {
@@ -1567,6 +1598,20 @@ document.addEventListener('DOMContentLoaded', () => {
         resetTimerButton.addEventListener('click', resetTimer);
     }
 
+    // --- Stopwatch Event Listeners ---
+    if (startStopwatchButton) {
+        startStopwatchButton.addEventListener('click', startStopwatch);
+    }
+    if (stopStopwatchButton) {
+        stopStopwatchButton.addEventListener('click', stopStopwatch);
+    }
+    if (lapStopwatchButton) {
+        lapStopwatchButton.addEventListener('click', lapStopwatch);
+    }
+    if (resetStopwatchButton) {
+        resetStopwatchButton.addEventListener('click', resetStopwatch);
+    }
+
     // --- Alarm Checking Logic ---
     let lastCheckedMinute = -1; // To ensure alarm only triggers once per minute
 
@@ -1734,6 +1779,155 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    // --- Stopwatch Helper Functions ---
+    /**
+     * Formats time in milliseconds to MM:SS.ms (e.g., 01:23.45 or 01:23.4 depending on precision)
+     * or HH:MM:SS.ms if hours are present.
+     * @param {number} timeInMilliseconds
+     * @param {number} precision - Number of decimal places for milliseconds (e.g., 1 for tenths, 2 for hundredths)
+     * @returns {string} Formatted time string
+     */
+    function formatStopwatchTime(timeInMilliseconds, precision = 1) {
+        const totalSeconds = Math.floor(timeInMilliseconds / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        const milliseconds = Math.floor((timeInMilliseconds % 1000) / (precision === 1 ? 100 : precision === 2 ? 10 : 1)); // for .0 or .00 or .000
+
+        let timeStr = "";
+        if (hours > 0) {
+            timeStr += `${String(hours).padStart(2, '0')}:`;
+        }
+        timeStr += `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        if (precision > 0) {
+             timeStr += `.${String(milliseconds).padStart(precision, '0').substring(0, precision)}`;
+        }
+        return timeStr;
+    }
+
+    /**
+     * Updates both stopwatch display elements (feature block and main settings display).
+     * @param {number} currentTimeMs - Current elapsed time in milliseconds for the stopwatch.
+     */
+    function updateStopwatchDisplay(currentTimeMs) {
+        const formattedTimeCompact = formatStopwatchTime(currentTimeMs, 1); // MM:SS.m for compact
+        const formattedTimeDetailed = formatStopwatchTime(currentTimeMs, 2); // MM:SS.mm for detailed, or 3 for .mmm
+
+        if (stopwatchBlockDisplay) {
+            stopwatchBlockDisplay.textContent = formattedTimeCompact;
+        }
+        if (stopwatchMainDisplay) {
+            stopwatchMainDisplay.textContent = formattedTimeDetailed;
+        }
+    }
+
+
+    // --- Stopwatch Core Logic ---
+    function runStopwatch() {
+        if (!isStopwatchRunning) return;
+        const currentTime = Date.now();
+        const displayTime = stopwatchElapsedTime + (currentTime - stopwatchStartTime);
+        updateStopwatchDisplay(displayTime);
+    }
+
+    function startStopwatch() {
+        if (isStopwatchRunning || !startStopwatchButton || !stopStopwatchButton || !lapStopwatchButton || !stopwatchFeatureBlock) return;
+
+        isStopwatchRunning = true;
+        stopwatchStartTime = Date.now() - stopwatchElapsedTime; // Adjust for previously elapsed time if resuming
+
+        if (stopwatchIntervalId) clearInterval(stopwatchIntervalId); // Clear any existing just in case
+        stopwatchIntervalId = setInterval(runStopwatch, 75); // Update frequently for ms display (e.g., ~13fps for smooth ms)
+
+        startStopwatchButton.disabled = true;
+        startStopwatchButton.textContent = "Start"; // Ensure it's "Start" if it was "Resume"
+        stopStopwatchButton.disabled = false;
+        lapStopwatchButton.disabled = false;
+        resetStopwatchButton.disabled = false; // Can reset while running
+
+        stopwatchFeatureBlock.classList.add('stopwatch-running');
+    }
+
+    function stopStopwatch() {
+        if (!isStopwatchRunning || !startStopwatchButton || !stopStopwatchButton || !lapStopwatchButton || !stopwatchFeatureBlock) return;
+
+        isStopwatchRunning = false;
+        clearInterval(stopwatchIntervalId);
+        // stopwatchIntervalId = null; // Keep ID if you want to check if it was ever started before reset
+        stopwatchElapsedTime = Date.now() - stopwatchStartTime; // Save total elapsed time
+        updateStopwatchDisplay(stopwatchElapsedTime); // Final update to exact time
+
+        startStopwatchButton.disabled = false;
+        startStopwatchButton.textContent = "Resume";
+        stopStopwatchButton.disabled = true;
+        lapStopwatchButton.disabled = true; // Can't lap when stopped
+        resetStopwatchButton.disabled = false; // Can always reset
+
+        stopwatchFeatureBlock.classList.remove('stopwatch-running');
+    }
+
+    function resetStopwatch() {
+        if (!startStopwatchButton || !stopStopwatchButton || !lapStopwatchButton || !resetStopwatchButton || !stopwatchFeatureBlock) return;
+
+        isStopwatchRunning = false;
+        clearInterval(stopwatchIntervalId);
+        stopwatchIntervalId = null;
+        stopwatchElapsedTime = 0;
+        stopwatchStartTime = 0;
+        laps = []; // Clear laps
+
+        updateStopwatchDisplay(0);
+        renderLapsList(); // Clear displayed laps
+
+        startStopwatchButton.disabled = false;
+        startStopwatchButton.textContent = "Start"; // Corrected from startTimerButton
+        stopStopwatchButton.disabled = true;
+        lapStopwatchButton.disabled = true;
+        // resetStopwatchButton.disabled = true; // Typically reset is enabled unless it's pristine 00:00
+
+        stopwatchFeatureBlock.classList.remove('stopwatch-running');
+    }
+
+
+    // --- Stopwatch Lap Logic ---
+    function renderLapsList() {
+        if (!lapsList) return;
+        lapsList.innerHTML = ''; // Clear previous laps
+
+        if (laps.length === 0) {
+            const placeholder = document.createElement('li');
+            placeholder.textContent = 'No laps yet.';
+            lapsList.appendChild(placeholder);
+            return;
+        }
+
+        laps.forEach((lapTime, index) => {
+            const lapItem = document.createElement('li');
+            // Add a lap number span for styling if desired
+            const lapNumberSpan = document.createElement('span');
+            lapNumberSpan.className = 'lap-number';
+            lapNumberSpan.textContent = `Lap ${index + 1}: `;
+
+            const lapTimeSpan = document.createElement('span');
+            lapTimeSpan.className = 'lap-time-value'; // For styling the time itself
+            lapTimeSpan.textContent = formatStopwatchTime(lapTime, 2); // Show laps with 2 decimal ms precision
+
+            lapItem.appendChild(lapNumberSpan);
+            lapItem.appendChild(lapTimeSpan);
+            lapsList.appendChild(lapItem);
+        });
+    }
+
+    function lapStopwatch() {
+        if (!isStopwatchRunning || !lapsList) return;
+
+        const currentTime = Date.now();
+        const currentElapsedTime = stopwatchElapsedTime + (currentTime - stopwatchStartTime);
+        laps.push(currentElapsedTime);
+        renderLapsList();
+    }
+
+
     // --- Initialization ---
     renderCompactDateDisplay(); // Display compact date first
     updateLiveClock(); // Initial call to set time immediately
@@ -1750,6 +1944,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (timerDisplay) {
         updateTimerDisplayDOM(0);
     }
+    // Initialize stopwatch display
+    updateStopwatchDisplay(0);
+
     loadAlarms(); // Load saved alarms on startup
     renderAlarmsList(); // Render initially loaded alarms
     updateAlarmFeatureBlockDisplay(); // Set initial status on feature block

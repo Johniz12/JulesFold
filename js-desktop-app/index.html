@@ -52,6 +52,10 @@
                         <span class="feature-block-title">Alarms</span>
                         <span id="alarm-block-status" class="feature-block-value">No Alarms Set</span>
                     </div>
+                    <div id="stopwatch-feature-block" class="time-feature-block clickable">
+                        <span class="feature-block-title">Stopwatch</span>
+                        <span id="stopwatch-block-display" class="feature-block-value">00:00.0</span>
+                    </div>
                     </div>
                     <hr> <!-- Separator between blocks and detailed settings sections -->
 
@@ -122,6 +126,25 @@
                         <div id="alarms-list">
                             <!-- Alarms will be listed here by JS -->
                             <p>No alarms set.</p>
+                        </div>
+                    </div>
+
+                    <div id="stopwatch-settings-section" class="time-feature-section" style="display:none;">
+                        <button class="back-to-features-btn">← Back to Features</button>
+                        <h4>Stopwatch</h4>
+                        <div id="stopwatch-main-display" class="time-display-box">00:00:00.000</div>
+                        <div id="stopwatch-controls">
+                            <button id="start-stopwatch">Start</button>
+                            <button id="stop-stopwatch" disabled>Stop</button>
+                            <button id="lap-stopwatch" disabled>Lap</button>
+                            <button id="reset-stopwatch">Reset</button>
+                        </div>
+                        <div id="laps-list-container">
+                            <h5>Laps</h5>
+                            <ol id="laps-list">
+                                <!-- Lap times will be listed here -->
+                                <li>No laps yet.</li>
+                            </ol>
                         </div>
                     </div>
 
