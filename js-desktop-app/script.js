@@ -510,11 +510,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) { console.error(`Error formatting time for zone ${timeZone}:`, error); displayElement.textContent = "Invalid zone"; }
     }
 
-    // SINGLE DECLARATION of populateTimeZoneSelects
-    function populateTimeZoneSelects() {
+    function populateTimeZoneSelects() { // SINGLE CORRECT DEFINITION
         [timezoneSelect1, timezoneSelect2].forEach((selectElement, index) => {
             if (!selectElement) return;
-            selectElement.innerHTML = ''; // Clear previous options before populating
+            selectElement.innerHTML = '';
             const defaultOption = document.createElement('option');
             defaultOption.value = ""; defaultOption.textContent = "Select a time zone...";
             selectElement.appendChild(defaultOption);
@@ -532,27 +531,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.target === timezoneSelect1) selectedTimeZone1 = selectedZone;
         else if (event.target === timezoneSelect2) selectedTimeZone2 = selectedZone;
         localStorage.setItem(event.target.id + '_selectedZone', selectedZone);
-        displayTimeForZone(selectedZone, displayElement); // Update detailed view immediately
-        updateDisplayedZoneTimes(); // Update feature block display
+        displayTimeForZone(selectedZone, displayElement);
+        updateDisplayedZoneTimes();
     }
     if (timezoneSelect1) timezoneSelect1.addEventListener('change', (e) => handleTimeZoneChange(e, timezoneDisplay1));
     if (timezoneSelect2) timezoneSelect2.addEventListener('change', (e) => handleTimeZoneChange(e, timezoneDisplay2));
     function updateDisplayedZoneTimes() {
         const getZoneLabel = (zoneValue) => { const zone = SAMPLE_TIMEZONES.find(tz => tz.value === zoneValue); return zone ? zone.label.split(' ')[0] : (zoneValue || "N/A"); };
-        displayTimeForZone(selectedTimeZone1, timezoneDisplay1, "Select a zone"); // For detailed settings
-        displayTimeForZone(selectedTimeZone2, timezoneDisplay2, "Select a zone"); // For detailed settings
+        displayTimeForZone(selectedTimeZone1, timezoneDisplay1, "Select a zone");
+        displayTimeForZone(selectedTimeZone2, timezoneDisplay2, "Select a zone");
         if (featureTz1Display) {
             const label1 = getZoneLabel(selectedTimeZone1);
-            const time1 = selectedTimeZone1 ? formatTimeForZoneDisplay(selectedTimeZone1) : "--:--"; // Shorter format
+            const time1 = selectedTimeZone1 ? formatTimeForZoneDisplay(selectedTimeZone1) : "--:--";
             featureTz1Display.innerHTML = `<span class="tz-label">${label1}:</span> <span class="tz-time">${time1}</span>`;
         }
         if (featureTz2Display) {
             const label2 = getZoneLabel(selectedTimeZone2);
-            const time2 = selectedTimeZone2 ? formatTimeForZoneDisplay(selectedTimeZone2) : "--:--"; // Shorter format
+            const time2 = selectedTimeZone2 ? formatTimeForZoneDisplay(selectedTimeZone2) : "--:--";
             featureTz2Display.innerHTML = `<span class="tz-label">${label2}:</span> <span class="tz-time">${time2}</span>`;
         }
     }
-    function formatTimeForZoneDisplay(timeZone) { // Helper for feature block display (HH:MM)
+    function formatTimeForZoneDisplay(timeZone) {
         if (!timeZone) return "--:--";
         try {
             const now = new Date();
@@ -800,28 +799,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Alarm Sound Selector Logic ---
-    // THIS IS THE DUPLICATE FUNCTION - WILL BE REMOVED
-    // function populateTimeZoneSelects() {
-    //     [timezoneSelect1, timezoneSelect2].forEach(selectElement => {
-    //         if (!selectElement) return;
-    //         const defaultOption = document.createElement('option');
-    //         defaultOption.value = "";
-    //         defaultOption.textContent = "Select a time zone...";
-    //         defaultOption.disabled = true;
-    //         defaultOption.selected = true;
-    //         selectElement.appendChild(defaultOption);
-    //         SAMPLE_TIMEZONES.forEach(tz => {
-    //             const option = document.createElement('option');
-    //             option.value = tz.value;
-    //             option.textContent = tz.label;
-    //             selectElement.appendChild(option);
-    //         });
-    //     });
-    // }
-
-    function populateAlarmSoundSelector() { // THIS IS THE CORRECT ONE TO KEEP
+    function populateAlarmSoundSelector() {
         if (!alarmSoundSelect) return;
-        alarmSoundSelect.innerHTML = ''; // Clear previous before populating
+        alarmSoundSelect.innerHTML = '';
         DEFAULT_ALARM_SOUNDS.forEach(sound => {
             const option = document.createElement('option');
             option.value = sound.file; option.textContent = sound.name;
@@ -835,8 +815,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem(ALARM_SOUND_STORAGE_KEY, currentSelectedAlarmSound);
         });
     }
-    // const previewAlarmSoundBtn = document.getElementById('preview-alarm-sound-btn'); // THIS IS THE DUPLICATE CONST - REMOVE
-    if (previewAlarmSoundBtn) { // Use the one from top
+    if (previewAlarmSoundBtn) {
         previewAlarmSoundBtn.addEventListener('click', () => {
             if (currentSelectedAlarmSound) playSound(currentSelectedAlarmSound);
             else alert("No alarm sound selected to preview.");
@@ -961,11 +940,15 @@ document.addEventListener('DOMContentLoaded', () => {
     loadAlarms();
     renderAlarmsList();
     updateAlarmFeatureBlockDisplay();
-    populateAlarmSoundSelector(); // CORRECT SINGLE CALL
+    populateAlarmSoundSelector();
     if (fullCalendarView) fullCalendarView.addEventListener('click', handleSummaryItemClick);
     setInterval(checkAlarms, 10000);
     console.log("JS Desktop App Initialized: Compact date and time shown. Widgets ready for drag/drop setup.");
 });
+
+[end of js-desktop-app/script.js]
+
+[end of js-desktop-app/script.js]
 
 [end of js-desktop-app/script.js]
 
