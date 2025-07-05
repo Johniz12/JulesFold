@@ -1,0 +1,141 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    background-color: #f0f0f0;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align to top for longer content */
+    min-height: 100vh;
+    padding-top: 20px; /* Add some padding at the top */
+}
+
+#app-container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    width: 90%;
+    max-width: 900px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+header h1 {
+    margin: 0;
+    color: #0056b3; /* A nice blue */
+}
+
+#breadcrumbs {
+    margin-bottom: 20px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+#breadcrumbs a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+#breadcrumbs a:hover {
+    text-decoration: underline;
+}
+
+#breadcrumbs span {
+    margin: 0 5px;
+}
+
+.button-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.button {
+    background-color: #007bff;
+    color: white;
+    padding: 15px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 1.1em;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #0056b3;
+}
+
+.button.secondary {
+    background-color: #6c757d;
+}
+.button.secondary:hover {
+    background-color: #545b62;
+}
+
+.button.tertiary {
+    background-color: #28a745;
+}
+.button.tertiary:hover {
+    background-color: #1e7e34;
+}
+
+
+#content-area h2 {
+    text-align: center;
+    color: #333;
+}
+
+.lesson-list {
+    list-style: none;
+    padding: 0;
+}
+
+.lesson-list li {
+    background-color: #e9ecef;
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.lesson-list li:hover {
+    background-color: #ced4da;
+}
+
+.lesson-content-view {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 5px;
+    margin-top: 20px;
+    border: 1px solid #ddd;
+}
+
+.lesson-content-view h3 {
+    margin-top: 0;
+    color: #0056b3;
+}
+
+.back-button {
+    display: inline-block;
+    margin-bottom: 20px;
+    background-color: #6c757d;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 0.9em;
+}
+
+.back-button:hover {
+    background-color: #545b62;
+}
