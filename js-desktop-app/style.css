@@ -123,6 +123,25 @@ main {
     background-color: #5a6268;
 }
 
+/* Full width crypto chart focus mode */
+main#main-content-area.main-content-crypto-focus {
+    /* flex-wrap: nowrap; Ensure crypto widget doesn't wrap if it was the only item */
+    /* No real need to change flex-wrap if others are display:none */
+}
+
+main#main-content-area.main-content-crypto-focus > #calendar-widget-area,
+main#main-content-area.main-content-crypto-focus > #time-widget-area {
+    display: none !important; /* Hide other widgets forcefully */
+}
+
+main#main-content-area.main-content-crypto-focus > #crypto-widget-area {
+    width: 100%;        /* Take full width of the main container */
+    flex-grow: 1;       /* Allow it to take all available flex space if main is flex */
+    flex-basis: 100%;   /* Ensure it tries to take full basis in flex context */
+    margin: 0;          /* Remove any default margins it might have as a widget area */
+    /* min-width should not be an issue if it's the only one visible */
+}
+
 /* Crypto Widget Styles */
 #crypto-widget-area {
     flex: 1; /* Allow it to take space like other widgets */

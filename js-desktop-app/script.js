@@ -1071,15 +1071,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (compactCryptoDisplay) {
         compactCryptoDisplay.addEventListener('click', () => {
             if (appContainer) appContainer.classList.add('expanded');
+            if (mainContentArea) mainContentArea.classList.add('main-content-crypto-focus'); // Add focus class
+
             if (compactCryptoDisplay) compactCryptoDisplay.style.display = 'none';
             if (fullCryptoChartView) fullCryptoChartView.style.display = 'flex'; // Show chart view
 
             const lastViewedSymbol = localStorage.getItem(LAST_VIEWED_TV_SYMBOL_KEY);
-            let initialSymbol = CRYPTO_PAIRS[0]?.tvSymbol; // Default to first in list
-            if (selectedCompactPairs.length > 0 && selectedCompactPairs[0]) {
-                 const firstCompactPairObj = CRYPTO_PAIRS.find(p => p.binanceSymbol === selectedCompactPairs[0]);
-                 if(firstCompactPairObj) initialSymbol = firstCompactPairObj.tvSymbol;
-            }
+            let initialSymbol = CRYPTO_PAIRS[0]?.tvSymbol;
+            const firstCompactPairObj = selectedCompactPairs[0] ? CRYPTO_PAIRS.find(p => p.binanceSymbol === selectedCompactPairs[0]) : null;
+            if(firstCompactPairObj) initialSymbol = firstCompactPairObj.tvSymbol;
+
             loadTradingViewChart(lastViewedSymbol || initialSymbol);
             if(cryptoPairSelector && (lastViewedSymbol || initialSymbol)) {
                 cryptoPairSelector.value = lastViewedSymbol || initialSymbol;
@@ -1090,8 +1091,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeCryptoChartButton) {
         closeCryptoChartButton.addEventListener('click', () => {
             if (appContainer) appContainer.classList.remove('expanded');
+            if (mainContentArea) mainContentArea.classList.remove('main-content-crypto-focus'); // Remove focus class
+
             if (fullCryptoChartView) fullCryptoChartView.style.display = 'none';
-            if (compactCryptoDisplay) compactCryptoDisplay.style.display = 'flex'; // Or 'block'
+            if (compactCryptoDisplay) compactCryptoDisplay.style.display = 'flex';
         });
     }
 
