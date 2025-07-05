@@ -6,27 +6,32 @@ body {
     color: #333;
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Align to top for longer content */
+    align-items: flex-start;
     min-height: 100vh;
-    padding-top: 20px; /* Add some space at the top */
+    padding-top: 20px;
 }
 
 #app-container {
     background-color: #fff;
-    padding: 15px; /* Slightly reduced padding for compact view */
+    padding: 15px;
     border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2); /* Enhanced shadow for widget feel */
-    width: 350px; /* Default width for a widget */
-    min-height: 150px; /* Minimum height */
-    transition: width 0.3s ease, height 0.3s ease; /* Smooth transition for size changes */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    width: 350px;
+    min-height: 150px;
+    transition: width 0.3s ease, height 0.3s ease;
     display: flex;
     flex-direction: column;
 }
 
-#app-container.expanded {
-    width: 90%; /* Expand to take more width */
-    max-width: 1000px; /* Max width when expanded */
-    /* Height will be auto or set by content */
+#app-container.expanded { /* For Calendar expansion */
+    width: 90%;
+    max-width: 1000px;
+}
+
+#app-container.expanded-crypto { /* Specific for Crypto expansion */
+    width: 90%;
+    max-width: 1000px;
+    /* min-height might be needed if content is too short, or rely on content height */
 }
 
 
@@ -36,24 +41,34 @@ header h1 {
     margin-bottom: 20px;
 }
 
-main {
+main#main-content-area {
     display: flex;
-    flex-wrap: wrap; /* Allow wrapping for smaller screens */
+    flex-wrap: wrap;
     gap: 20px;
-    flex-grow: 1; /* Allow main to take available vertical space in app-container */
+    flex-grow: 1;
 }
 
-/* Container for both compact and full calendar views */
-#calendar-widget-area {
-    flex: 2;
-    min-width: 300px; /* Adjust as needed, especially when expanded */
-    padding: 10px; /* Padding for the area itself */
+/* Widget Area Base */
+.widget-area {
+    padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
     background-color: #f9f9f9;
-    display: flex; /* To manage visibility switch easily if needed, or just for structure */
-    flex-direction: column; /* Stack compact and full views if both were visible */
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box; /* Ensure padding and border are included in width/height */
 }
+
+#calendar-widget-area {
+    flex: 2;
+    min-width: 300px;
+}
+
+#time-widget-area {
+    flex: 1;
+    min-width: 200px;
+}
+
 
 #compact-date-display {
     padding: 10px;
@@ -63,7 +78,7 @@ main {
     background-color: #e9ecef;
     color: #333;
     border-radius: 4px;
-    margin-bottom: 10px; /* Space before full calendar or other content */
+    margin-bottom: 10px;
 }
 
 #compact-date-display.clickable {
@@ -74,27 +89,7 @@ main {
     background-color: #dcdcdc;
 }
 
-/* #full-calendar-view will be styled by its content (calendar-header, calendar-grid) */
-/* It's hidden by default via inline style in HTML, will be shown by JS */
 
-
-#widgets-container {
-    flex: 1; /* Takes less space */
-    min-width: 250px; /* Minimum width */
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-}
-
-#emoji-summary-container h2 {
-    text-align: center;
-    font-size: 1.2em;
-    margin-top: 0;
-    margin-bottom: 10px;
-}
-
-/* Placeholder for calendar and summary content styling */
 .calendar-header {
     display: flex;
     justify-content: space-between;
@@ -111,440 +106,29 @@ main {
     cursor: pointer;
     font-size: 0.9em;
 }
-
 .calendar-header button:hover {
     background-color: #0056b3;
 }
-
 .calendar-header button#close-calendar {
-    background-color: #6c757d; /* A different color for close */
+    background-color: #6c757d;
 }
 .calendar-header button#close-calendar:hover {
     background-color: #5a6268;
 }
-
-/* Full width crypto chart focus mode */
-main#main-content-area.main-content-crypto-focus {
-    /* flex-wrap: nowrap; Ensure crypto widget doesn't wrap if it was the only item */
-    /* No real need to change flex-wrap if others are display:none */
-}
-
-main#main-content-area.main-content-crypto-focus > #calendar-widget-area,
-main#main-content-area.main-content-crypto-focus > #time-widget-area {
-    display: none !important; /* Hide other widgets forcefully */
-}
-
-main#main-content-area.main-content-crypto-focus > #crypto-widget-area {
-    width: 100%;        /* Take full width of the main container */
-    flex-grow: 1;       /* Allow it to take all available flex space if main is flex */
-    flex-basis: 100%;   /* Ensure it tries to take full basis in flex context */
-    margin: 0;          /* Remove any default margins it might have as a widget area */
-    /* min-width should not be an issue if it's the only one visible */
-}
-
-/* Crypto Widget Styles */
-#crypto-widget-area {
-    flex: 1; /* Allow it to take space like other widgets */
-    min-width: 220px; /* Minimum width */
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9; /* Consistent with other widget areas */
-    display: flex;
-    flex-direction: column;
-    /* margin-top will be handled by flex gap in main or specific rules if needed */
-}
-
-#compact-crypto-display {
-    padding: 10px;
-    background-color: #2a2e30; /* Darker background for crypto prices */
-    color: #fff;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    gap: 5px; /* Space between price slots */
-}
-
-.crypto-slot {
-    font-size: 0.9em;
-    padding: 2px 5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* In case pair name + price is too long */
-    text-align: left; /* Align text to left within slot */
-}
-.crypto-slot .pair-name { /* Assuming JS will wrap pair name in a span */
-    color: #adb5bd; /* Lighter color for pair name */
-    margin-right: 5px;
-}
-.crypto-slot .pair-price { /* Assuming JS will wrap price in a span */
-    font-weight: bold;
-}
-
-
-#full-crypto-chart-view {
-    display: flex; /* Will be set to flex or block by JS */
-    flex-direction: column;
-    gap: 10px; /* Space between close button, selector, and chart */
-    padding-top: 10px; /* Space above the close button */
-}
-
-#close-crypto-chart {
-    width: auto; /* Don't make it full width */
-    align-self: flex-start; /* Align to left */
-}
-
-#crypto-pair-selector {
-    padding: 8px;
-    font-size: 1em;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    background-color: #fff;
-    margin: 0 auto 10px auto; /* Center it and add margin */
-    max-width: 250px; /* Max width for selector */
-    display: block; /* Ensure margin auto works */
-}
-
-#tv-chart-container-crypto {
-    width: 100%;
-    height: 450px; /* Default height, can be adjusted */
-    /* TradingView widget might override this or use it as a basis */
-}
-
-/* Stopwatch Specific Styles */
-#stopwatch-feature-block .feature-block-value { /* For "00:00.0" display */
-    font-size: 1.1em; /* Slightly adjusted if needed */
-    letter-spacing: 0.5px;
-}
-
-#stopwatch-feature-block.stopwatch-running .feature-block-value {
-    color: #28a745; /* Green when running, similar to timer */
-}
-
-#stopwatch-settings-section #stopwatch-main-display {
-    font-size: 2em; /* Larger font for main stopwatch display */
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 15px;
-    letter-spacing: 1px;
-}
-
-#stopwatch-controls {
-    display: flex;
-    justify-content: center; /* Center buttons */
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-#stopwatch-controls button {
-    width: auto; /* Allow buttons to size to content */
-    flex-grow: 0; /* Don't grow to fill space, unless desired */
-    padding: 8px 15px; /* Decent padding for control buttons */
-    /* General button styles from #time-settings-view button will apply for color, etc. */
-}
-
-/* Specific styling for button states if needed */
-#stopwatch-controls button#start-stopwatch {
-    /* background-color: #28a745; Green for start */
-}
-#stopwatch-controls button#stop-stopwatch {
-    background-color: #dc3545; /* Red for stop */
-}
-#stopwatch-controls button#stop-stopwatch:hover {
-    background-color: #c82333;
-}
-
-
-#laps-list-container {
-    margin-top: 10px;
-}
-
-#laps-list-container h5 {
-    font-size: 1em;
-    margin-bottom: 8px;
-    color: #444;
-    text-align: left; /* Align laps title left */
-    border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
-}
-
-#laps-list {
-    list-style-type: decimal; /* Numbered laps */
-    padding-left: 20px; /* Indent for numbers */
-    max-height: 120px; /* Scrollable lap list */
-    overflow-y: auto;
-    background-color: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 4px;
-    font-size: 0.9em;
-}
-
-#laps-list li {
-    padding: 5px 8px;
-    border-bottom: 1px dotted #dee2e6;
-    color: #333;
-    display: flex;
-    justify-content: space-between;
-}
-#laps-list li:last-child {
-    border-bottom: none;
-}
-#laps-list li .lap-number {
-    margin-right: 10px;
-    color: #6c757d;
-}
-
-/* Subsection styling for within feature sections (generic) */
-.setting-subsection {
-    margin-top: 15px;
-    margin-bottom: 15px;
-    padding: 10px;
-    background-color: #fdfdfd;
-    border: 1px solid #eee;
-    border-radius: 4px;
-}
-.setting-subsection label { /* General label style within subsections */
-    margin-right: 8px;
-    font-size: 0.9em;
-    color: #333;
-    font-weight: bold;
-}
-
-/* Specifics for Alarm Sound Selector */
-#alarm-sound-settings { /* This is the .setting-subsection for alarm sounds */
+.calendar-action-buttons {
+    margin-left: auto;
     display: flex;
     align-items: center;
-    gap: 10px;
-    /* background-color: #f0f0f0; */ /* Optional: slightly different bg for this specific subsection */
 }
-
-#alarm-sound-select {
-    flex-grow: 1;
-    padding: 7px; /* Slightly more padding */
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 0.95em; /* Slightly larger font */
-    background-color: #fff;
-}
-
-#preview-alarm-sound-btn {
-    width: auto;
-    padding: 7px 14px; /* Adjusted padding */
-    font-size: 0.9em; /* Consistent font size */
-    background-color: #6c757d;
-    /* color: white; Is inherited from general button style if not overridden */
-}
-#preview-alarm-sound-btn:hover {
-    background-color: #5a6268;
-}
-
-/* Visual Notification Overlay */
-#visual-notification-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent backdrop */
-    display: flex; /* Used to center content */
-    justify-content: center;
-    align-items: center;
-    z-index: 1000; /* High z-index to be on top */
-    /* display: none; /* Initial state set by inline style, JS toggles */
-}
-
-#visual-notification-content {
-    background-color: #fff;
-    padding: 25px;
-    border-radius: 8px;
-    text-align: center;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-}
-
-#notification-image {
-    max-width: 150px; /* Adjust as needed */
-    max-height: 150px; /* Adjust as needed */
-    display: block; /* Remove extra space below if it's inline */
-}
-
-#dismiss-notification-btn {
-    padding: 8px 20px;
-    font-size: 0.9em;
-    background-color: #007bff; /* Primary button color */
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-#dismiss-notification-btn:hover {
-    background-color: #0056b3;
-}
-
-/* Alarm Specific Styles */
-#alarm-feature-block .feature-block-value { /* e.g., "No Alarms Set" or "Next: 07:30" */
-    font-size: 1em; /* Adjusted for potentially more text like "Next: HH:MM" */
-    /* Other styles inherited from .feature-block-value */
-}
-
-#alarm-settings-section #add-alarm-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 15px;
-    padding: 10px;
-    background-color: #f9f9f9; /* Light background for form area */
-    border-radius: 4px;
-}
-
-#alarm-settings-section #add-alarm-form label {
-    font-size: 0.9em;
-    margin-right: 5px;
-    flex-basis: auto; /* Allow label to take its content width */
-}
-
-#alarm-settings-section #new-alarm-time {
-    padding: 8px 6px; /* Increased padding */
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1.1em; /* Increased font size */
-    width: auto; /* Allow it to size based on content + padding, or set a specific larger width */
-    /* e.g., width: 100px; */
-}
-
-#alarm-settings-section #new-alarm-label {
-    flex-grow: 1;
-    padding: 6px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    min-width: 100px; /* Ensure it has some width */
-}
-
-#alarm-settings-section #add-alarm-button {
-    padding: 7px 15px;
-    width: auto;
-    flex-shrink: 0;
-    font-size: 0.9em;
-    /* Inherits general button style from #time-settings-view button, which is blue */
-}
-
-#alarm-settings-section h5 { /* "Current Alarms" title */
-    font-size: 1.05em;
-    margin-top: 20px; /* More space above list */
-    margin-bottom: 10px;
-    color: #333;
-    border-top: 1px solid #e0e0e0;
-    padding-top: 15px;
-}
-
-#alarms-list {
-    max-height: 180px;
-    overflow-y: auto;
-    padding: 0; /* Remove padding if .alarm-item has its own */
-    background-color: transparent; /* Let section background show */
-    border: none; /* Remove border if items have their own */
-}
-
-.alarm-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 8px;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 0.9em;
-    background-color: #fff; /* Give items a background if list is transparent */
-    border-radius: 3px; /* Optional: rounded corners for items */
-    margin-bottom: 5px; /* Space between alarm items */
-}
-.alarm-item:last-child {
-    border-bottom: none;
-}
-
-.alarm-item .alarm-details {
-    display: flex;
-    flex-direction: column; /* Stack time and label */
-    flex-grow: 1;
-    margin-right: 10px;
-}
-
-.alarm-item .alarm-time {
-    font-weight: bold;
-    font-size: 1.1em; /* Make time more prominent */
-}
-
-.alarm-item .alarm-label {
-    font-size: 0.85em;
-    color: #555;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin-top: 2px;
-}
-
-.alarm-item .alarm-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.alarm-item .alarm-toggle-switch {
-    /* Basic checkbox styling for now */
-    transform: scale(1.2); /* Make checkbox slightly larger */
-    margin-right: 5px; /* Consistent margin */
-}
-
-.alarm-item .delete-alarm-btn {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    padding: 4px 8px;
-    font-size: 0.85em;
-    border-radius: 3px;
-    cursor: pointer;
-}
-.alarm-item .delete-alarm-btn:hover {
-    background-color: #c82333;
-}
-
-.back-to-features-btn { /* Added this style earlier, ensuring it's here */
-    display: block;
-    margin-bottom: 15px;
-    padding: 6px 10px;
-    font-size: 0.85em;
-    background-color: #6c757d;
-    color: white;
-    border: 1px solid #6c757d;
-    border-radius: 0.2rem;
-    cursor: pointer;
-    width: auto;
-}
-.back-to-features-btn:hover {
-    background-color: #5a6268;
-}
-
 .calendar-header button#toggle-summary-calendar {
-    background-color: #17a2b8; /* Info color */
-    margin-right: 5px; /* Space between summary and close */
+    background-color: #17a2b8;
+    margin-right: 5px;
 }
 .calendar-header button#toggle-summary-calendar:hover {
     background-color: #138496;
 }
-
-.calendar-action-buttons {
-    margin-left: auto; /* Pushes this group to the right */
-    display: flex;
-    align-items: center;
-}
-
-
-.calendar-header h3 { /* Targeting the month/year label */
-    margin: 0; /* Remove default margins */
+.calendar-header h3 {
+    margin: 0;
     font-size: 1.3em;
     color: #333;
 }
@@ -555,166 +139,219 @@ main#main-content-area.main-content-crypto-focus > #crypto-widget-area {
     gap: 5px;
     text-align: center;
 }
-
 .calendar-grid div {
     padding: 10px 5px;
     border: 1px solid #eee;
-    min-height: 40px; /* Min height for day cells */
+    min-height: 40px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
     font-size: 0.9em;
 }
-
 .day-name {
     font-weight: bold;
     background-color: #e9ecef;
 }
-
 .day-cell {
     cursor: pointer;
     background-color: #fff;
 }
-
 .day-cell:hover {
     background-color: #f0f0f0;
 }
-
 .current-day {
     background-color: #007bff !important;
     color: white;
     font-weight: bold;
 }
-
 .other-month {
     color: #ccc;
     background-color: #fdfdfd;
 }
-
 .day-cell .emoji {
     font-size: 1.1em;
-    /* margin-top: 4px; // Removed, as emoji-display-container will handle spacing */
-    margin-right: 2px; /* Add a little space between multiple emojis if they are spans */
+    margin-right: 2px;
 }
 .day-cell .day-number {
-    display: block; /* Ensure it takes its own line if emoji is present */
+    display: block;
     font-size: 0.9em;
     margin-bottom: 2px;
 }
-
 .emoji-display-container {
-    display: flex; /* Arrange multiple emojis in a row */
-    flex-wrap: wrap; /* Allow wrapping if too many emojis */
-    justify-content: center; /* Center emojis within the container */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     align-items: center;
-    margin-top: 3px; /* Space above the emoji container */
-    line-height: 1; /* Prevent extra space from line height if emojis are tall */
-    max-height: 2.5em; /* Limit height to prevent oversized cells, allows approx 2 lines of small emojis */
-    overflow-y: hidden; /* Hide overflow if too many emojis to fit in max-height */
+    margin-top: 3px;
+    line-height: 1;
+    max-height: 2.5em;
+    overflow-y: hidden;
 }
 
-
-/* Styling for the emoji summary list */
-#summary-content ul {
-    list-style-type: none; /* Remove default bullets */
-    padding-left: 0; /* Remove default padding */
-    margin-top: 0;
-}
-
-#summary-content li {
-    padding: 6px 0;
-    font-size: 0.95em;
-    border-bottom: 1px solid #eee; /* Separator line */
-}
-
-#summary-content li:last-child {
-    border-bottom: none; /* No line for the last item */
-}
-
-/* Ensure day numbers and emojis are spaced nicely */
-.day-cell .day-number {
-    display: block; /* Ensure it takes its own line if emoji is present */
-    font-size: 0.9em;
-    margin-bottom: 2px;
-}
-
-/* Styles for the internal summary panel */
 #calendar-internal-summary {
     padding: 10px;
     margin-top: 10px;
     background-color: #f8f9fa;
     border-top: 1px solid #ddd;
-    border-radius: 0 0 5px 5px; /* Match bottom corners of calendar area if it's the last element */
+    border-radius: 0 0 5px 5px;
 }
-
 #calendar-internal-summary h4 {
     margin-top: 0;
     margin-bottom: 8px;
     font-size: 1.1em;
     color: #333;
 }
-
 #calendar-internal-summary ul {
     list-style-type: none;
     padding-left: 0;
     margin-bottom: 0;
 }
-
 #calendar-internal-summary li {
     padding: 4px 0;
     font-size: 0.9em;
     border-bottom: 1px solid #eee;
 }
-
 #calendar-internal-summary li:last-child {
     border-bottom: none;
 }
 
-/* Time Widget Area */
-#time-widget-area {
-    flex: 1; /* Adjust flex properties as needed, similar to old widgets-container */
-    min-width: 200px; /* Minimum width before wrapping or shrinking */
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
+#summary-period-selector {
     display: flex;
-    flex-direction: column;
-    margin-top: 20px; /* Add margin if it wraps below calendar in compact view */
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #dee2e6;
+}
+#summary-period-selector button {
+    padding: 5px 10px;
+    font-size: 0.8em;
+    background-color: #e9ecef;
+    color: #495057;
+    border: 1px solid #ced4da;
+    border-radius: 0.2rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+#summary-period-selector button:hover {
+    background-color: #d6dce1;
+    border-color: #b9c1c8;
+}
+#summary-period-selector button.active-period {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+.clickable-summary-emoji {
+    cursor: pointer;
+    padding: 6px 4px;
+    transition: background-color 0.15s ease-in-out;
+    border-radius: 3px;
+}
+.clickable-summary-emoji:hover {
+    background-color: #e9ecef;
+}
+#summary-emoji-dates-detail {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #ccc;
+}
+#summary-emoji-dates-detail h5 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 1em;
+}
+#summary-emoji-dates-detail ul {
+    list-style-type: none;
+    padding-left: 10px;
+    font-size: 0.9em;
+}
+#summary-emoji-dates-detail li {
+    padding: 3px 0;
+}
+#back-to-summary-list {
+    padding: 5px 10px;
+    font-size: 0.8em;
+    background-color: #6c757d;
+    color: white;
+    border: 1px solid #6c757d;
+    border-radius: 0.2rem;
+    cursor: pointer;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+#back-to-summary-list:hover {
+    background-color: #5a6268;
 }
 
-#app-container.expanded #time-widget-area {
-    margin-top: 0; /* No margin-top when side-by-side in expanded view */
+/* Emoji Picker Popup */
+#emoji-picker-popup {
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    border-radius: 5px;
+    padding: 8px;
+    z-index: 100;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    width: auto;
+    min-width: 120px;
+    max-width: 200px;
+}
+#emoji-picker-popup button {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+}
+#emoji-picker-popup button:hover {
+    background-color: #e0e0e0;
+    border-color: #ccc;
+}
+#emoji-picker-popup button.picker-emoji-active {
+    background-color: #007bff;
+    color: white;
+    border-color: #0056b3;
+}
+#emoji-picker-popup button.picker-done-button {
+    background-color: #28a745;
+    color: white;
+    border-color: #1e7e34;
+    width: 100%;
+    margin-top: 5px;
+}
+#emoji-picker-popup button.picker-done-button:hover {
+    background-color: #218838;
 }
 
-
+/* Time Widget Specific Styles */
 #compact-time-display {
     padding: 10px;
     text-align: center;
-    font-size: 1.5em; /* Larger font for time */
+    font-size: 1.5em;
     font-weight: bold;
-    background-color: #343a40; /* Dark background for time */
-    color: #fff; /* Light text */
+    background-color: #343a40;
+    color: #fff;
     border-radius: 4px;
-    margin-bottom: 10px; /* Space before settings view if it expands */
+    margin-bottom: 10px;
 }
-
 #compact-time-display.clickable {
     cursor: pointer;
 }
-
 #compact-time-display.clickable:hover {
-    background-color: #495057; /* Slightly lighter on hover */
+    background-color: #495057;
 }
-
 
 #time-settings-view {
     padding: 15px;
     border-top: 1px solid #ccc;
     background-color: #fff;
 }
-
 #time-settings-view h3 {
     margin-top: 0;
     margin-bottom: 15px;
@@ -722,8 +359,7 @@ main#main-content-area.main-content-crypto-focus > #crypto-widget-area {
     color: #333;
     text-align: center;
 }
-
-#time-settings-view button { /* General button style within settings */
+#time-settings-view button {
     display: block;
     width: 100%;
     padding: 8px;
@@ -735,31 +371,98 @@ main#main-content-area.main-content-crypto-focus > #crypto-widget-area {
     cursor: pointer;
     font-size: 0.9em;
 }
-
 #time-settings-view button:hover {
     background-color: #0056b3;
 }
-
 #time-settings-view button#close-time-settings {
-    background-color: #6c757d; /* Grey for close */
+    background-color: #6c757d;
     margin-top: 10px;
 }
 #time-settings-view button#close-time-settings:hover {
     background-color: #5a6268;
 }
 
-/* Styles for #time-features-menu, .time-feature-btn, .active-feature-button, hr.feature-menu-divider are removed */
+/* Time Widget Feature Blocks & Sections */
+#time-feature-blocks-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.time-feature-block {
+    padding: 12px;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    background-color: #f8f9fa;
+    text-align: center;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+.time-feature-block.clickable {
+    cursor: pointer;
+}
+.time-feature-block.clickable:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+.feature-block-title {
+    display: block;
+    font-size: 0.8em;
+    color: #6c757d;
+    margin-bottom: 5px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.feature-block-value {
+    display: block;
+    font-size: 1.2em;
+    color: #212529;
+    font-weight: bold;
+}
+#timer-feature-block.timer-block-running {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+#timer-feature-block.timer-block-running .feature-block-value {
+    color: #155724;
+}
+#timer-feature-block.timer-block-paused {
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+}
+#timer-feature-block.timer-block-paused .feature-block-value {
+    color: #856404;
+}
+#feature-tz-display-container {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+#feature-tz-display-container .tz-value {
+    font-size: 0.95em;
+    font-weight: normal;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 5px;
+}
+.tz-label {
+    color: #495057;
+    margin-right: 5px;
+    font-weight: normal;
+}
+.tz-time {
+    color: #212529;
+    font-weight: bold;
+}
 
 .time-feature-section {
     padding: 10px;
-    border: 1px solid #f0f0f0; /* Light border for the section itself */
+    border: 1px solid #f0f0f0;
     border-radius: 4px;
-    margin-bottom: 15px; /* Space between sections if multiple were shown (though only one will be) */
-    background-color: #ffffff; /* White background for content area */
+    margin-bottom: 15px;
+    background-color: #ffffff;
 }
-
-.time-feature-section h4 { /* Titles within each feature section */
-    font-size: 1.1em; /* Slightly larger than old .setting-section h4 */
+.time-feature-section h4 {
+    font-size: 1.1em;
     color: #333;
     margin-top: 0;
     margin-bottom: 12px;
@@ -767,26 +470,6 @@ main#main-content-area.main-content-crypto-focus > #crypto-widget-area {
     padding-bottom: 8px;
     border-bottom: 1px solid #eee;
 }
-
-
-/* Old .setting-section can be removed or repurposed if no longer used elsewhere */
-.setting-section { /* If still used, ensure it doesn't conflict. For now, assume it's replaced by .time-feature-section */
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    /* border-bottom: 1px dashed #eee; */ /* Handled by hr or section borders now */
-}
-.setting-section:last-of-type {
-    /* border-bottom: none; */
-    margin-bottom: 5px;
-}
-/* .setting-section h4 style can likely be removed if .setting-section is fully phased out for .time-feature-section */
-.setting-section h4 {
-    font-size: 1em;
-    color: #555;
-    margin-top: 0;
-    margin-bottom: 8px;
-}
-
 .time-display-box {
     background-color: #e9ecef;
     padding: 8px;
@@ -794,21 +477,18 @@ main#main-content-area.main-content-crypto-focus > #crypto-widget-area {
     font-size: 0.9em;
     color: #333;
     margin-top: 8px;
-    min-height: 20px; /* Ensure it has some height even when empty */
+    min-height: 20px;
     text-align: center;
 }
-
 .timezone-selector-group {
     margin-bottom: 15px;
 }
-
 .timezone-selector-group label {
     display: block;
     margin-bottom: 5px;
     font-size: 0.9em;
     color: #555;
 }
-
 .timezone-select {
     width: 100%;
     padding: 6px;
@@ -826,299 +506,467 @@ main#main-content-area.main-content-crypto-focus > #crypto-widget-area {
     align-items: center;
     margin-bottom: 10px;
 }
-
 #timer-inputs label {
     font-size: 0.9em;
     margin-right: 5px;
 }
-
 #timer-inputs input[type="number"] {
-    width: 50px; /* Fixed width for time inputs */
+    width: 50px;
     padding: 5px;
     text-align: center;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 0.9em;
 }
-
 #timer-display {
-    font-size: 1.8em; /* Larger font for timer countdown */
+    font-size: 1.8em;
     font-weight: bold;
-    color: #28a745; /* Green color for active timer display */
+    color: #28a745;
     margin-bottom: 10px;
+    text-align: center;
 }
-
 #timer-controls {
     display: flex;
-    justify-content: space-between; /* Distribute buttons */
-    gap: 10px; /* Space between buttons */
+    justify-content: space-between;
+    gap: 10px;
 }
-
 #timer-controls button {
-    flex-grow: 1; /* Allow buttons to share space */
-    /* Using general button styles from #time-settings-view button */
+    flex-grow: 1;
 }
-
 #timer-controls button#pause-timer[disabled] {
-    background-color: #adb5bd; /* Grey out disabled pause button */
+    background-color: #adb5bd;
     cursor: not-allowed;
 }
-#timer-controls button#start-timer {
-    /* Specific style if needed, e.g., when it becomes "Resume" */
+
+/* Alarm Specific Styles */
+#alarm-feature-block .feature-block-value {
+    font-size: 1em;
 }
-
-
-/* Emoji Picker Popup */
-#emoji-picker-popup {
-    position: absolute; /* Will be positioned by JS */
-    background-color: #fff;
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-    border-radius: 5px;
-    padding: 8px;
-    z-index: 100; /* Ensure it's above other elements */
-    display: flex; /* For arranging emojis if needed, e.g., in a grid */
+#alarm-settings-section #add-alarm-form {
+    display: flex;
     flex-wrap: wrap;
-    gap: 5px;
-    width: auto; /* Shrink to content */
-    min-width: 120px; /* Minimum sensible width */
-    max-width: 200px; /* Allow a bit more width for more emojis */
-}
-
-#emoji-picker-popup button { /* Style for emoji buttons inside picker */
-    background-color: #f0f0f0;
-    border: 1px solid #ddd;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #f9f9f9;
     border-radius: 4px;
-    padding: 5px 8px;
-    cursor: pointer;
+}
+#alarm-settings-section #add-alarm-form label {
+    font-size: 0.9em;
+    margin-right: 5px;
+    flex-basis: auto;
+}
+#alarm-settings-section #new-alarm-time {
+    padding: 8px 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1.1em;
+    width: auto;
+}
+#alarm-settings-section #new-alarm-label {
+    flex-grow: 1;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    min-width: 100px;
+}
+#alarm-settings-section #add-alarm-button {
+    padding: 7px 15px;
+    width: auto;
+    flex-shrink: 0;
+    font-size: 0.9em;
+}
+#alarm-settings-section h5 {
+    font-size: 1.05em;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #333;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 15px;
+}
+#alarms-list {
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 0;
+    background-color: transparent;
+    border: none;
+}
+.alarm-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 8px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9em;
+    background-color: #fff;
+    border-radius: 3px;
+    margin-bottom: 5px;
+}
+.alarm-item:last-child {
+    border-bottom: none;
+}
+.alarm-item .alarm-details {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    margin-right: 10px;
+}
+.alarm-item .alarm-time {
+    font-weight: bold;
     font-size: 1.1em;
 }
-
-#emoji-picker-popup button:hover {
-    background-color: #e0e0e0;
-    border-color: #ccc;
+.alarm-item .alarm-label {
+    font-size: 0.85em;
+    color: #555;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-top: 2px;
 }
-
-#emoji-picker-popup button.picker-emoji-active {
-    background-color: #007bff;
+.alarm-item .alarm-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.alarm-item .alarm-toggle-switch {
+    transform: scale(1.2);
+    margin-right: 5px;
+}
+.alarm-item .delete-alarm-btn {
+    background-color: #dc3545;
     color: white;
-    border-color: #0056b3;
+    border: none;
+    padding: 4px 8px;
+    font-size: 0.85em;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.alarm-item .delete-alarm-btn:hover {
+    background-color: #c82333;
+}
+.setting-subsection {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #fdfdfd;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
+.setting-subsection label {
+    margin-right: 8px;
+    font-size: 0.9em;
+    color: #333;
+    font-weight: bold;
+}
+#alarm-sound-settings {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+#alarm-sound-select {
+    flex-grow: 1;
+    padding: 7px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.95em;
+    background-color: #fff;
+}
+#preview-alarm-sound-btn {
+    width: auto;
+    padding: 7px 14px;
+    font-size: 0.9em;
+    background-color: #6c757d;
+}
+#preview-alarm-sound-btn:hover {
+    background-color: #5a6268;
 }
 
-#emoji-picker-popup button.picker-done-button {
-    background-color: #28a745; /* Green for done */
-    color: white;
-    border-color: #1e7e34;
-    width: 100%; /* Make it full width within the picker */
-    margin-top: 5px;
+/* Stopwatch Specific Styles */
+#stopwatch-feature-block .feature-block-value {
+    font-size: 1.1em;
+    letter-spacing: 0.5px;
 }
-#emoji-picker-popup button.picker-done-button:hover {
-    background-color: #218838;
+#stopwatch-feature-block.stopwatch-running .feature-block-value {
+    color: #28a745;
+}
+#stopwatch-settings-section #stopwatch-main-display {
+    font-size: 2em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+    text-align: center;
+}
+#stopwatch-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+#stopwatch-controls button {
+    width: auto;
+    flex-grow: 0;
+    padding: 8px 15px;
+}
+#stopwatch-controls button#stop-stopwatch {
+    background-color: #dc3545;
+}
+#stopwatch-controls button#stop-stopwatch:hover {
+    background-color: #c82333;
+}
+#laps-list-container {
+    margin-top: 10px;
+}
+#laps-list-container h5 {
+    font-size: 1em;
+    margin-bottom: 8px;
+    color: #444;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+#laps-list {
+    list-style-type: decimal;
+    padding-left: 20px;
+    max-height: 120px;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+#laps-list li {
+    padding: 5px 8px;
+    border-bottom: 1px dotted #dee2e6;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+}
+#laps-list li:last-child {
+    border-bottom: none;
+}
+#laps-list li .lap-number {
+    margin-right: 10px;
+    color: #6c757d;
+}
+
+/* Visual Notification Overlay */
+#visual-notification-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000;
+}
+#visual-notification-content {
+    background-color: #fff; padding: 25px; border-radius: 8px;
+    text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    display: flex; flex-direction: column; align-items: center; gap: 15px;
+}
+#notification-image {
+    max-width: 150px; max-height: 150px; display: block;
+}
+#dismiss-notification-btn {
+    padding: 8px 20px; font-size: 0.9em; background-color: #007bff;
+    color: white; border: none; border-radius: 4px; cursor: pointer;
+}
+#dismiss-notification-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Back to Features Button (generic for time widget sections) */
+.back-to-features-btn {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    padding: 6px 10px;
+    font-size: 0.85em;
+    background-color: #6c757d;
+    color: white;
+    border: 1px solid #6c757d;
+    border-radius: 0.2rem;
+    cursor: pointer;
+    width: auto;
+    float: right;
+}
+.back-to-features-btn:hover {
+    background-color: #5a6268;
+}
+
+
+/* Crypto Widget New Styles */
+#crypto-widget-area {
+    flex: 1;
+    min-width: 280px;
+    /* Ensures the widget area itself can take up space */
+    display: flex; /* Already there, good */
+    flex-direction: column; /* Already there, good */
+}
+
+#compact-crypto-display {
+    padding: 8px;
+    background-color: #2a2e30;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* compact-crypto-slot-X are IDs, style them via ID or common class if preferred */
+#compact-crypto-slot-0,
+#compact-crypto-slot-1,
+#compact-crypto-slot-2 {
+    font-size: 0.85em;
+    padding: 3px 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+    border-radius: 3px;
+    background-color: #343a40;
+}
+#compact-crypto-slot-0 .pair-name,
+#compact-crypto-slot-1 .pair-name,
+#compact-crypto-slot-2 .pair-name {
+    color: #adb5bd;
+    margin-right: 5px;
+}
+#compact-crypto-slot-0 .pair-price,
+#compact-crypto-slot-1 .pair-price,
+#compact-crypto-slot-2 .pair-price {
+    font-weight: bold;
+    color: #f8f9fa;
+}
+
+#expanded-crypto-view {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 10px;
+    margin-top: 10px;
+    border-top: 1px solid #e0e0e0;
+    min-height: 380px; /* ADDED: Fail-safe minimum height */
+    flex-grow: 1; /* ADDED: Allow it to grow if crypto-widget-area has space */
+}
+
+#crypto-back-to-compact-btn {
+    padding: 6px 10px;
+    font-size: 0.85em;
+    background-color: #6c757d;
+    color: white;
+    border: 1px solid #6c757d;
+    border-radius: 0.2rem;
+    cursor: pointer;
+    width: auto;
+    align-self: flex-start;
+    margin-bottom: 5px;
+}
+#crypto-back-to-compact-btn:hover {
+    background-color: #5a6268;
+}
+
+.crypto-display-slot {
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background-color: #ffffff;
+    /* ADDED: Ensure slots can grow if #expanded-crypto-view is flex column */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Styling for when a slot is in "Price Button Mode" */
+.crypto-display-slot .crypto-price-button-view {
+    padding: 12px;
+    font-size: 1.1em;
+    font-weight: bold;
+    text-align: center;
+    background-color: #f0f2f5;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    min-height: 40px; /* ADDED: Ensure button view has some min height */
+    display: flex; /* ADDED: To center content vertically if needed */
+    align-items: center;
+    justify-content: center;
+}
+.crypto-display-slot .crypto-price-button-view:hover {
+    background-color: #e4e6eb;
+}
+.crypto-display-slot .crypto-price-button-view .slot-pair-name {
+    color: #007bff;
+}
+.crypto-display-slot .crypto-price-button-view .slot-pair-price {
+    color: #28a745;
+    margin-left: 8px;
+}
+
+/* Styling for when a slot is in "Chart Mode" */
+.crypto-display-slot .crypto-chart-mode-view {
+    display: flex; /* Ensures it's a block-like element that can contain sized children */
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1; /* ADDED: Allow chart mode view to take available space in slot */
+}
+
+/* Visibility is controlled by JS adding/removing 'active-chart-slot' on '.crypto-display-slot' */
+.crypto-display-slot.active-chart-slot .crypto-price-button-view {
+    display: none !important;
+}
+.crypto-display-slot.active-chart-slot .crypto-chart-mode-view {
+    display: flex !important; /* Changed from block to flex to allow flex-grow on children */
+}
+
+.crypto-display-slot:not(.active-chart-slot) .crypto-price-button-view {
+    display: flex !important; /* Ensure it's flex for alignment */
+}
+.crypto-display-slot:not(.active-chart-slot) .crypto-chart-mode-view {
+    display: none !important;
+}
+
+
+.crypto-display-slot .pair-selector-slot {
+    width: 100%;
+    max-width: 300px;
+    padding: 8px;
+    font-size: 0.95em;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    margin: 0 auto 10px auto;
+    display: block;
+}
+
+.crypto-display-slot .tv-chart-container {
+    width: 100%;
+    height: 350px;
+    min-height: 250px; /* ADDED: Fallback min-height */
+    background-color: #f0f0f0;
+    flex-grow: 1; /* ADDED: Allow chart container to take space in chart-mode-view */
 }
 
 
 /* Drag and Drop Styles */
 .dragging {
     opacity: 0.5;
-    border: 2px dashed #007bff; /* Optional: border on the item being dragged */
-}
-
-.drag-over-placeholder {
-    height: 50px; /* Example height, or match widget margins */
-    background-color: #e0e0e0;
     border: 2px dashed #007bff;
-    margin: 10px 0; /* Similar to widget gaps */
-    border-radius: 5px;
-    display: block; /* Ensure it takes up space */
 }
-
-/* Style for when dragging over a widget to insert before/after */
 .drop-target-highlight-before::before {
-    content: '';
-    display: block;
-    height: 10px; /* Small indicator line */
-    background-color: #007bff;
-    margin-bottom: 5px; /* Space it from the actual element */
+    content: ''; display: block; height: 10px;
+    background-color: #007bff; margin-bottom: 5px;
 }
-
 .drop-target-highlight-after::after {
-    content: '';
-    display: block;
-    height: 10px; /* Small indicator line */
-    background-color: #007bff;
-    margin-top: 5px; /* Space it from the actual element */
+    content: ''; display: block; height: 10px;
+    background-color: #007bff; margin-top: 5px;
 }
 
-
-/* Time Widget Feature Blocks */
-#time-feature-blocks-container {
-    display: flex;
-    flex-direction: column; /* Stack blocks vertically */
-    gap: 10px; /* Space between blocks */
-    margin-bottom: 15px; /* Space before the <hr> or detailed settings */
+/* Deprecated/Old Crypto Styles  */
+#full-crypto-chart-view,
+#tv-chart-container-crypto {
+    display: none !important;
 }
-
-.time-feature-block {
-    padding: 12px;
-    border: 1px solid #ced4da;
-    border-radius: 0.25rem;
-    background-color: #f8f9fa;
-    text-align: center;
-    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
-}
-
-.time-feature-block.clickable {
-    cursor: pointer;
-}
-
-.time-feature-block.clickable:hover {
-    background-color: #e9ecef;
-    border-color: #adb5bd;
-}
-
-.feature-block-title {
-    display: block;
-    font-size: 0.8em;
-    color: #6c757d; /* Muted color for title */
-    margin-bottom: 5px;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-.feature-block-value {
-    display: block;
-    font-size: 1.2em; /* Larger for the value */
-    color: #212529;
-    font-weight: bold;
-}
-
-/* Specific styles for timer block when active/paused */
-#timer-feature-block.timer-block-running {
-    background-color: #d4edda; /* Light green */
-    border-color: #c3e6cb;
-}
-#timer-feature-block.timer-block-running .feature-block-value {
-    color: #155724; /* Darker green */
-}
-
-#timer-feature-block.timer-block-paused {
-    background-color: #fff3cd; /* Light yellow */
-    border-color: #ffeeba;
-}
-#timer-feature-block.timer-block-paused .feature-block-value {
-    color: #856404; /* Darker yellow/brown */
-}
-
-
-/* Timezone display within its feature block */
-#feature-tz-display-container {
-    display: flex;
-    flex-direction: column; /* Stack timezone 1 and 2 */
-    gap: 3px; /* Small gap between the two timezone lines */
-}
-
-#feature-tz-display-container .tz-value { /* This is for the spans like #feature-tz1-display */
-    font-size: 0.95em;
-    font-weight: normal;
-    display: flex; /* Use flex to position label and time within this span */
-    justify-content: space-between; /* Push label left, time right */
-    padding: 0 5px; /* Some padding if needed */
-}
-
-/* Styles for the inner spans created by JS */
-.tz-label {
-    color: #495057; /* Slightly muted label color */
-    margin-right: 5px; /* Space between label and time */
-    font-weight: normal;
-}
-
-.tz-time {
-    color: #212529; /* Standard text color for time */
-    font-weight: bold; /* Make the time itself bold */
-}
-
-
-/* Summary Period Selector in Calendar Summary Panel */
-#summary-period-selector {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #dee2e6;
-}
-
-#summary-period-selector button {
-    padding: 5px 10px;
-    font-size: 0.8em;
-    background-color: #e9ecef;
-    color: #495057;
-    border: 1px solid #ced4da;
-    border-radius: 0.2rem;
-    cursor: pointer;
-    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, color 0.15s ease-in-out;
-}
-
-#summary-period-selector button:hover {
-    background-color: #d6dce1;
-    border-color: #b9c1c8;
-}
-
-#summary-period-selector button.active-period {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-}
-
-#summary-list-display {
-    /* This div will contain the ul/li for the summary list. */
-}
-
-.clickable-summary-emoji {
-    cursor: pointer;
-    padding: 6px 4px; /* Slightly more padding to indicate clickability */
-    transition: background-color 0.15s ease-in-out;
-    border-radius: 3px;
-}
-
-.clickable-summary-emoji:hover {
-    background-color: #e9ecef; /* Light hover effect */
-}
-
-#summary-emoji-dates-detail {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px dashed #ccc;
-}
-
-#summary-emoji-dates-detail h5 { /* Title for this section */
-    margin-top: 0;
-    margin-bottom: 8px;
-    font-size: 1em;
-}
-
-#summary-emoji-dates-detail ul {
-    list-style-type: none;
-    padding-left: 10px;
-    font-size: 0.9em;
-}
-
-#summary-emoji-dates-detail li {
-    padding: 3px 0;
-}
-
-#back-to-summary-list { /* Style for the back button */
-    padding: 5px 10px;
-    font-size: 0.8em;
-    background-color: #6c757d; /* Grey color */
-    color: white;
-    border: 1px solid #6c757d;
-    border-radius: 0.2rem;
-    cursor: pointer;
-    margin-bottom: 10px;
-    display: inline-block; /* Allow margin-bottom */
-}
-
-#back-to-summary-list:hover {
-    background-color: #5a6268;
+#crypto-pair-selector { /* Old single selector */
+     display: none !important;
 }

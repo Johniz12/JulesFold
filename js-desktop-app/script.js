@@ -289,33 +289,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function _loadTradingViewChartForSlot(slotIndex, tvSymbol) {
         const chartContainer = cryptoTVChartContainers[slotIndex];
-        if (!tvSymbol || typeof TradingView === 'undefined' || !chartContainer) {
-            if(chartContainer) chartContainer.innerHTML = `<p style="text-align:center; padding:20px;">Chart for ${tvSymbol || 'N/A'} unavailable.</p>`;
-            console.error(`TradingView: Lib not loaded, symbol missing, or chart container for slot ${slotIndex} not found.`);
+
+        // Ensure chartContainer exists before trying to manipulate it
+        if (!chartContainer) {
+            console.error(`Chart container for slot ${slotIndex} not found.`);
+            return;
+        }
+
+        if (!tvSymbol || typeof TradingView === 'undefined') {
+            chartContainer.innerHTML = `<p style="text-align:center; padding:20px; height:100%; display:flex; align-items:center; justify-content:center;">Chart for ${tvSymbol || 'N/A'} unavailable. TradingView library may not be loaded or symbol is missing.</p>`;
+            console.error(`TradingView: Lib not loaded or symbol missing for slot ${slotIndex}. Symbol: ${tvSymbol}`);
             return;
         }
 
         if (tradingViewWidgets[slotIndex]) {
-            try { tradingViewWidgets[slotIndex].remove(); }
-            catch (e) { console.warn(`Error removing TV widget for slot ${slotIndex}:`, e); }
+            try {
+                tradingViewWidgets[slotIndex].remove();
+            } catch (e) {
+                console.warn(`Error removing TV widget for slot ${slotIndex}:`, e);
+            }
             tradingViewWidgets[slotIndex] = null;
         }
-        chartContainer.innerHTML = ''; // Ensure container is empty
+        chartContainer.innerHTML = ''; // Ensure container is empty before loading new chart
 
         try {
             tradingViewWidgets[slotIndex] = new TradingView.widget({
                 "container_id": chartContainer.id,
-                "width": "100%", "height": "100%", // Use 100% of container
-                "symbol": tvSymbol, "interval": "60", "timezone": "Etc/UTC",
-                "theme": "light", "style": "1", "locale": "en",
-                "toolbar_bg": "#f1f3f6", "enable_publishing": false,
-                "allow_symbol_change": false, // Selector outside chart controls this
-                "details": true, "autosize": true,
+                "width": "100%",
+                "height": "100%", // Rely on CSS to give .tv-chart-container its height (e.g., 350px or flex-grow)
+                "symbol": tvSymbol,
+                "interval": "60",
+                "timezone": "Etc/UTC",
+                "theme": "light",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "allow_symbol_change": false,
+                "details": true,
+                "autosize": true, // This should make the chart fit its container
                 "hide_side_toolbar": true,
             });
         } catch (e) {
             console.error(`Error creating TradingView widget for slot ${slotIndex} with symbol ${tvSymbol}:`, e);
-            chartContainer.innerHTML = `<p style="text-align:center; padding:20px;">Error loading chart for ${tvSymbol}.</p>`;
+            chartContainer.innerHTML = `<p style="text-align:center; padding:20px; height:100%; display:flex; align-items:center; justify-content:center;">Error loading chart for ${tvSymbol}.</p>`;
         }
     }
 
