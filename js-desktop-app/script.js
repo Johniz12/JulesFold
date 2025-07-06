@@ -289,34 +289,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function _loadTradingViewChartForSlot(slotIndex, tvSymbol) {
         const chartContainer = cryptoTVChartContainers[slotIndex];
+        console.log(`[Crypto] Attempting to load chart for slot ${slotIndex}, Symbol: ${tvSymbol}, Container ID: ${chartContainer ? chartContainer.id : 'Not Found'}`);
 
-        // Ensure chartContainer exists before trying to manipulate it
         if (!chartContainer) {
-            console.error(`Chart container for slot ${slotIndex} not found.`);
+            console.error(`[Crypto] Chart container DOM element for slot ${slotIndex} not found.`);
             return;
         }
 
-        if (!tvSymbol || typeof TradingView === 'undefined') {
-            chartContainer.innerHTML = `<p style="text-align:center; padding:20px; height:100%; display:flex; align-items:center; justify-content:center;">Chart for ${tvSymbol || 'N/A'} unavailable. TradingView library may not be loaded or symbol is missing.</p>`;
-            console.error(`TradingView: Lib not loaded or symbol missing for slot ${slotIndex}. Symbol: ${tvSymbol}`);
-            return;
-        }
-
+        // Clear previous widget and content
         if (tradingViewWidgets[slotIndex]) {
             try {
                 tradingViewWidgets[slotIndex].remove();
+                console.log(`[Crypto] Removed previous TradingView widget for slot ${slotIndex}.`);
             } catch (e) {
-                console.warn(`Error removing TV widget for slot ${slotIndex}:`, e);
+                console.warn(`[Crypto] Error removing previous TradingView widget for slot ${slotIndex}:`, e);
             }
             tradingViewWidgets[slotIndex] = null;
         }
-        chartContainer.innerHTML = ''; // Ensure container is empty before loading new chart
+        chartContainer.innerHTML = ''; // Ensure container is empty
 
+        if (typeof TradingView === 'undefined') {
+            chartContainer.innerHTML = `<p style="text-align:center; padding:20px; height:100%; display:flex; align-items:center; justify-content:center;">TradingView library not loaded.</p>`;
+            console.error(`[Crypto] TradingView library (TradingView object) is undefined.`);
+            return;
+        }
+
+        if (!tvSymbol) {
+            chartContainer.innerHTML = `<p style="text-align:center; padding:20px; height:100%; display:flex; align-items:center; justify-content:center;">No symbol provided for chart.</p>`;
+            console.error(`[Crypto] No tvSymbol provided for slot ${slotIndex}.`);
+            return;
+        }
+
+        console.log(`[Crypto] Instantiating TradingView widget for ${tvSymbol} in container ${chartContainer.id}`);
         try {
             tradingViewWidgets[slotIndex] = new TradingView.widget({
                 "container_id": chartContainer.id,
                 "width": "100%",
-                "height": "100%", // Rely on CSS to give .tv-chart-container its height (e.g., 350px or flex-grow)
+                "height": "100%", // Relies on CSS for actual height of container
                 "symbol": tvSymbol,
                 "interval": "60",
                 "timezone": "Etc/UTC",
@@ -327,12 +336,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 "enable_publishing": false,
                 "allow_symbol_change": false,
                 "details": true,
-                "autosize": true, // This should make the chart fit its container
+                "autosize": true,
                 "hide_side_toolbar": true,
+                "no_referral_id": true,
+                "save_image": false,
+                // "key": tvSymbol, // Speculative: Force re-mount if symbol changes - may not be standard TV param
             });
+            console.log(`[Crypto] TradingView widget for slot ${slotIndex} (${tvSymbol}) instantiated.`);
         } catch (e) {
-            console.error(`Error creating TradingView widget for slot ${slotIndex} with symbol ${tvSymbol}:`, e);
-            chartContainer.innerHTML = `<p style="text-align:center; padding:20px; height:100%; display:flex; align-items:center; justify-content:center;">Error loading chart for ${tvSymbol}.</p>`;
+            console.error(`[Crypto] Error creating TradingView widget for slot ${slotIndex} with symbol ${tvSymbol}:`, e);
+            chartContainer.innerHTML = `<p style="text-align:center; padding:20px; height:100%; display:flex; align-items:center; justify-content:center;">Error creating chart for ${tvSymbol}. Check console.</p>`;
         }
     }
 
@@ -428,6 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (compactCryptoDisplay) {
             compactCryptoDisplay.addEventListener('click', () => {
                 if (appContainer) appContainer.classList.add('expanded-crypto');
+                if (mainContentArea) mainContentArea.classList.add('main-content-crypto-focus'); // ADDED
                 if (expandedCryptoView) expandedCryptoView.style.display = 'flex';
                 if (compactCryptoDisplay) compactCryptoDisplay.style.display = 'none';
                 renderCryptoWidgetExpandedState();
@@ -437,6 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cryptoBackToCompactBtn) {
             cryptoBackToCompactBtn.addEventListener('click', () => {
                 if (appContainer) appContainer.classList.remove('expanded-crypto');
+                if (mainContentArea) mainContentArea.classList.remove('main-content-crypto-focus'); // ADDED
                 if (expandedCryptoView) expandedCryptoView.style.display = 'none';
                 if (compactCryptoDisplay) compactCryptoDisplay.style.display = 'flex';
                  // Stop active chart when going compact? Consider later.
