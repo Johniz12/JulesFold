@@ -474,8 +474,12 @@ form button[type="submit"]:hover {
     /* The width will be set by JS, or cards will wrap if not enough space before JS */
     /* For now, let them wrap or extend, JS will handle overflow */
     padding-bottom: 10px; /* Space for potential scrollbar or just visual */
-    transition: transform 0.5s ease-in-out; /* Smooth transition for scrolling */
+    /* transition: transform 0.5s ease-in-out; */ /* JS will handle transform for simple-carousel, full carousels might still use this */
 }
+.carousel-container:not(.simple-carousel) .carousel-track {
+    transition: transform 0.5s ease-in-out; /* Only apply to button-controlled carousels */
+}
+
 
 .project-card {
     background: var(--background-light);
@@ -655,7 +659,7 @@ form button[type="submit"]:hover {
 
 /* Home Page Preview Sections */
 .page-preview-section {
-    padding: 60px var(--container-padding);
+    padding: 60px var(--container-padding); /* Keep existing padding */
     border-bottom: 1px solid #e0e0e0; /* Separator line */
 }
 .page-preview-section:last-of-type {

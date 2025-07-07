@@ -316,4 +316,180 @@ document.addEventListener('DOMContentLoaded', function() {
 
     initCarousel('projects-carousel');
     initCarousel('testimonials-carousel');
+
+    // Simplified Auto-Scrolling Carousel for Home Page Previews
+    function initSimpleAutoCarousel(carouselId) {
+        // console.log(`[${carouselId}] initSimpleAutoCarousel called.`);
+        const carouselElement = document.getElementById(carouselId);
+        if (!carouselElement) {
+            // console.log(`[${carouselId}] Simple carousel element NOT FOUND.`);
+            return;
+        }
+
+        const track = carouselElement.querySelector('.carousel-track');
+        if (!track) {
+            // console.error(`[${carouselId}] Track element not found.`);
+            return;
+        }
+
+        let originalCards = Array.from(track.children);
+        if (originalCards.length === 0) {
+            // console.log(`[${carouselId}] No cards found.`);
+            return;
+        }
+
+        // --- Infinite scroll setup: Clone cards ---
+        // To make the loop seamless, clone the initial set of cards and append them
+        // This way, when scrolling, it appears infinite.
+        // Only clone if there are enough cards to make cloning worthwhile / fill the view
+
+        let cardWidth = 0;
+        let gap = 0;
+        let totalWidthOfOriginalSet = 0;
+        let scrollInterval = null;
+        const scrollDelay = 30; // Milliseconds for smoother animation step
+        const pauseDelayOnHover = 2000; // ms to pause before resuming after mouseleave
+        let resumeScrollTimer = null;
+        let currentScrollLeft = 0;
+        let step = 1; // Scroll speed (pixels per interval)
+
+        function setupDimensionsAndClones() {
+            // console.log(`[${carouselId}] setupDimensionsAndClones`);
+            // Clear existing clones if any (e.g., on resize)
+            track.innerHTML = '';
+            originalCards.forEach(card => track.appendChild(card.cloneNode(true)));
+            originalCards = Array.from(track.children); // Re-select after potential recreation
+
+            if (originalCards.length === 0 || window.innerWidth <= 768) {
+                track.style.transform = 'translateX(0px)'; // Reset on mobile
+                if(originalCards.length > 0) originalCards.forEach(card => track.appendChild(card)); // Put original cards back if they were cleared
+                return false; // Don't proceed with cloning or width calculation for mobile/no cards
+            }
+
+            cardWidth = originalCards.length > 0 ? originalCards[0].offsetWidth : 0;
+            gap = originalCards.length > 0 ? parseInt(window.getComputedStyle(track).gap) || 0 : 0;
+
+            if (cardWidth === 0) return false; // Cannot proceed if cardWidth is 0
+
+            totalWidthOfOriginalSet = originalCards.reduce((acc, card) => acc + card.offsetWidth + gap, 0) - gap;
+
+            // Clone cards only if the total width of original cards is less than, say, 3x the container width
+            // Or simply if they don't already fill up a good amount of scrollable space.
+            // For continuous scroll, we need enough clones to cover the transition when looping.
+            let numClonesToAppend = Math.ceil(carouselElement.offsetWidth / (cardWidth + gap)) + 2;
+            if (originalCards.length < numClonesToAppend ) numClonesToAppend = originalCards.length;
+
+
+            if (track.scrollWidth < carouselElement.offsetWidth * 2 && originalCards.length > 0) { // Only clone if needed
+                 for(let i = 0; i < numClonesToAppend; ++i) {
+                    const clone = originalCards[i % originalCards.length].cloneNode(true);
+                    track.appendChild(clone);
+                }
+            }
+            return true;
+        }
+
+
+        function scrollTick() {
+            currentScrollLeft += step;
+            if (currentScrollLeft >= totalWidthOfOriginalSet + gap) {
+                currentScrollLeft = 0; // Jump back to the start
+                track.style.transition = 'none'; // No transition for the jump
+                track.style.transform = `translateX(-${currentScrollLeft}px)`;
+                // Force reflow/repaint before re-enabling transition
+                void track.offsetWidth;
+                track.style.transition = ''; // Re-enable CSS transition if it was defined
+            } else {
+                if (track.style.transition === 'none') track.style.transition = '';
+                track.style.transform = `translateX(-${currentScrollLeft}px)`;
+            }
+        }
+
+        function startSimpleAutoScroll() {
+            // console.log(`[${carouselId}] startSimpleAutoScroll. Interval: ${scrollInterval}`);
+            if (scrollInterval || window.innerWidth <= 768 || cardWidth === 0) return;
+
+            clearInterval(scrollInterval); // Clear just in case
+            scrollInterval = setInterval(scrollTick, scrollDelay);
+            // console.log(`[${carouselId}] Simple auto-scroll STARTED.`);
+        }
+
+        function stopSimpleAutoScroll() {
+            // console.log(`[${carouselId}] stopSimpleAutoScroll. Interval: ${scrollInterval}`);
+            clearInterval(scrollInterval);
+            scrollInterval = null;
+            // console.log(`[${carouselId}] Simple auto-scroll STOPPED.`);
+        }
+
+        carouselElement.addEventListener('mouseenter', () => {
+            if (window.innerWidth > 768) {
+                // console.log(`[${carouselId}] Mouse enter, stopping scroll.`);
+                clearTimeout(resumeScrollTimer);
+                stopSimpleAutoScroll();
+            }
+        });
+
+        carouselElement.addEventListener('mouseleave', () => {
+            if (window.innerWidth > 768) {
+                // console.log(`[${carouselId}] Mouse leave, planning to resume scroll.`);
+                clearTimeout(resumeScrollTimer); // Clear any pending resume
+                resumeScrollTimer = setTimeout(() => {
+                    // console.log(`[${carouselId}] Resuming scroll after mouseleave delay.`);
+                    currentScrollLeft = parseFloat(getComputedStyle(track).transform.split(',')[4]) * -1 || 0; // Get current position
+                    startSimpleAutoScroll();
+                }, pauseDelayOnHover);
+            }
+        });
+
+        let initialSetupDone = false;
+        function reinitialize() {
+            // console.log(`[${carouselId}] Reinitializing simple carousel`);
+            stopSimpleAutoScroll();
+            currentScrollLeft = 0; // Reset scroll position
+            track.style.transform = 'translateX(0px)'; // Visually reset
+            if (setupDimensionsAndClones()) { // Setup dimensions and clones
+                if (window.innerWidth > 768) {
+                    startSimpleAutoScroll();
+                }
+            }
+            initialSetupDone = true;
+        }
+
+
+        // Initial setup
+        // Use a small delay for initial setup to ensure layout is stable
+        setTimeout(() => {
+            reinitialize();
+        }, 100);
+
+
+        window.addEventListener('resize', () => {
+            // console.log(`[${carouselId}] Window resize simple carousel.`);
+             // If it was never properly initialized (e.g. started on mobile), try to init now if desktop
+            if (!initialSetupDone && window.innerWidth > 768) {
+                reinitialize();
+            } else if (initialSetupDone) { // If already initialized, just re-evaluate
+                stopSimpleAutoScroll();
+                if (setupDimensionsAndClones()) { // Recalculate and re-clone if needed
+                    // Reset scroll position before restarting to avoid jump if cardWidth changed
+                    currentScrollLeft = 0;
+                    track.style.transform = 'translateX(0px)';
+                    if (window.innerWidth > 768) {
+                        startSimpleAutoScroll();
+                    }
+                } else if (window.innerWidth <= 768) { // Switched to mobile
+                    track.style.transform = 'translateX(0px)'; // Ensure it's reset
+                }
+            }
+        });
+    }
+
+    // Initialize simple carousels on Home page if they exist
+    if (document.getElementById('home-projects-preview-carousel')) {
+        initSimpleAutoCarousel('home-projects-preview-carousel');
+    }
+    if (document.getElementById('home-testimonials-preview-carousel')) {
+        initSimpleAutoCarousel('home-testimonials-preview-carousel');
+    }
+
 });
