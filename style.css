@@ -1,0 +1,639 @@
+/*
+    Developer Portfolio Website Stylesheet
+    Author: [Your Name] / Jules AI Agent
+    Version: 1.0
+    ------------------------------------------
+    NOTE FOR PRODUCTION:
+    Consider minifying this CSS file to reduce its size and improve loading times.
+    Tools like CSSMinifier or PostCSS with cssnano can be used.
+    ------------------------------------------
+*/
+
+/* Global Styles & Variables */
+:root {
+    --primary-color: #0A2463; /* Deep Blue */
+    --secondary-color: #3E92CC; /* Lighter Blue */
+    --accent-color: #D8315B; /* Contrasting Accent (e.g., for CTAs) - Optional */
+    --text-color-light: #FDFDFD; /* Almost White */
+    --text-color-dark: #1E1E1E; /* Dark Gray / Off-Black */
+    --background-light: #FFFFFF;
+    --background-dark: #121212; /* For potential dark mode */
+    --container-padding: 20px;
+    --border-radius: 8px;
+    --header-height: 70px;
+    --footer-height: 100px;
+
+    /* Fonts */
+    --font-primary: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    --font-headings: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Basic Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-primary);
+    line-height: 1.7;
+    color: var(--text-color-dark);
+    background-color: var(--background-light);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensures footer sticks to bottom */
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px; /* Max width for larger screens */
+    margin: auto;
+    overflow: hidden; /* Clears floats */
+    padding: 0 var(--container-padding);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-headings);
+    color: var(--primary-color);
+    margin-bottom: 0.75em;
+}
+
+p {
+    margin-bottom: 1em;
+}
+
+a {
+    color: var(--secondary-color);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Header */
+header {
+    background: var(--primary-color);
+    color: var(--text-color-light);
+    padding: 15px 0;
+    height: var(--header-height);
+    position: fixed; /* Sticky header */
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+}
+
+header .logo {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: var(--text-color-light);
+    /* If using an image logo: */
+    /* height: 50px; */
+    /* width: auto; */
+}
+
+header nav ul {
+    list-style: none;
+    display: flex;
+}
+
+header nav li {
+    margin-left: 25px;
+}
+
+header nav a {
+    color: var(--text-color-light);
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: 0.95em;
+    padding: 5px 0;
+    border-bottom: 2px solid transparent;
+    transition: border-bottom 0.3s ease;
+}
+
+header nav a:hover, header nav a.active {
+    border-bottom: 2px solid var(--secondary-color);
+    color: var(--secondary-color);
+}
+
+/* Hero Section */
+.hero {
+    background: var(--primary-color); /* Default: Deep blue */
+    color: var(--text-color-light);
+    padding: 120px var(--container-padding) 60px; /* Adjust padding for fixed header */
+    text-align: center;
+    margin-top: var(--header-height); /* Offset for fixed header */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(60vh - var(--header-height)); /* Example height */
+}
+
+.hero-content {
+    max-width: 800px;
+}
+
+.hero h1 {
+    font-size: 3em; /* Responsive font size can be added */
+    color: var(--text-color-light);
+    margin-bottom: 0.5em;
+    line-height: 1.2;
+}
+
+.hero p {
+    font-size: 1.2em;
+    margin-bottom: 1.5em;
+    color: rgba(253, 253, 253, 0.9); /* Slightly less bright for subtitle */
+}
+
+.cta-button {
+    display: inline-block;
+    padding: 12px 30px;
+    background: var(--secondary-color); /* Lighter blue or accent */
+    color: var(--text-color-light);
+    text-decoration: none;
+    font-size: 1.1em;
+    font-weight: bold;
+    border-radius: var(--border-radius);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.cta-button:hover {
+    background: #D8315B; /* Accent color on hover */
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
+
+/* Main Content Wrapper */
+.site-wrap {
+    flex: 1; /* Allows footer to stick to bottom */
+    padding-top: var(--header-height); /* For fixed header */
+}
+
+
+/* Main Content Area & Sidebar */
+main {
+    padding: 40px 0; /* Increased padding */
+}
+
+main .container {
+    display: flex;
+    flex-wrap: wrap; /* Responsive behavior */
+    gap: 30px; /* Space between content and sidebar */
+}
+
+.main-content {
+    flex: 3; /* Takes more space */
+    background: var(--background-light);
+    padding: var(--container-padding);
+    border-radius: var(--border-radius);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    min-width: 0; /* Fix for flexbox overflow */
+}
+
+.sidebar {
+    flex: 1; /* Takes less space */
+    background: var(--background-light);
+    padding: var(--container-padding);
+    border-radius: var(--border-radius);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    min-width: 0; /* Fix for flexbox overflow */
+}
+
+/* Footer */
+footer {
+    background: var(--text-color-dark); /* Darker footer */
+    color: rgba(253, 253, 253, 0.7); /* Lighter text for footer */
+    text-align: center;
+    padding: 40px var(--container-padding);
+    margin-top: auto; /* Pushes footer to bottom if content is short */
+    height: auto; /* Adjust based on content */
+}
+
+footer p {
+    margin-bottom: 15px;
+    font-size: 0.9em;
+}
+
+footer .social-media {
+    margin-top: 10px;
+}
+
+footer .social-media a {
+    color: rgba(253, 253, 253, 0.7);
+    margin: 0 12px;
+    font-size: 1.5em; /* Larger icons */
+    transition: color 0.3s ease;
+}
+
+footer .social-media a:hover {
+    color: var(--secondary-color); /* Highlight on hover */
+    text-decoration: none;
+}
+
+/* Contact Form Specifics */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+form div {
+    /* Removed margin-bottom as gap is used in form */
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+form input[type="text"],
+form input[type="email"],
+form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: var(--border-radius);
+    font-family: var(--font-primary);
+    font-size: 1em;
+}
+
+form input[type="text"]:focus,
+form input[type="email"]:focus,
+form textarea:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 2px rgba(62, 146, 204, 0.2);
+}
+
+form button[type="submit"] { /* More specific selector */
+    padding: 12px 25px;
+    background: var(--primary-color);
+    color: var(--text-color-light);
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 1.05em;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    align-self: flex-start; /* Align button to the left */
+}
+
+form button[type="submit"]:hover {
+    background: var(--secondary-color);
+}
+
+
+/* Placeholder for logo.png - replace with an actual image or remove if not using */
+.logo {
+    /* If using text logo, it's styled above */
+    /* If using an image: */
+    /* display: flex; */
+    /* align-items: center; */
+}
+.logo img {
+    height: 40px; /* Adjust if you have an image logo */
+    /* width: auto; */
+}
+
+
+/* Basic Responsive Adjustments (more in dedicated step) */
+@media (max-width: 768px) {
+    header .container {
+        flex-direction: column;
+        align-items: center;
+    }
+    header {
+        height: auto; /* Adjust height for stacked items */
+        position: static; /* Or adjust padding for content */
+    }
+    .site-wrap {
+        padding-top: 0; /* Adjust if header becomes static */
+    }
+    .hero {
+        margin-top: 0; /* Adjust if header becomes static */
+        padding-top: 60px; /* Less padding on mobile */
+        padding-bottom: 40px;
+    }
+    header nav {
+        margin-top: 10px;
+        width: 100%;
+    }
+    header nav ul {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+    header nav li {
+        margin: 10px 0;
+        width: 100%;
+        text-align: center;
+    }
+    header nav a {
+        display: block; /* Make links take full width */
+        padding: 10px;
+    }
+
+    main .container {
+        flex-direction: column;
+    }
+    .main-content, .sidebar {
+        flex-basis: 100%; /* Full width on smaller screens */
+        margin-bottom: 20px;
+    }
+    .sidebar {
+        margin-bottom: 0; /* No bottom margin for the last element */
+    }
+
+    .hero h1 {
+        font-size: 2.5em;
+    }
+    .hero p {
+        font-size: 1.1em; /* Slightly larger for mobile readability */
+    }
+    .cta-button {
+        font-size: 1em;
+        padding: 12px 24px; /* Slightly larger padding */
+    }
+
+    footer .social-media a {
+        font-size: 1.4em; /* Larger icons for touch */
+        margin: 0 10px;
+    }
+
+    /* Responsive Carousel: Stack cards */
+    .carousel-track {
+        flex-direction: column;
+        align-items: center; /* Center cards when stacked */
+        gap: 25px; /* Adjust gap for vertical stacking */
+    }
+
+    .project-card, .testimonial-card {
+        min-width: 80%; /* Allow cards to be wider on mobile */
+        max-width: 400px; /* But not too wide on medium-small screens */
+        flex-basis: auto; /* Reset flex-basis for stacking */
+    }
+
+    .project-screenshot {
+        height: 180px; /* Adjust screenshot height for mobile */
+    }
+
+    form input[type="text"],
+    form input[type="email"],
+    form textarea,
+    form button[type="submit"] {
+        font-size: 1em; /* Ensure readability on mobile */
+        padding: 12px;
+    }
+
+    form button[type="submit"] {
+        width: 100%; /* Make button full width */
+    }
+
+    /* Adjust header logo and nav text if needed for very small screens */
+    header .logo {
+        font-size: 1.5em;
+    }
+    header nav a {
+        font-size: 0.9em;
+    }
+
+}
+
+/* Media query for very small screens (e.g., iPhone SE) */
+@media (max-width: 480px) {
+    .container {
+        width: 95%; /* More space on very small screens */
+        padding: 0 15px;
+    }
+
+    .hero h1 {
+        font-size: 2em; /* Further reduce hero headline */
+    }
+    .hero p {
+        font-size: 1em;
+    }
+
+    .project-card, .testimonial-card {
+        min-width: 90%; /* Cards take up more space */
+    }
+
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.6em; }
+    h3 { font-size: 1.3em; }
+
+    header nav a {
+        padding: 8px; /* Reduce padding for nav links if they look too bulky */
+    }
+}
+
+
+/* Utility Classes */
+.text-center {
+    text-align: center;
+}
+.mt-1 { margin-top: 1rem; }
+.mb-1 { margin-bottom: 1rem; }
+/* Add more as needed */
+
+/* Project Carousel Styles */
+.carousel-container {
+    overflow: hidden; /* Hides a horizontal scrollbar if items overflow before JS is active */
+    position: relative; /* For positioning nav buttons later */
+    margin: 2rem 0;
+}
+
+.carousel-track {
+    display: flex; /* Lays out project cards in a row */
+    gap: 20px; /* Space between cards */
+    /* The width will be set by JS, or cards will wrap if not enough space before JS */
+    /* For now, let them wrap or extend, JS will handle overflow */
+    padding-bottom: 10px; /* Space for potential scrollbar or just visual */
+    transition: transform 0.5s ease-in-out; /* Smooth transition for scrolling */
+}
+
+.project-card {
+    background: var(--background-light);
+    border: 1px solid #eee;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    min-width: 300px; /* Minimum width for a card */
+    max-width: 340px; /* Max width for a card on larger screens */
+    flex: 0 0 auto; /* Prevent shrinking/growing, maintain basis size */
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+}
+
+
+.project-screenshot {
+    width: 100%;
+    height: 200px; /* Fixed height for consistency */
+    object-fit: cover; /* Cover the area, might crop */
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+    background-color: #e0e0e0; /* Placeholder background for image area */
+}
+
+.project-info {
+    padding: 15px;
+    flex-grow: 1; /* Allows info to take remaining space if card height is fixed */
+    display: flex;
+    flex-direction: column;
+}
+
+.project-title {
+    font-size: 1.4em;
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 0.5em;
+}
+
+.project-description {
+    font-size: 0.95em;
+    line-height: 1.5;
+    margin-bottom: 1em;
+    flex-grow: 1; /* Pushes links to the bottom */
+}
+
+.project-links {
+    margin-bottom: 0.75em;
+}
+
+.project-links a {
+    display: inline-block;
+    margin-right: 10px;
+    padding: 5px 10px;
+    background-color: var(--secondary-color);
+    color: var(--text-color-light);
+    border-radius: 4px;
+    font-size: 0.85em;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.project-links a:hover {
+    background-color: var(--primary-color);
+    text-decoration: none;
+}
+
+.project-tech {
+    font-size: 0.8em;
+    color: #555;
+    margin-top: auto; /* Pushes tech info to the bottom of the card if needed */
+}
+
+/* Basic styling for carousel buttons (will be enhanced later) */
+.carousel-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    z-index: 10;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+.carousel-button:hover {
+    background-color: rgba(0,0,0,0.8);
+}
+
+.carousel-button.prev {
+    left: 10px;
+}
+
+.carousel-button.next {
+    right: 10px;
+}
+
+/* Testimonial Carousel Styles */
+/* Uses .carousel-container and .carousel-track from projects, if they are generic enough.
+   If specific styling is needed for testimonial carousel, use #testimonials-carousel selector or new classes. */
+
+#testimonials-carousel .carousel-track {
+    /* Any specific adjustments for testimonial track */
+    /* flex-direction: column; */ /* Stack testimonials on mobile by default before JS - MOVED TO MEDIA QUERY */
+    /* align-items: center; */ /* Center cards when stacked - MOVED TO MEDIA QUERY */
+}
+
+.testimonial-card {
+    background: var(--secondary-color); /* Lighter blue background for contrast */
+    color: var(--text-color-light);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    min-width: 320px; /* Minimum width for a testimonial */
+    max-width: 360px; /* Max width for a testimonial on larger screens */
+    flex: 0 0 auto; /* Prevent shrinking/growing */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.testimonial-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+
+.testimonial-quote {
+    font-size: 1.1em;
+    line-height: 1.6;
+    font-style: italic;
+    margin-bottom: 1.5em;
+    position: relative;
+    padding-left: 30px; /* Space for quote mark */
+}
+
+.testimonial-quote::before {
+    content: '“'; /* Opening quote mark */
+    font-size: 3em;
+    color: rgba(255, 255, 255, 0.5);
+    position: absolute;
+    left: -5px;
+    top: -15px;
+    font-family: serif;
+}
+
+.testimonial-author {
+    font-size: 0.95em;
+    font-weight: bold;
+    text-align: right;
+    color: rgba(253, 253, 253, 0.85);
+}
+
+.testimonial-author::before {
+    content: "— "; /* Em dash before author */
+}

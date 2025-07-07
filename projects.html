@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects - Developer Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a href="index.html" class="logo">[Your Name/Logo]</a>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About Me</a></li>
+                    <li><a href="projects.html" class="active">Projects</a></li>
+                    <li><a href="testimonials.html">Testimonials</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="site-wrap">
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1>My Projects</h1>
+                    <p>[Showcasing my best work and innovative solutions I've developed.]</p>
+                </div>
+            </div>
+        </section>
+
+        <main>
+            <div class="container">
+                <section class="main-content">
+                    <h2>Project Showcase</h2>
+                    <p>Here are some of the projects I've worked on, showcasing my skills in creating effective and innovative solutions. The interactive carousel will be enabled with JavaScript later.</p>
+
+                    <div class="carousel-container" id="projects-carousel">
+                        <div class="carousel-track">
+                            <!-- Project Card 1 -->
+                            <div class="project-card">
+                                <img src="placeholder-project.png" alt="Project 1 Screenshot" class="project-screenshot" loading="lazy">
+                                <div class="project-info">
+                                    <h3 class="project-title">Project Alpha</h3>
+                                    <p class="project-description">A web application for task management, built with React and Node.js. Features include user authentication, real-time updates, and a responsive design.</p>
+                                    <div class="project-links">
+                                        <a href="#" class="project-link">Live Demo</a>
+                                        <a href="#" class="project-link">GitHub</a>
+                                    </div>
+                                    <p class="project-tech"><strong>Tech:</strong> React, Node.js, MongoDB</p>
+                                </div>
+                            </div>
+                            <!-- Project Card 2 -->
+                            <div class="project-card">
+                                <img src="placeholder-project.png" alt="Project 2 Screenshot" class="project-screenshot" loading="lazy">
+                                <div class="project-info">
+                                    <h3 class="project-title">E-commerce Platform</h3>
+                                    <p class="project-description">A full-featured e-commerce site with product listings, shopping cart, and payment integration using Stripe. Developed with Django and PostgreSQL.</p>
+                                    <div class="project-links">
+                                        <a href="#" class="project-link">Live Demo</a>
+                                        <a href="#" class="project-link">GitHub</a>
+                                    </div>
+                                    <p class="project-tech"><strong>Tech:</strong> Django, Python, PostgreSQL, Stripe API</p>
+                                </div>
+                            </div>
+                            <!-- Project Card 3 -->
+                            <div class="project-card">
+                                <img src="placeholder-project.png" alt="Project 3 Screenshot" class="project-screenshot" loading="lazy">
+                                <div class="project-info">
+                                    <h3 class="project-title">Portfolio Website V1</h3>
+                                    <p class="project-description">My previous personal portfolio website, built with vanilla HTML, CSS, and JavaScript, focusing on a clean and minimalist design.</p>
+                                    <div class="project-links">
+                                        <a href="#" class="project-link">Live Demo</a>
+                                        <a href="#" class="project-link">GitHub</a>
+                                    </div>
+                                    <p class="project-tech"><strong>Tech:</strong> HTML, CSS, JavaScript</p>
+                                </div>
+                            </div>
+                            <!-- Add more project cards as needed -->
+                        </div>
+                        <!-- Carousel navigation buttons -->
+                        <button class="carousel-button prev" aria-label="Previous project">&lt;</button>
+                        <button class="carousel-button next" aria-label="Next project">&gt;</button>
+                    </div>
+                    <p class="mt-1">Each project highlights the technologies used and the problems solved. Use the arrow buttons to navigate through projects on larger screens. On smaller screens, projects are listed vertically.</p>
+                </section>
+                <aside class="sidebar">
+                    <h3>Technologies Used</h3>
+                    <p>A summary of common technologies, or filter options for projects.</p>
+                    <ul>
+                        <li>JavaScript Frameworks</li>
+                        <li>Backend Technologies</li>
+                        <li>Database Systems</li>
+                        <li>Version Control (Git)</li>
+                    </ul>
+                </aside>
+            </div>
+        </main>
+    </div> {/* End of .site-wrap */}
+
+    <footer>
+        <div class="container">
+            <p>&copy; <span id="current-year">2024</span> Your Name / Your Brand. All rights reserved.</p>
+            <div class="social-media">
+                <a href="https://linkedin.com/in/yourprofile" target="_blank">LinkedIn</a>
+                <a href="https://github.com/yourprofile" target="_blank">GitHub</a>
+                <a href="https://twitter.com/yourprofile" target="_blank">X/Twitter</a>
+                <a href="https://instagram.com/yourprofile" target="_blank">Instagram</a>
+            </div>
+        </div>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

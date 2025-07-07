@@ -1,1 +1,79 @@
-index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Developer Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a href="index.html" class="logo">[Your Name/Logo]</a>
+            <nav>
+                <ul>
+                    <li><a href="index.html" class="active">Home</a></li>
+                    <li><a href="about.html">About Me</a></li>
+                    <li><a href="projects.html">Projects</a></li>
+                    <li><a href="testimonials.html">Testimonials</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="site-wrap"> {/* Added site-wrap for sticky footer */}
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content"> {/* Added hero-content wrapper */}
+                    <h1>Crafting Digital Experiences That Inspire.</h1>
+                    <p>Hi, I'm [Your Name], a passionate Software Developer specializing in building modern, responsive web applications. Let's create something amazing together.</p>
+                    <a href="projects.html" class="cta-button">View My Work</a>
+                </div>
+            </div>
+        </section>
+
+        <main>
+            <div class="container">
+                <section class="main-content">
+                    <h2>Welcome to My Portfolio</h2>
+                    <p>I focus on delivering high-quality code and intuitive user experiences. With a strong foundation in front-end and back-end technologies, I transform complex problems into elegant digital solutions. Explore my projects to see my skills in action, or learn more about my journey in the about section.</p>
+                    <p>My approach is collaborative and user-centric, ensuring that every project not only meets technical requirements but also resonates with its intended audience. I'm always eager to learn new technologies and take on challenging projects.</p>
+
+                    <h3>Key Strengths:</h3>
+                    <ul>
+                        <li>Full-Stack Web Development</li>
+                        <li>Responsive & Mobile-First Design</li>
+                        <li>Agile Methodologies & Team Collaboration</li>
+                        <li>Problem Solving & Clean Code Practices</li>
+                    </ul>
+                </section>
+                <aside class="sidebar">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="about.html">About Me</a></li>
+                        <li><a href="projects.html">Projects</a></li>
+                        <li><a href="contact.html">Contact Me</a></li>
+                    </ul>
+                    <h3 class="mt-1">Current Focus</h3>
+                    <p>Exploring advanced JavaScript frameworks and cloud-native application development.</p>
+                </aside>
+            </div>
+        </main>
+    </div> {/* End of .site-wrap */}
+
+    <footer>
+        <div class="container">
+            <p>&copy; <span id="current-year">2024</span> Your Name / Your Brand. All rights reserved.</p>
+            <div class="social-media">
+                <a href="https://linkedin.com/in/yourprofile" target="_blank">LinkedIn</a>
+                <a href="https://github.com/yourprofile" target="_blank">GitHub</a>
+                <a href="https://twitter.com/yourprofile" target="_blank">X/Twitter</a>
+                <a href="https://instagram.com/yourprofile" target="_blank">Instagram</a>
+            </div>
+        </div>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

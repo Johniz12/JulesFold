@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - Developer Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a href="index.html" class="logo">[Your Name/Logo]</a>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About Me</a></li>
+                    <li><a href="projects.html">Projects</a></li>
+                    <li><a href="testimonials.html">Testimonials</a></li>
+                    <li><a href="contact.html" class="active">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="site-wrap">
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1>Get in Touch</h1>
+                    <p>[Let's discuss your project or how I can contribute to your team.]</p>
+                </div>
+            </div>
+        </section>
+
+        <main>
+            <div class="container">
+                <section class="main-content">
+                    <h2>Let's Connect!</h2>
+                    <p>I'm excited to discuss new projects, opportunities, or just chat about technology. Please use the form below, or reach out via email. I'll get back to you as soon as possible.</p>
+                    <form action="https://formspree.io/f/YOUR_FORMSPREE_ID" method="POST"> {/* Example: Using Formspree for form handling */}
+                        <div>
+                            <label for="name">Full Name:</label>
+                            <input type="text" id="name" name="name" placeholder="e.g., Jane Doe" required>
+                        </div>
+                        <div>
+                            <label for="email">Email Address:</label>
+                            <input type="email" id="email" name="email" placeholder="e.g., jane.doe@example.com" required>
+                        </div>
+                         <div>
+                            <label for="subject">Subject:</label>
+                            <input type="text" id="subject" name="subject" placeholder="e.g., Project Inquiry">
+                        </div>
+                        <div>
+                            <label for="message">Message:</label>
+                            <textarea id="message" name="message" rows="6" placeholder="Tell me about your project or query..." required></textarea>
+                        </div>
+                        <button type="submit">Send Message</button>
+                    </form>
+                </section>
+                <aside class="sidebar">
+                    <h3>Direct Contact</h3>
+                    <p><strong>Email:</strong> <a href="mailto:your.email@example.com">your.email@example.com</a></p>
+                    <p><em>(Please replace with your actual email address)</em></p>
+                    <p><strong>Phone:</strong> (Optional: +1 123-456-7890)</p>
+
+                    <h3 class="mt-1">Availability</h3>
+                    <p>Open to new freelance projects and collaborations. Currently based in [Your City/Region - Optional].</p>
+                </aside>
+            </div>
+        </main>
+    </div> {/* End of .site-wrap */}
+
+    <footer>
+        <div class="container">
+            <p>&copy; <span id="current-year">2024</span> Your Name / Your Brand. All rights reserved.</p>
+            <div class="social-media">
+                <a href="https://linkedin.com/in/yourprofile" target="_blank">LinkedIn</a>
+                <a href="#">GitHub</a>
+                <a href="#">X/Twitter</a>
+                <a href="#">Instagram</a>
+            </div>
+        </div>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
