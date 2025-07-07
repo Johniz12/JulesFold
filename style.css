@@ -637,3 +637,134 @@ form button[type="submit"]:hover {
 .testimonial-author::before {
     content: "— "; /* Em dash before author */
 }
+
+/* Home Page Preview Sections */
+.page-preview-section {
+    padding: 60px var(--container-padding);
+    border-bottom: 1px solid #e0e0e0; /* Separator line */
+}
+.page-preview-section:last-of-type {
+    border-bottom: none;
+}
+
+.page-preview-section h2 {
+    text-align: center;
+    font-size: 2.2em;
+    margin-bottom: 1em;
+    color: var(--primary-color);
+}
+
+.page-preview-section .section-intro {
+    text-align: center;
+    font-size: 1.1em;
+    color: #555;
+    max-width: 700px;
+    margin: 0 auto 2em auto;
+    line-height: 1.7;
+}
+
+.page-preview-section.alt-background {
+    background-color: #f9f9f9; /* Light grey for alternating sections */
+}
+
+.preview-content {
+    margin-bottom: 2em;
+}
+
+/* Project Preview Grid */
+.project-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.project-card-preview {
+    background: var(--background-light);
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.project-card-preview:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.project-screenshot-preview {
+    width: 100%;
+    max-width: 250px; /* Control image size in preview */
+    height: 150px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    background-color: #e0e0e0; /* Placeholder background */
+}
+
+.project-card-preview h4 {
+    color: var(--primary-color);
+    font-size: 1.3em;
+    margin-bottom: 0.5em;
+}
+.project-card-preview p {
+    font-size: 0.9em;
+    color: #666;
+    line-height: 1.5;
+}
+
+/* Testimonial Preview Grid */
+.testimonial-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+.testimonial-card-preview {
+    background: var(--secondary-color);
+    color: var(--text-color-light);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+}
+.testimonial-card-preview blockquote {
+    font-style: italic;
+    margin-bottom: 1em;
+    font-size: 1.05em;
+    line-height: 1.6;
+}
+.testimonial-card-preview p {
+    font-weight: bold;
+    font-size: 0.9em;
+    text-align: right;
+}
+.testimonial-card-preview p::before {
+    content: "— ";
+}
+
+
+/* Secondary CTA button style */
+.cta-button.secondary-cta {
+    background-color: var(--text-color-dark);
+    color: var(--text-color-light);
+    display: block; /* Or inline-block if preferred */
+    width: fit-content;
+    margin: 20px auto 0 auto; /* Center if block */
+}
+.cta-button.secondary-cta:hover {
+    background-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+/* Adjustments for preview sections on mobile */
+@media (max-width: 768px) {
+    .page-preview-section h2 {
+        font-size: 1.8em;
+    }
+    .page-preview-section .section-intro {
+        font-size: 1em;
+    }
+    .project-preview-grid, .testimonial-preview-grid {
+        grid-template-columns: 1fr; /* Stack cards on mobile */
+    }
+}

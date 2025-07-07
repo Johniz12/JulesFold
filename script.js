@@ -16,24 +16,82 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Example: Smooth scroll for navigation links (can be expanded)
     const navLinks = document.querySelectorAll('header nav a');
+    const previewSectionIds = { // Map nav link text to section IDs on home page
+        'About Me': 'home-about-preview',
+        'Projects': 'home-projects-preview',
+        'Testimonials': 'home-testimonials-preview',
+        'Contact': 'home-contact-preview' // Assuming Contact nav link should also scroll to its preview
+    };
+
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
-            // Basic check if it's an on-page link
-            if (this.hash !== "") {
-                // Check if the target element exists on the current page
-                const targetElement = document.querySelector(this.hash);
-                if (targetElement) {
-                    // Prevent default anchor click behavior
+            const linkText = this.textContent.trim();
+            const targetSectionId = previewSectionIds[linkText];
+
+            // Check if on Home page and the link corresponds to a preview section
+            if (window.location.pathname.endsWith('/') || window.location.pathname.endsWith('index.html')) {
+                if (targetSectionId) {
+                    const targetElement = document.getElementById(targetSectionId);
+                    if (targetElement) {
+                        e.preventDefault();
+                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                        // Update active class (basic, could be improved with scroll spying)
+                        navLinks.forEach(navLink => navLink.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                } else if (this.getAttribute('href') === 'index.html') {
+                    // If "Home" link is clicked on Home page, scroll to top
                     e.preventDefault();
-                    // Smooth scroll to target
-                    targetElement.scrollIntoView({
-                        behavior: 'smooth'
-                    });
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    navLinks.forEach(navLink => navLink.classList.remove('active'));
+                    document.querySelector('header nav a[href="index.html"]').classList.add('active');
                 }
-                // If it's a link to another page, let the default behavior happen
+                // Else, let default behavior for other links on home page (e.g. if one pointed to an external site)
             }
+            // For links on other pages, or links on home page not matching a preview section, default browser navigation occurs.
         });
     });
+
+    // Active nav link highlighting on scroll for Home page
+    if (window.location.pathname.endsWith('/') || window.location.pathname.endsWith('index.html')) {
+        const sections = Object.values(previewSectionIds).map(id => document.getElementById(id)).filter(el => el);
+        // Add hero section to sections for active link update
+        const heroSection = document.querySelector('.hero');
+        if (heroSection) sections.unshift(heroSection);
+
+
+        window.addEventListener('scroll', () => {
+            let currentActiveSectionId = '';
+            const scrollPosition = window.scrollY + window.innerHeight / 2; // Midpoint of viewport
+
+            sections.forEach(section => {
+                if (section.offsetTop <= scrollPosition && (section.offsetTop + section.offsetHeight) > scrollPosition) {
+                    if (section.classList.contains('hero')) {
+                        currentActiveSectionId = 'index.html'; // Map hero to "Home" link
+                    } else {
+                        currentActiveSectionId = section.id;
+                    }
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                const linkText = link.textContent.trim();
+                const targetSectionId = previewSectionIds[linkText];
+                if (targetSectionId === currentActiveSectionId) {
+                    link.classList.add('active');
+                } else if (link.getAttribute('href') === 'index.html' && currentActiveSectionId === 'index.html') {
+                    link.classList.add('active');
+                }
+            });
+             // If no section is active (e.g., scrolled past all sections), default to Home or clear all
+            if (!currentActiveSectionId && scrollPosition < sections[0]?.offsetTop) {
+                 navLinks.forEach(link => link.classList.remove('active'));
+                 document.querySelector('header nav a[href="index.html"]').classList.add('active');
+            }
+        });
+    }
+
 
     // Placeholder for fade-in/slide-up animations
     // This is a very basic example. A library like AOS (Animate On Scroll) or Intersection Observer API would be better for more complex animations.
