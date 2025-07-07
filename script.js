@@ -1,26 +1,23 @@
 /*
     Developer Portfolio Website Scripts
     Author: [Your Name] / Jules AI Agent
-    Version: 1.0
+    Version: 1.1 (Attempting auto-scroll fix)
     ------------------------------------------
     NOTE FOR PRODUCTION:
     Consider minifying this JavaScript file to reduce its size and improve loading times.
-    Tools like UglifyJS, Terser, or esbuild can be used.
     ------------------------------------------
 */
 
-// Basic JavaScript for future interactivity (e.g., animations, carousel)
-
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Portfolio website loaded successfully!');
+    // console.log('Portfolio website loaded successfully!');
 
-    // Example: Smooth scroll for navigation links (can be expanded)
+    // Navigation link handling (smooth scroll on Home, direct on others)
     const navLinks = document.querySelectorAll('header nav a');
-    const previewSectionIds = { // Map nav link text to section IDs on home page
+    const previewSectionIds = {
         'About Me': 'home-about-preview',
         'Projects': 'home-projects-preview',
         'Testimonials': 'home-testimonials-preview',
-        'Contact': 'home-contact-preview' // Assuming Contact nav link should also scroll to its preview
+        'Contact': 'home-contact-preview'
     };
 
     navLinks.forEach(link => {
@@ -28,46 +25,42 @@ document.addEventListener('DOMContentLoaded', function() {
             const linkText = this.textContent.trim();
             const targetSectionId = previewSectionIds[linkText];
 
-            // Check if on Home page and the link corresponds to a preview section
             if (window.location.pathname.endsWith('/') || window.location.pathname.endsWith('index.html')) {
                 if (targetSectionId) {
                     const targetElement = document.getElementById(targetSectionId);
                     if (targetElement) {
                         e.preventDefault();
                         targetElement.scrollIntoView({ behavior: 'smooth' });
-                        // Update active class (basic, could be improved with scroll spying)
                         navLinks.forEach(navLink => navLink.classList.remove('active'));
                         this.classList.add('active');
                     }
-                } else if (this.getAttribute('href') === 'index.html') {
-                    // If "Home" link is clicked on Home page, scroll to top
+                } else if (this.getAttribute('href') === 'index.html' || this.getAttribute('href') === './') {
                     e.preventDefault();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     navLinks.forEach(navLink => navLink.classList.remove('active'));
-                    document.querySelector('header nav a[href="index.html"]').classList.add('active');
+                    const homeLink = document.querySelector('header nav a[href="index.html"]');
+                    if (homeLink) homeLink.classList.add('active');
                 }
-                // Else, let default behavior for other links on home page (e.g. if one pointed to an external site)
             }
-            // For links on other pages, or links on home page not matching a preview section, default browser navigation occurs.
         });
     });
 
     // Active nav link highlighting on scroll for Home page
     if (window.location.pathname.endsWith('/') || window.location.pathname.endsWith('index.html')) {
-        const sections = Object.values(previewSectionIds).map(id => document.getElementById(id)).filter(el => el);
-        // Add hero section to sections for active link update
+        const sectionsForScrollSpy = Object.values(previewSectionIds)
+            .map(id => document.getElementById(id))
+            .filter(el => el);
         const heroSection = document.querySelector('.hero');
-        if (heroSection) sections.unshift(heroSection);
-
+        if (heroSection) sectionsForScrollSpy.unshift(heroSection);
 
         window.addEventListener('scroll', () => {
             let currentActiveSectionId = '';
-            const scrollPosition = window.scrollY + window.innerHeight / 2; // Midpoint of viewport
+            const scrollPosition = window.scrollY + window.innerHeight / 2;
 
-            sections.forEach(section => {
+            sectionsForScrollSpy.forEach(section => {
                 if (section.offsetTop <= scrollPosition && (section.offsetTop + section.offsetHeight) > scrollPosition) {
                     if (section.classList.contains('hero')) {
-                        currentActiveSectionId = 'index.html'; // Map hero to "Home" link
+                        currentActiveSectionId = 'index.html';
                     } else {
                         currentActiveSectionId = section.id;
                     }
@@ -80,65 +73,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 const targetSectionId = previewSectionIds[linkText];
                 if (targetSectionId === currentActiveSectionId) {
                     link.classList.add('active');
-                } else if (link.getAttribute('href') === 'index.html' && currentActiveSectionId === 'index.html') {
+                } else if ((link.getAttribute('href') === 'index.html' || link.getAttribute('href') === './') && currentActiveSectionId === 'index.html') {
                     link.classList.add('active');
                 }
             });
-             // If no section is active (e.g., scrolled past all sections), default to Home or clear all
-            if (!currentActiveSectionId && scrollPosition < sections[0]?.offsetTop) {
+
+            if (!currentActiveSectionId && sectionsForScrollSpy.length > 0 && scrollPosition < sectionsForScrollSpy[0].offsetTop) {
                  navLinks.forEach(link => link.classList.remove('active'));
-                 document.querySelector('header nav a[href="index.html"]').classList.add('active');
+                 const homeLink = document.querySelector('header nav a[href="index.html"]');
+                 if (homeLink) homeLink.classList.add('active');
             }
         });
     }
 
-
-    // Placeholder for fade-in/slide-up animations
-    // This is a very basic example. A library like AOS (Animate On Scroll) or Intersection Observer API would be better for more complex animations.
-const elementsToAnimate = document.querySelectorAll('.hero, .main-content, .sidebar, .project-card, .testimonial-card');
+    // Fade-in/slide-up animations
+    const elementsToAnimate = document.querySelectorAll('.hero, .main-content, .sidebar, .project-card, .testimonial-card, .page-preview-section');
     const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.style.opacity = 1;
                 entry.target.style.transform = 'translateY(0)';
-                // Optional: unobserve after animation
-                // observer.unobserve(entry.target);
+                observer.unobserve(entry.target);
             }
         });
-    }, { threshold: 0.1 }); // Trigger when 10% of the element is visible
+    }, { threshold: 0.1 });
 
     elementsToAnimate.forEach(el => {
-        el.style.opacity = 0; // Start transparent
-        el.style.transform = 'translateY(20px)'; // Start slightly down
-        el.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+        el.style.opacity = 0;
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
         observer.observe(el);
     });
-
-});
-
-// Placeholder for carousel functionality
-// This will be implemented in later steps for Projects and Testimonials sections
-// For now, this is just a conceptual placeholder.
-function initCarousel(carouselSelector) {
-    const carousel = document.querySelector(carouselSelector);
-    if (carousel) {
-        console.log(`Carousel found: ${carouselSelector}. Functionality to be added.`);
-        // Basic carousel logic will go here
-        // - Get items
-        // - Add next/prev buttons
-        // - Implement sliding
-    }
-}
-
-// Call carousel initializers if those sections exist on the page
-// document.addEventListener('DOMContentLoaded', function() {
-//     if (document.querySelector('.projects-carousel')) {
-//         initCarousel('.projects-carousel');
-//     }
-//     if (document.querySelector('.testimonials-carousel')) {
-//         initCarousel('.testimonials-carousel');
-//     }
-// });
 
     // Update copyright year
     const yearSpan = document.getElementById('current-year');
@@ -148,11 +113,9 @@ function initCarousel(carouselSelector) {
 
     // Generic Carousel Functionality
     function initCarousel(carouselId) {
+        // console.log(`[${carouselId}] initCarousel called.`);
         const carouselElement = document.getElementById(carouselId);
-        if (!carouselElement) {
-            // console.log(`Carousel with ID ${carouselId} not found on this page.`);
-            return;
-        }
+        if (!carouselElement) return;
 
         const track = carouselElement.querySelector('.carousel-track');
         const cards = Array.from(track.children);
@@ -161,42 +124,51 @@ function initCarousel(carouselSelector) {
         const playPauseButton = carouselElement.querySelector('.carousel-button.play-pause');
 
         if (!track || !nextButton || !prevButton || !playPauseButton || cards.length === 0) {
-            // console.log(`Carousel ${carouselId} is missing track, buttons, play/pause button, or cards.`);
+            console.error(`[${carouselId}] Missing critical elements. Cannot initialize.`);
             return;
         }
 
-        let cardWidth = cards[0].offsetWidth;
+        let cardWidth = 0;
         let currentTranslate = 0;
         let currentIndex = 0;
-        const gap = parseInt(window.getComputedStyle(track).gap) || 0; // Get gap from CSS
+        let gap = 0;
 
-        function updateCardWidth() {
-            // Only update cardWidth if cards are displayed in a row (desktop view)
-            if (window.innerWidth > 768) { // Matches the CSS breakpoint for stacking
-                 // Ensure cards are visible and have width before measuring
-                if (cards.length > 0 && cards[0].offsetWidth > 0) {
-                    cardWidth = cards[0].offsetWidth;
-                } else {
-                    // Fallback or wait for layout
-                    // console.log("Card width not available yet for " + carouselId);
-                    // Potentially use a ResizeObserver or a more robust way to get width after layout
-                    // For now, we'll rely on initial load or a fixed width if this fails often.
-                    // This might happen if the carousel is initially hidden or cards have no content.
-                    // A simple fixed fallback if needed: cardWidth = 300;
-                }
+        let autoScrollInterval = null;
+        let isPaused = false;
+        const autoScrollDelay = 4000;
+
+        function updateCardWidthAndGap() {
+            if (cards.length > 0 && cards[0].offsetWidth > 0) {
+                cardWidth = cards[0].offsetWidth;
+                gap = parseInt(window.getComputedStyle(track).gap) || 0;
             } else {
-                // On mobile, cards are stacked, so horizontal scrolling logic isn't applicable
-                // or needs to be handled differently. For now, we disable buttons on mobile.
+                cardWidth = 0;
+                gap = 0;
+                // console.warn(`[${carouselId}] Card width not available during updateCardWidthAndGap.`);
+            }
+
+            if (window.innerWidth <= 768) {
+                stopAutoScroll();
             }
             updateButtonStates();
         }
 
-
-        function moveToCard(index) {
-            if (window.innerWidth <= 768) { // Disable horizontal scroll on mobile
+        function moveToCard(index, smooth = true) {
+            if (window.innerWidth <= 768) {
                 track.style.transform = 'translateX(0px)';
+                track.style.transition = 'none';
                 return;
             }
+            if (cardWidth === 0 && cards.length > 0) {
+                 updateCardWidthAndGap();
+                 if(cardWidth === 0) {
+                    // console.error(`[${carouselId}] cardWidth is still 0. Aborting move.`);
+                    return;
+                 }
+            }
+            if (cards.length === 0) return;
+
+            track.style.transition = smooth ? 'transform 0.5s ease-in-out' : 'none';
             currentTranslate = -index * (cardWidth + gap);
             track.style.transform = `translateX(${currentTranslate}px)`;
             currentIndex = index;
@@ -204,64 +176,144 @@ function initCarousel(carouselSelector) {
         }
 
         function updateButtonStates() {
-            if (window.innerWidth <= 768) { // Disable buttons on mobile where cards stack
+            if (window.innerWidth <= 768) {
                 prevButton.style.display = 'none';
                 nextButton.style.display = 'none';
-                track.style.transform = 'translateX(0px)'; // Ensure no horizontal translation
+                playPauseButton.style.display = 'none';
                 return;
             }
 
             prevButton.style.display = 'block';
             nextButton.style.display = 'block';
+            playPauseButton.style.display = 'block';
 
-            prevButton.disabled = currentIndex === 0;
-            // To check if the last card is fully visible:
-            // The total width of the track content is (cards.length * cardWidth) + ((cards.length - 1) * gap)
-            // The visible width of the carousel container is carouselElement.offsetWidth
-            // If currentTranslate makes the end of the track visible, disable next.
-            const trackWidth = track.scrollWidth;
-            const containerWidth = carouselElement.offsetWidth;
-            nextButton.disabled = currentIndex >= cards.length - 1 || (currentTranslate + trackWidth) <= containerWidth;
+            prevButton.disabled = cards.length <= 1;
+            nextButton.disabled = cards.length <= 1;
 
-            // A simpler way to check if the last "group" of cards is visible
-            // This logic assumes we can show more than one card at a time if the container is wide enough
-            // For one-by-one card scrolling, the above is fine.
-            // For this implementation, let's assume we scroll one card at a time.
-            // If last card is in view, disable next.
-             if (cards.length > 0) {
-                const lastCard = cards[cards.length - 1];
-                const lastCardRect = lastCard.getBoundingClientRect();
-                const containerRect = carouselElement.getBoundingClientRect();
-                // Check if the right edge of the last card is within or past the right edge of the container
-                if (lastCardRect.right <= containerRect.right + 5) { // +5 for small tolerance
-                    nextButton.disabled = true;
-                }
+            if (isPaused) {
+                playPauseButton.textContent = '►';
+                playPauseButton.setAttribute('aria-label', 'Play carousel');
+                playPauseButton.setAttribute('aria-pressed', 'false');
+            } else {
+                playPauseButton.textContent = '❚❚';
+                playPauseButton.setAttribute('aria-label', 'Pause carousel');
+                playPauseButton.setAttribute('aria-pressed', 'true');
             }
         }
 
-        nextButton.addEventListener('click', () => {
-            if (currentIndex < cards.length - 1) {
-                moveToCard(currentIndex + 1);
+        function advanceCarousel() {
+            if(isPaused || cards.length === 0 || cardWidth === 0) return;
+
+            let nextIndex = currentIndex + 1;
+            if (nextIndex >= cards.length) {
+                nextIndex = 0;
             }
+            moveToCard(nextIndex);
+        }
+
+        function startAutoScroll() {
+            // console.log(`[${carouselId}] Attempting startAutoScroll. isPaused: ${isPaused}, cardWidth: ${cardWidth}`);
+            if (isPaused || autoScrollInterval || window.innerWidth <= 768 || cards.length === 0 || cardWidth === 0) {
+                // console.log(`[${carouselId}] Auto-scroll NOT started. Conditions met to prevent.`);
+                return;
+            }
+            clearInterval(autoScrollInterval);
+            autoScrollInterval = setInterval(advanceCarousel, autoScrollDelay);
+            // console.log(`[${carouselId}] Auto-scroll STARTED.`);
+            isPaused = false; // Ensure state is playing
+            updateButtonStates(); // Reflect playing state on button
+        }
+
+        function stopAutoScroll() {
+            clearInterval(autoScrollInterval);
+            autoScrollInterval = null;
+            // console.log(`[${carouselId}] Auto-scroll STOPPED.`);
+        }
+
+        playPauseButton.addEventListener('click', () => {
+            if (isPaused) {
+                isPaused = false;
+                startAutoScroll();
+            } else {
+                isPaused = true;
+                stopAutoScroll();
+            }
+            updateButtonStates();
+        });
+
+        nextButton.addEventListener('click', () => {
+            isPaused = true;
+            stopAutoScroll();
+            updateButtonStates();
+            let nextIndex = currentIndex + 1;
+            if (nextIndex >= cards.length) nextIndex = 0;
+            moveToCard(nextIndex);
         });
 
         prevButton.addEventListener('click', () => {
-            if (currentIndex > 0) {
-                moveToCard(currentIndex - 1);
-            }
+            isPaused = true;
+            stopAutoScroll();
+            updateButtonStates();
+            let prevIndex = currentIndex - 1;
+            if (prevIndex < 0) prevIndex = cards.length - 1;
+            moveToCard(prevIndex);
         });
 
         // Initial setup
-        updateCardWidth(); // Get initial card width
-        moveToCard(0);     // Set initial position and button states
+        updateCardWidthAndGap();
+        moveToCard(0, false);
 
-        // Update on resize
+        // Delay initial auto-scroll start slightly to ensure layout is stable
+        setTimeout(() => {
+            if (window.innerWidth > 768 && !isPaused && cards.length > 0 && cardWidth > 0) {
+                // console.log(`[${carouselId}] Desktop view on init after timeout, !isPaused. Starting auto-scroll.`);
+                startAutoScroll();
+            } else {
+                // console.log(`[${carouselId}] Conditions not met for auto-scroll start after timeout.`);
+                updateButtonStates();
+            }
+        }, 100); // 100ms delay, can be adjusted
+
         window.addEventListener('resize', () => {
-            updateCardWidth();
-            moveToCard(currentIndex); // Recalculate position based on new width and current index
+            const wasPlaying = !isPaused && autoScrollInterval;
+            stopAutoScroll();
+            updateCardWidthAndGap();
+            moveToCard(currentIndex, false);
+            if (wasPlaying && window.innerWidth > 768 && cardWidth > 0) {
+                startAutoScroll();
+            } else {
+                if (window.innerWidth > 768) updateButtonStates();
+            }
+        });
+
+        carouselElement.addEventListener('focusin', () => {
+            if (!isPaused && autoScrollInterval) {
+                stopAutoScroll();
+                // To indicate it's paused by focus, not user choice:
+                // isPaused = true; // Temporarily consider it paused
+                // updateButtonStates(); // This will show play icon
+                // isPaused = false; // But don't keep it paused if user tabs out without clicking play/pause
+                // Simpler: just stop, user can click play.
+                // For now, we'll just ensure the button reflects a "paused" state if auto-scroll stops.
+                // The most reliable is to let the user click play again.
+                // So, if it was playing, and focus stops it, the button should ideally allow resuming.
+                // This means we might need a temporary pause state for focus.
+                // For now, let's assume focus just stops it, and user can click play.
+                // To make the button show "Play" when focus stops auto-scroll:
+                playPauseButton.textContent = '►';
+                playPauseButton.setAttribute('aria-label', 'Play carousel (paused by focus)');
+                playPauseButton.setAttribute('aria-pressed', 'false'); // Visually it's paused
+            }
+        });
+         // Optional: Resume on focusout if it wasn't manually paused and focus is truly outside
+        carouselElement.addEventListener('focusout', (event) => {
+            if (!carouselElement.contains(event.relatedTarget) && !isPaused && !autoScrollInterval && window.innerWidth > 768 && cardWidth > 0) {
+                // console.log(`[${carouselId}] Focus left carousel, restarting auto-scroll if it wasn't manually paused.`);
+                startAutoScroll();
+            }
         });
     }
 
-    // Initialize carousels
     initCarousel('projects-carousel');
     initCarousel('testimonials-carousel');
+});
