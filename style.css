@@ -578,6 +578,21 @@ form button[type="submit"]:hover {
     right: 10px;
 }
 
+.carousel-button.play-pause {
+    /* Position it, for example, in the center or bottom of the carousel */
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    /* Or, if you want it next to prev/next: */
+    /* top: 50%; */
+    /* left: calc(50% - 20px); */ /* Adjust as needed if fixed size */
+    /* transform: translateY(-50%); */
+    padding: 6px 10px;
+    font-size: 0.9em; /* Adjust size of play/pause icon/text */
+    border-radius: 6px; /* Can be different from prev/next */
+}
+
+
 /* Testimonial Carousel Styles */
 /* Uses .carousel-container and .carousel-track from projects, if they are generic enough.
    If specific styling is needed for testimonial carousel, use #testimonials-carousel selector or new classes. */

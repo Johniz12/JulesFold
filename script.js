@@ -158,9 +158,10 @@ function initCarousel(carouselSelector) {
         const cards = Array.from(track.children);
         const nextButton = carouselElement.querySelector('.carousel-button.next');
         const prevButton = carouselElement.querySelector('.carousel-button.prev');
+        const playPauseButton = carouselElement.querySelector('.carousel-button.play-pause');
 
-        if (!track || !nextButton || !prevButton || cards.length === 0) {
-            // console.log(`Carousel ${carouselId} is missing track, buttons, or cards.`);
+        if (!track || !nextButton || !prevButton || !playPauseButton || cards.length === 0) {
+            // console.log(`Carousel ${carouselId} is missing track, buttons, play/pause button, or cards.`);
             return;
         }
 
