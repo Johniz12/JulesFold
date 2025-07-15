@@ -340,33 +340,34 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        console.log(`[Crypto] Instantiating TradingView widget for ${tvSymbol} in container ${chartContainer.id}`);
-        try {
-            tradingViewWidgets[slotIndex] = new TradingView.widget({
-                "container_id": chartContainer.id,
-                "width": "100%",
-                "height": "100%", // Relies on CSS for actual height of container
-                "symbol": tvSymbol,
-                "interval": "60",
-                "timezone": "Etc/UTC",
-                "theme": "light",
-                "style": "1",
-                "locale": "en",
-                "toolbar_bg": "#f1f3f6",
-                "enable_publishing": false,
-                "allow_symbol_change": false,
-                "details": true,
-                "autosize": true,
-                "hide_side_toolbar": true,
-                "no_referral_id": true,
-                "save_image": false,
-                // "key": tvSymbol, // Speculative: Force re-mount if symbol changes - may not be standard TV param
-            });
-            console.log(`[Crypto] TradingView widget for slot ${slotIndex} (${tvSymbol}) instantiated.`);
-        } catch (e) {
-            console.error(`[Crypto] Error creating TradingView widget for slot ${slotIndex} with symbol ${tvSymbol}:`, e);
-            chartContainer.innerHTML = `<p style="text-align:center; padding:20px; height:100%; display:flex; align-items:center; justify-content:center;">Error creating chart for ${tvSymbol}. Check console.</p>`;
-        }
+        setTimeout(() => {
+            console.log(`[Crypto] Instantiating TradingView widget for ${tvSymbol} in container ${chartContainer.id}`);
+            try {
+                tradingViewWidgets[slotIndex] = new TradingView.widget({
+                    "container_id": chartContainer.id,
+                    "width": "100%",
+                    "height": "100%", // Relies on CSS for actual height of container
+                    "symbol": tvSymbol,
+                    "interval": "60",
+                    "timezone": "Etc/UTC",
+                    "theme": "light",
+                    "style": "1",
+                    "locale": "en",
+                    "toolbar_bg": "#f1f3f6",
+                    "enable_publishing": false,
+                    "allow_symbol_change": false,
+                    "details": true,
+                    "autosize": true,
+                    "hide_side_toolbar": true,
+                    "no_referral_id": true,
+                    "save_image": false,
+                });
+                console.log(`[Crypto] TradingView widget for slot ${slotIndex} (${tvSymbol}) instantiated.`);
+            } catch (e) {
+                console.error(`[Crypto] Error creating TradingView widget for slot ${slotIndex} with symbol ${tvSymbol}:`, e);
+                chartContainer.innerHTML = `<p style="text-align:center; padding:20px; height:100%; display:flex; align-items:center; justify-content:center;">Error creating chart for ${tvSymbol}. Check console.</p>`;
+            }
+        }, 100);
     }
 
     async function renderCryptoWidgetExpandedState() {
