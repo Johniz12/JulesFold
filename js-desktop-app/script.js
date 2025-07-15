@@ -122,8 +122,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSummaryPeriod = "all", lastCheckedMinute = -1, activeEmojiPicker = null;
 
     // --- NEW Crypto Widget State & Data (3-Slot Version) ---
-    const COINGECKO_COINS_LIST_URL = 'https://api.coingecko.com/api/v3/coins/list?include_platform=false';
-    const COINGECKO_PRICE_URL = 'https://api.coingecko.com/api/v3/simple/price'; //?ids=bitcoin&vs_currencies=usd
     const CRYPTO_STORAGE_KEY_SLOT_PAIRS = 'cryptoSlotPairsV1';
     const CRYPTO_STORAGE_KEY_ACTIVE_SLOT = 'cryptoActiveSlotV1';
 
@@ -261,30 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function fetchCryptoPriceById(coinId) {
-        if (!coinId) return { price: 'N/A', symbol: '' };
-        const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-        const targetUrl = `${COINGECKO_PRICE_URL}?ids=${coinId}&vs_currencies=usd`;
-        const url = proxyUrl + targetUrl;
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                console.error(`Error fetching price for ${coinId}: ${response.status}`);
-                return { price: 'Error', symbol: coinId.substring(0,3).toUpperCase() };
-            }
-            const data = await response.json();
-            if (data[coinId] && data[coinId].usd) {
-                const price = parseFloat(data[coinId].usd);
-                // Attempt to find the coin's symbol from our list for display
-                const coinInfo = cryptoSlotPairsData.find(p => p.id === coinId) || availableCryptoCoins.find(c => c.id === coinId);
-                return { price: price.toLocaleString(undefined, { style: 'currency', currency: 'USD' }), symbol: coinInfo ? coinInfo.symbol : coinId.substring(0,3).toUpperCase() };
-            }
-            return { price: 'N/A', symbol: coinId.substring(0,3).toUpperCase() };
-        } catch (error) {
-            console.error(`Error fetching price for ${coinId}:`, error);
-            return { price: 'Error', symbol: coinId.substring(0,3).toUpperCase() };
-        }
-    }
 
     function _loadTradingViewChartForSlot(slotIndex, tvSymbol) {
         const chartContainer = cryptoTVChartContainers[slotIndex];
@@ -350,31 +324,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (i === activeCryptoChartSlotIndex) {
                 slotElement.classList.add('active-chart-slot');
-                // Chart mode is visible, price button hidden by CSS
                 if (cryptoPairSelectors[i]) cryptoPairSelectors[i].value = currentPairData.tvSymbol || '';
                 _loadTradingViewChartForSlot(i, currentPairData.tvSymbol);
             } else {
                 slotElement.classList.remove('active-chart-slot');
-                // Price button visible, chart mode hidden by CSS
                 pairNameSpan.textContent = currentPairData.name || 'N/A';
                 pairPriceSpan.textContent = 'Loading...';
-                if (currentPairData.id) {
-                    const { price } = await fetchCryptoPriceById(currentPairData.id);
-                    pairPriceSpan.textContent = price;
-                } else {
-                     pairPriceSpan.textContent = 'N/A';
-                }
+                const price = await getPriceFromTradingView(currentPairData.tvSymbol);
+                pairPriceSpan.textContent = price;
             }
         }
+    }
+
+    async function getPriceFromTradingView(tvSymbol) {
+        if (!tvSymbol) return 'N/A';
+        return new Promise(resolve => {
+            const widget = new TradingView.widget({
+                "symbol": tvSymbol,
+                "width": "0",
+                "height": "0",
+                "theme": "light",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "allow_symbol_change": false,
+                "details": true,
+                "autosize": true,
+                "hide_side_toolbar": true,
+                "container_id": `tv-chart-container-slot-${Math.floor(Math.random() * 1000)}`, // Temporary container
+                "onready": function(widget) {
+                    const price = widget.chart().price().value();
+                    widget.remove();
+                    resolve(price.toLocaleString(undefined, { style: 'currency', currency: 'USD' }));
+                }
+            });
+        });
     }
 
     async function updateCompactCryptoDisplayPrices() {
         for (let i = 0; i < 3; i++) {
             const compactSlotEl = compactCryptoSlots[i];
             const pairData = cryptoSlotPairsData[i];
-            if (compactSlotEl && pairData && pairData.id) {
+            if (compactSlotEl && pairData && pairData.tvSymbol) {
                 compactSlotEl.innerHTML = `<span class="pair-name">${pairData.symbol || '---'}:</span> <span class="pair-price">Loading...</span>`;
-                const { price } = await fetchCryptoPriceById(pairData.id);
+                const price = await getPriceFromTradingView(pairData.tvSymbol);
                 compactSlotEl.innerHTML = `<span class="pair-name">${pairData.symbol || '---'}:</span> <span class="pair-price">${price}</span>`;
             } else if (compactSlotEl) {
                 compactSlotEl.innerHTML = `<span class="pair-name">---:</span> <span class="pair-price">N/A</span>`;
