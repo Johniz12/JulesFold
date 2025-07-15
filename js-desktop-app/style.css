@@ -29,9 +29,9 @@ body {
 }
 
 #app-container.expanded-crypto { /* Specific for Crypto expansion */
-    width: 90%;
-    max-width: 1000px;
-    /* min-height might be needed if content is too short, or rely on content height */
+    width: 95vw;
+    max-width: 95vw;
+    height: 95vh;
 }
 
 
