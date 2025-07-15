@@ -222,12 +222,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(COINGECKO_COINS_LIST_URL);
             if (!response.ok) throw new Error(`CoinGecko API error: ${response.status}`);
             const coins = await response.json();
-            availableCryptoCoins = coins.map(coin => ({
-                id: coin.id,
-                symbol: coin.symbol.toUpperCase(),
-                name: coin.name,
-                tvSymbol: `BINANCE:${coin.symbol.toUpperCase()}USDT`
-            })).sort((a, b) => a.name.localeCompare(b.name));
+            availableCryptoCoins = coins
+                .map(coin => ({
+                    id: coin.id,
+                    symbol: coin.symbol.toUpperCase(),
+                    name: coin.name,
+                    tvSymbol: `BINANCE:${coin.symbol.toUpperCase()}USDT`
+                }))
+                .filter(coin => coin.tvSymbol.startsWith('BINANCE:'))
+                .sort((a, b) => a.name.localeCompare(b.name));
         } catch (error) {
             console.error("Error fetching crypto coins list:", error);
             availableCryptoCoins = [...DEFAULT_CRYPTO_SLOT_PAIRS];
