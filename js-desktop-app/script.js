@@ -371,7 +371,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function renderCryptoWidgetExpandedState() {
-        if (!expandedCryptoView) return;
+        if (!expandedCryptoView) {
+            console.error("[Crypto] Expanded crypto view element not found. Cannot render.");
+            return;
+        }
+        console.log(`[Crypto] Rendering expanded state. Active slot: ${activeCryptoChartSlotIndex}`);
 
         for (let i = 0; i < 3; i++) {
             const slotElement = cryptoDisplaySlots[i];
@@ -381,14 +385,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const pairPriceSpan = cryptoSlotPairPriceSpans[i];
             const currentPairData = cryptoSlotPairsData[i] || {};
 
-            if (!slotElement || !priceButtonView || !chartModeView || !pairNameSpan || !pairPriceSpan) continue;
+            if (!slotElement || !priceButtonView || !chartModeView || !pairNameSpan || !pairPriceSpan) {
+                console.warn(`[Crypto] Missing elements for slot ${i}, skipping render for this slot.`);
+                continue;
+            }
+
+            const currentPairData = cryptoSlotPairsData[i] || {};
+            console.log(`[Crypto] Processing slot ${i}:`, currentPairData);
 
             if (i === activeCryptoChartSlotIndex) {
+                console.log(`[Crypto] Slot ${i} is the active chart slot. Showing chart.`);
                 slotElement.classList.add('active-chart-slot');
                 // Chart mode is visible, price button hidden by CSS
                 if (cryptoPairSelectors[i]) cryptoPairSelectors[i].value = currentPairData.tvSymbol || '';
                 _loadTradingViewChartForSlot(i, currentPairData.tvSymbol);
             } else {
+                console.log(`[Crypto] Slot ${i} is not active. Showing price button.`);
                 slotElement.classList.remove('active-chart-slot');
                 // Price button visible, chart mode hidden by CSS
                 pairNameSpan.textContent = currentPairData.name || 'N/A';
@@ -418,9 +430,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleCryptoSlotClick(slotIndex) {
-        if (slotIndex === activeCryptoChartSlotIndex) return; // Already active
+        console.log(`[Crypto] Handling click on slot ${slotIndex}. Current active slot is ${activeCryptoChartSlotIndex}.`);
+        if (slotIndex === activeCryptoChartSlotIndex) {
+            console.log(`[Crypto] Clicked on the already active slot, no change.`);
+            return;
+        }
         activeCryptoChartSlotIndex = slotIndex;
         localStorage.setItem(CRYPTO_STORAGE_KEY_ACTIVE_SLOT, activeCryptoChartSlotIndex.toString());
+        console.log(`[Crypto] Set active slot to ${slotIndex}. Rendering expanded state.`);
         renderCryptoWidgetExpandedState();
     }
 
@@ -440,8 +457,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function initCryptoWidget() {
+        console.log("[Crypto] Initializing Crypto Widget...");
         const storedPairs = localStorage.getItem(CRYPTO_STORAGE_KEY_SLOT_PAIRS);
-        cryptoSlotPairsData = storedPairs ? JSON.parse(storedPairs) : [...DEFAULT_CRYPTO_SLOT_PAIRS];
+        try {
+            cryptoSlotPairsData = storedPairs ? JSON.parse(storedPairs) : [...DEFAULT_CRYPTO_SLOT_PAIRS];
+            console.log("[Crypto] Loaded slot pairs data:", cryptoSlotPairsData);
+        } catch (e) {
+            console.error("[Crypto] Error parsing stored slot pairs. Using defaults.", e);
+            cryptoSlotPairsData = [...DEFAULT_CRYPTO_SLOT_PAIRS];
+        }
         // Ensure cryptoSlotPairsData has 3 elements, padding with defaults if necessary
         for (let i = 0; i < 3; i++) {
             if (!cryptoSlotPairsData[i]) {
