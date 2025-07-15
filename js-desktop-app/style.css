@@ -977,12 +977,16 @@ main#main-content-area {
 }
 
 #main-content-area.main-content-crypto-focus {
-    flex-wrap: nowrap; /* Prevent wrapping when focusing on crypto */
+    flex-direction: column;
+    flex-wrap: nowrap;
 }
-#main-content-area.main-content-crypto-focus > .widget-area:not(#crypto-widget-area) {
-    display: none; /* Hide other widgets */
-}
-#main-content-area.main-content-crypto-focus > #crypto-widget-area {
-    flex-basis: 100% !important; /* Allow crypto widget to take full width */
+
+#main-content-area.main-content-crypto-focus > .widget-area {
     width: 100%;
+    flex-basis: auto; /* Reset basis for vertical stacking */
+}
+
+#main-content-area.main-content-crypto-focus > #crypto-widget-area {
+    flex-grow: 1; /* Allow crypto widget to take up remaining vertical space */
+    height: 100%; /* Ensure it tries to fill the container */
 }
