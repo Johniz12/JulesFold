@@ -156,18 +156,39 @@
 
             <div id="crypto-widget-area" class="widget-area" draggable="true">
                 <div id="compact-crypto-display" class="clickable">
-                    <div class="crypto-slot" id="crypto-slot-1">Pair 1: Loading...</div>
-                    <div class="crypto-slot" id="crypto-slot-2">Pair 2: Loading...</div>
-                    <div class="crypto-slot" id="crypto-slot-3">Pair 3: Loading...</div>
+                    <div class="crypto-slot" id="compact-crypto-slot-0">Pair 1: Loading...</div>
+                    <div class="crypto-slot" id="compact-crypto-slot-1">Pair 2: Loading...</div>
+                    <div class="crypto-slot" id="compact-crypto-slot-2">Pair 3: Loading...</div>
                 </div>
-                <div id="full-crypto-chart-view" style="display: none;">
-                    <button id="close-crypto-chart" class="back-to-features-btn">← Close Chart</button>
-                    <!-- Re-using back-to-features-btn style for close button -->
-                    <select id="crypto-pair-selector">
-                        <!-- Options populated by JS -->
-                    </select>
-                    <div id="tv-chart-container-crypto"></div>
-                    <!-- Configure compact pairs button deferred -->
+                <div id="expanded-crypto-view" style="display: none;">
+                    <button id="crypto-back-to-compact-btn">← Back</button>
+                    <div class="crypto-display-slot" id="crypto-display-slot-0">
+                        <div class="crypto-price-button-view">
+                            <span class="slot-pair-name">BTC</span>: <span class="slot-pair-price">$0.00</span>
+                        </div>
+                        <div class="crypto-chart-mode-view">
+                            <select class="pair-selector-slot" id="pair-selector-slot-0"></select>
+                            <div class="tv-chart-container" id="tv-chart-container-slot-0"></div>
+                        </div>
+                    </div>
+                    <div class="crypto-display-slot" id="crypto-display-slot-1">
+                        <div class="crypto-price-button-view">
+                            <span class="slot-pair-name">ETH</span>: <span class="slot-pair-price">$0.00</span>
+                        </div>
+                        <div class="crypto-chart-mode-view">
+                            <select class="pair-selector-slot" id="pair-selector-slot-1"></select>
+                            <div class="tv-chart-container" id="tv-chart-container-slot-1"></div>
+                        </div>
+                    </div>
+                    <div class="crypto-display-slot" id="crypto-display-slot-2">
+                        <div class="crypto-price-button-view">
+                            <span class="slot-pair-name">DOGE</span>: <span class="slot-pair-price">$0.00</span>
+                        </div>
+                        <div class="crypto-chart-mode-view">
+                            <select class="pair-selector-slot" id="pair-selector-slot-2"></select>
+                            <div class="tv-chart-container" id="tv-chart-container-slot-2"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>

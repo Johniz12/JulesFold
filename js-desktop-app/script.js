@@ -217,48 +217,42 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadWidgetOrder() { if (!mainContentArea) return; const savedOrder = localStorage.getItem('widgetOrder'); if (savedOrder) { const orderedIds = JSON.parse(savedOrder); const currentWidgetsMap = new Map(); Array.from(mainContentArea.children).forEach(child => { if (child.id) currentWidgetsMap.set(child.id, child); }); orderedIds.forEach(id => { const widget = currentWidgetsMap.get(id); if (widget) mainContentArea.appendChild(widget); }); } }
 
     // --- NEW Crypto Widget (3-Slot) Functions ---
-
     async function fetchAvailableCryptoCoinsList() {
         try {
             const response = await fetch(COINGECKO_COINS_LIST_URL);
             if (!response.ok) throw new Error(`CoinGecko API error: ${response.status}`);
             const coins = await response.json();
-            // Map to a more usable format, also create a tvSymbol (guessing format)
             availableCryptoCoins = coins.map(coin => ({
                 id: coin.id,
-                symbol: coin.symbol.toUpperCase(), // Coingecko gives lowercase, TV often uses uppercase
+                symbol: coin.symbol.toUpperCase(),
                 name: coin.name,
-                // Attempt to create a TradingView compatible symbol (e.g., BINANCE:BTCUSDT)
-                // This is a simplification; real mapping can be complex.
-                // For now, we'll assume common pairs are against USDT on Binance.
                 tvSymbol: `BINANCE:${coin.symbol.toUpperCase()}USDT`
-            })).sort((a,b) => a.name.localeCompare(b.name)); // Sort alphabetically by name
-            console.log("Fetched available crypto coins:", availableCryptoCoins.length);
+            })).sort((a, b) => a.name.localeCompare(b.name));
         } catch (error) {
-            console.error("Error fetching available crypto coins:", error);
-            availableCryptoCoins = [...DEFAULT_CRYPTO_SLOT_PAIRS]; // Fallback to defaults
+            console.error("Error fetching crypto coins list:", error);
+            availableCryptoCoins = [...DEFAULT_CRYPTO_SLOT_PAIRS];
         }
     }
 
     function populateAllCryptoPairSelectors() {
         cryptoPairSelectors.forEach((selector, index) => {
             if (!selector) return;
-            selector.innerHTML = ''; // Clear existing options
+            selector.innerHTML = '';
 
             availableCryptoCoins.forEach(coin => {
                 const option = document.createElement('option');
-                option.value = coin.tvSymbol; // Store tvSymbol
+                option.value = coin.tvSymbol;
                 option.textContent = `${coin.name} (${coin.symbol})`;
-                option.dataset.coinId = coin.id; // Store coingecko id for price fetching
+                option.dataset.coinId = coin.id;
                 option.dataset.coinSymbol = coin.symbol;
                 option.dataset.coinName = coin.name;
                 selector.appendChild(option);
             });
 
-            if (cryptoSlotPairsData[index] && cryptoSlotPairsData[index].tvSymbol) {
-                selector.value = cryptoSlotPairsData[index].tvSymbol;
-            } else if (availableCryptoCoins.length > 0 && DEFAULT_CRYPTO_SLOT_PAIRS[index]) {
-                 // Fallback to default if current slot data is bad but defaults exist
+            const currentPair = cryptoSlotPairsData[index];
+            if (currentPair && currentPair.tvSymbol) {
+                selector.value = currentPair.tvSymbol;
+            } else if (DEFAULT_CRYPTO_SLOT_PAIRS[index]) {
                 selector.value = DEFAULT_CRYPTO_SLOT_PAIRS[index].tvSymbol;
             }
         });
@@ -289,44 +283,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function _loadTradingViewChartForSlot(slotIndex, tvSymbol) {
         const chartContainer = cryptoTVChartContainers[slotIndex];
-        console.log(`[Crypto] Attempting to load chart for slot ${slotIndex}, Symbol: ${tvSymbol}, Container ID: ${chartContainer ? chartContainer.id : 'Not Found'}`);
-
         if (!chartContainer) {
-            console.error(`[Crypto] Chart container DOM element for slot ${slotIndex} not found.`);
+            console.error(`Chart container for slot ${slotIndex} not found.`);
             return;
         }
 
-        // Clear previous widget and content
         if (tradingViewWidgets[slotIndex]) {
             try {
                 tradingViewWidgets[slotIndex].remove();
-                console.log(`[Crypto] Removed previous TradingView widget for slot ${slotIndex}.`);
-            } catch (e) {
-                console.warn(`[Crypto] Error removing previous TradingView widget for slot ${slotIndex}:`, e);
-            }
+            } catch (e) { console.warn("Error removing old TV widget", e); }
             tradingViewWidgets[slotIndex] = null;
         }
-        chartContainer.innerHTML = ''; // Ensure container is empty
+        chartContainer.innerHTML = '';
 
         if (typeof TradingView === 'undefined') {
-            chartContainer.innerHTML = `<p style="text-align:center; padding:20px; height:100%; display:flex; align-items:center; justify-content:center;">TradingView library not loaded.</p>`;
-            console.error(`[Crypto] TradingView library (TradingView object) is undefined.`);
+            chartContainer.innerHTML = `<p class="error-message">TradingView library not loaded.</p>`;
             return;
         }
 
         if (!tvSymbol) {
-            chartContainer.innerHTML = `<p style="text-align:center; padding:20px; height:100%; display:flex; align-items:center; justify-content:center;">No symbol provided for chart.</p>`;
-            console.error(`[Crypto] No tvSymbol provided for slot ${slotIndex}.`);
+            chartContainer.innerHTML = `<p class="error-message">No crypto pair selected.</p>`;
             return;
         }
 
-        console.log(`[Crypto] Instantiating TradingView widget for ${tvSymbol} in container ${chartContainer.id}`);
         try {
             tradingViewWidgets[slotIndex] = new TradingView.widget({
                 "container_id": chartContainer.id,
-                "width": "100%",
-                "height": "100%", // Relies on CSS for actual height of container
                 "symbol": tvSymbol,
+                "width": "100%",
+                "height": "100%",
                 "interval": "60",
                 "timezone": "Etc/UTC",
                 "theme": "light",
@@ -338,14 +323,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 "details": true,
                 "autosize": true,
                 "hide_side_toolbar": true,
-                "no_referral_id": true,
-                "save_image": false,
-                // "key": tvSymbol, // Speculative: Force re-mount if symbol changes - may not be standard TV param
             });
-            console.log(`[Crypto] TradingView widget for slot ${slotIndex} (${tvSymbol}) instantiated.`);
         } catch (e) {
-            console.error(`[Crypto] Error creating TradingView widget for slot ${slotIndex} with symbol ${tvSymbol}:`, e);
-            chartContainer.innerHTML = `<p style="text-align:center; padding:20px; height:100%; display:flex; align-items:center; justify-content:center;">Error creating chart for ${tvSymbol}. Check console.</p>`;
+            console.error(`Error creating TradingView widget for ${tvSymbol}:`, e);
+            chartContainer.innerHTML = `<p class="error-message">Could not load chart for ${tvSymbol}.</p>`;
         }
     }
 
@@ -421,27 +402,25 @@ document.addEventListener('DOMContentLoaded', () => {
     async function initCryptoWidget() {
         const storedPairs = localStorage.getItem(CRYPTO_STORAGE_KEY_SLOT_PAIRS);
         cryptoSlotPairsData = storedPairs ? JSON.parse(storedPairs) : [...DEFAULT_CRYPTO_SLOT_PAIRS];
-        // Ensure cryptoSlotPairsData has 3 elements, padding with defaults if necessary
         for (let i = 0; i < 3; i++) {
             if (!cryptoSlotPairsData[i]) {
                 cryptoSlotPairsData[i] = DEFAULT_CRYPTO_SLOT_PAIRS[i] || { id: `unknown-${i}`, symbol: 'N/A', name: 'Not Set', tvSymbol: '' };
             }
         }
 
-
         const storedActiveSlot = localStorage.getItem(CRYPTO_STORAGE_KEY_ACTIVE_SLOT);
         activeCryptoChartSlotIndex = storedActiveSlot ? parseInt(storedActiveSlot, 10) : 0;
         if (isNaN(activeCryptoChartSlotIndex) || activeCryptoChartSlotIndex < 0 || activeCryptoChartSlotIndex > 2) {
-            activeCryptoChartSlotIndex = 0; // Default to first slot if invalid
+            activeCryptoChartSlotIndex = 0;
         }
 
-        await fetchAvailableCryptoCoinsList(); // Fetch full list
-        populateAllCryptoPairSelectors(); // Then populate
+        await fetchAvailableCryptoCoinsList();
+        populateAllCryptoPairSelectors();
 
         if (compactCryptoDisplay) {
             compactCryptoDisplay.addEventListener('click', () => {
                 if (appContainer) appContainer.classList.add('expanded-crypto');
-                if (mainContentArea) mainContentArea.classList.add('main-content-crypto-focus'); // ADDED
+                if (mainContentArea) mainContentArea.classList.add('main-content-crypto-focus');
                 if (expandedCryptoView) expandedCryptoView.style.display = 'flex';
                 if (compactCryptoDisplay) compactCryptoDisplay.style.display = 'none';
                 renderCryptoWidgetExpandedState();
@@ -451,10 +430,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cryptoBackToCompactBtn) {
             cryptoBackToCompactBtn.addEventListener('click', () => {
                 if (appContainer) appContainer.classList.remove('expanded-crypto');
-                if (mainContentArea) mainContentArea.classList.remove('main-content-crypto-focus'); // ADDED
+                if (mainContentArea) mainContentArea.classList.remove('main-content-crypto-focus');
                 if (expandedCryptoView) expandedCryptoView.style.display = 'none';
                 if (compactCryptoDisplay) compactCryptoDisplay.style.display = 'flex';
-                 // Stop active chart when going compact? Consider later.
             });
         }
 
@@ -471,11 +449,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        updateCompactCryptoDisplayPrices(); // Initial price load for compact
-        setInterval(updateCompactCryptoDisplayPrices, 60000); // Update compact prices every 60s
-        // Initial render of expanded state (even if hidden) to set up selectors correctly.
-        // It will be properly rendered again when expanded.
-        renderCryptoWidgetExpandedState();
+        updateCompactCryptoDisplayPrices();
+        setInterval(updateCompactCryptoDisplayPrices, 60000);
+        renderCryptoWidgetExpandedState(); // Initial render for setup
     }
 
     // --- Initialization ---
