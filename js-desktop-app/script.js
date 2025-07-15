@@ -66,9 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const cryptoWidgetArea = document.getElementById('crypto-widget-area');
     const compactCryptoDisplay = document.getElementById('compact-crypto-display'); // Main compact view
     const compactCryptoSlots = [
-        document.getElementById('compact-crypto-slot-0'),
-        document.getElementById('compact-crypto-slot-1'),
-        document.getElementById('compact-crypto-slot-2')
+        document.getElementById('crypto-slot-1'),
+        document.getElementById('crypto-slot-2'),
+        document.getElementById('crypto-slot-3')
     ];
     const expandedCryptoView = document.getElementById('expanded-crypto-view');
     const cryptoBackToCompactBtn = document.getElementById('crypto-back-to-compact-btn');
