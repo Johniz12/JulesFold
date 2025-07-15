@@ -402,16 +402,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function updateCompactCryptoDisplayPrices() {
+    function updateCompactCryptoDisplay() {
         for (let i = 0; i < 3; i++) {
             const compactSlotEl = compactCryptoSlots[i];
             const pairData = cryptoSlotPairsData[i];
-            if (compactSlotEl && pairData && pairData.id) {
-                compactSlotEl.innerHTML = `<span class="pair-name">${pairData.symbol || '---'}:</span> <span class="pair-price">Loading...</span>`;
-                const { price } = await fetchCryptoPriceById(pairData.id);
-                compactSlotEl.innerHTML = `<span class="pair-name">${pairData.symbol || '---'}:</span> <span class="pair-price">${price}</span>`;
+            if (compactSlotEl && pairData && pairData.name) {
+                compactSlotEl.innerHTML = `<span class="pair-name">${pairData.name}</span>`;
             } else if (compactSlotEl) {
-                compactSlotEl.innerHTML = `<span class="pair-name">---:</span> <span class="pair-price">N/A</span>`;
+                compactSlotEl.innerHTML = `<span class="pair-name">Not Set</span>`;
             }
         }
     }
@@ -434,7 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else { // If a button's pair changed (less common, but for completeness)
                 renderCryptoWidgetExpandedState(); // Re-render to update button text
             }
-            updateCompactCryptoDisplayPrices(); // Update compact view as well
+            updateCompactCryptoDisplay(); // Update compact view as well
         }
     }
 
@@ -491,8 +489,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        updateCompactCryptoDisplayPrices(); // Initial price load for compact
-        setInterval(updateCompactCryptoDisplayPrices, 60000); // Update compact prices every 60s
+        updateCompactCryptoDisplay(); // Initial display for compact
+        setInterval(updateCompactCryptoDisplay, 60000); // Update compact display every 60s
         // Initial render of expanded state (even if hidden) to set up selectors correctly.
         // It will be properly rendered again when expanded.
         renderCryptoWidgetExpandedState();
