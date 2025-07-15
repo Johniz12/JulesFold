@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const DEFAULT_CRYPTO_SLOT_PAIRS = [
         { id: 'bitcoin', symbol: 'btc', name: 'Bitcoin', tvSymbol: 'BINANCE:BTCUSDT' },
         { id: 'ethereum', symbol: 'eth', name: 'Ethereum', tvSymbol: 'BINANCE:ETHUSDT' },
-        { id: 'dogecoin', symbol: 'doge', name: 'Dogecoin', tvSymbol: 'BINANCE:DOGEUSDT' }
+        { id: 'ethereum-name-service', symbol: 'ens', name: 'Ethereum Name Service', tvSymbol: 'BINANCE:ENSUSDT' }
     ];
 
     // --- Calendar Functions (Largely Unchanged) ---
