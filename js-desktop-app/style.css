@@ -30,8 +30,38 @@ body {
 
 #app-container.expanded-crypto { /* Specific for Crypto expansion */
     width: 90%;
-    max-width: 1000px;
+    max-width: 1200px; /* Increased max-width for a wider view */
     /* min-height might be needed if content is too short, or rely on content height */
+}
+
+/* NEW: Styles for main content area when crypto is expanded */
+.main-content-crypto-focus {
+    flex-direction: column;
+}
+
+.main-content-crypto-focus #calendar-widget-area,
+.main-content-crypto-focus #time-widget-area {
+    flex-grow: 0; /* Don't grow */
+    flex-basis: auto; /* Use content size */
+    width: auto;
+    min-width: 0;
+}
+
+.main-content-crypto-focus #crypto-widget-area {
+    width: 100%; /* Take full width */
+    flex-grow: 1; /* Allow it to grow vertically */
+}
+
+/* Hide detailed views of other widgets when crypto is focused */
+.main-content-crypto-focus #full-calendar-view,
+.main-content-crypto-focus #time-settings-view {
+    display: none !important;
+}
+
+/* Ensure compact views are visible */
+.main-content-crypto-focus #compact-date-display,
+.main-content-crypto-focus #compact-time-display {
+    display: block !important;
 }
 
 

@@ -248,7 +248,11 @@ document.addEventListener('DOMContentLoaded', () => {
             availableCryptoCoins.forEach(coin => {
                 const option = document.createElement('option');
                 option.value = coin.tvSymbol; // Store tvSymbol
-                option.textContent = `${coin.name} (${coin.symbol})`;
+                // Display as "Bitcoin (BTC/USDT)"
+                const pair = coin.tvSymbol.split(':')[1] || '';
+                const base = pair.replace('USDT', '');
+                const quote = 'USDT';
+                option.textContent = `${coin.name} (${base}/${quote})`;
                 option.dataset.coinId = coin.id; // Store coingecko id for price fetching
                 option.dataset.coinSymbol = coin.symbol;
                 option.dataset.coinName = coin.name;
@@ -441,7 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (compactCryptoDisplay) {
             compactCryptoDisplay.addEventListener('click', () => {
                 if (appContainer) appContainer.classList.add('expanded-crypto');
-                if (mainContentArea) mainContentArea.classList.add('main-content-crypto-focus'); // ADDED
+                if (mainContentArea) mainContentArea.classList.add('main-content-crypto-focus');
                 if (expandedCryptoView) expandedCryptoView.style.display = 'flex';
                 if (compactCryptoDisplay) compactCryptoDisplay.style.display = 'none';
                 renderCryptoWidgetExpandedState();
@@ -451,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cryptoBackToCompactBtn) {
             cryptoBackToCompactBtn.addEventListener('click', () => {
                 if (appContainer) appContainer.classList.remove('expanded-crypto');
-                if (mainContentArea) mainContentArea.classList.remove('main-content-crypto-focus'); // ADDED
+                if (mainContentArea) mainContentArea.classList.remove('main-content-crypto-focus');
                 if (expandedCryptoView) expandedCryptoView.style.display = 'none';
                 if (compactCryptoDisplay) compactCryptoDisplay.style.display = 'flex';
                  // Stop active chart when going compact? Consider later.
