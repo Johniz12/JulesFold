@@ -219,21 +219,37 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- NEW Crypto Widget (3-Slot) Functions ---
 
     async function fetchAvailableCryptoCoinsList() {
+        const CACHE_KEY = 'cryptoCoinsList';
+        const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+        const cachedData = localStorage.getItem(CACHE_KEY);
+
+        if (cachedData) {
+            const { timestamp, coins } = JSON.parse(cachedData);
+            if (Date.now() - timestamp < CACHE_DURATION) {
+                console.log("Using cached crypto coins list.");
+                availableCryptoCoins = coins;
+                return;
+            }
+        }
+
         try {
             const response = await fetch(COINGECKO_COINS_LIST_URL);
             if (!response.ok) throw new Error(`CoinGecko API error: ${response.status}`);
             const coins = await response.json();
-            // Map to a more usable format, also create a tvSymbol (guessing format)
+
             availableCryptoCoins = coins.map(coin => ({
                 id: coin.id,
-                symbol: coin.symbol.toUpperCase(), // Coingecko gives lowercase, TV often uses uppercase
+                symbol: coin.symbol.toUpperCase(),
                 name: coin.name,
-                // Attempt to create a TradingView compatible symbol (e.g., BINANCE:BTCUSDT)
-                // This is a simplification; real mapping can be complex.
-                // For now, we'll assume common pairs are against USDT on Binance.
                 tvSymbol: `BINANCE:${coin.symbol.toUpperCase()}USDT`
-            })).sort((a,b) => a.name.localeCompare(b.name)); // Sort alphabetically by name
-            console.log("Fetched available crypto coins:", availableCryptoCoins.length);
+            })).sort((a,b) => a.name.localeCompare(b.name));
+
+            localStorage.setItem(CACHE_KEY, JSON.stringify({
+                timestamp: Date.now(),
+                coins: availableCryptoCoins
+            }));
+
+            console.log("Fetched and cached available crypto coins:", availableCryptoCoins.length);
         } catch (error) {
             console.error("Error fetching available crypto coins:", error);
             availableCryptoCoins = [...DEFAULT_CRYPTO_SLOT_PAIRS]; // Fallback to defaults
