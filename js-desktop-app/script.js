@@ -263,7 +263,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchCryptoPriceById(coinId) {
         if (!coinId) return { price: 'N/A', symbol: '' };
-        const url = `${COINGECKO_PRICE_URL}?ids=${coinId}&vs_currencies=usd`;
+        const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+        const targetUrl = `${COINGECKO_PRICE_URL}?ids=${coinId}&vs_currencies=usd`;
+        const url = proxyUrl + targetUrl;
         try {
             const response = await fetch(url);
             if (!response.ok) {
