@@ -402,14 +402,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function updateCompactCryptoDisplay() {
+    async function updateCompactCryptoDisplayPrices() {
         for (let i = 0; i < 3; i++) {
             const compactSlotEl = compactCryptoSlots[i];
             const pairData = cryptoSlotPairsData[i];
-            if (compactSlotEl && pairData && pairData.name) {
-                compactSlotEl.innerHTML = `<span class="pair-name">${pairData.name}</span>`;
+            if (compactSlotEl && pairData && pairData.id) {
+                compactSlotEl.innerHTML = `<span class="pair-name">${pairData.symbol || '---'}:</span> <span class="pair-price">Loading...</span>`;
+                const { price } = await fetchCryptoPriceById(pairData.id);
+                compactSlotEl.innerHTML = `<span class="pair-name">${pairData.symbol || '---'}:</span> <span class="pair-price">${price}</span>`;
             } else if (compactSlotEl) {
-                compactSlotEl.innerHTML = `<span class="pair-name">Not Set</span>`;
+                compactSlotEl.innerHTML = `<span class="pair-name">---:</span> <span class="pair-price">N/A</span>`;
             }
         }
     }
@@ -432,7 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else { // If a button's pair changed (less common, but for completeness)
                 renderCryptoWidgetExpandedState(); // Re-render to update button text
             }
-            updateCompactCryptoDisplay(); // Update compact view as well
+            updateCompactCryptoDisplayPrices(); // Update compact view as well
         }
     }
 
@@ -489,8 +491,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        updateCompactCryptoDisplay(); // Initial display for compact
-        setInterval(updateCompactCryptoDisplay, 60000); // Update compact display every 60s
+        updateCompactCryptoDisplayPrices(); // Initial price load for compact
+        setInterval(updateCompactCryptoDisplayPrices, 60000); // Update compact prices every 60s
         // Initial render of expanded state (even if hidden) to set up selectors correctly.
         // It will be properly rendered again when expanded.
         renderCryptoWidgetExpandedState();

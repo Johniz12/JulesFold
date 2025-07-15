@@ -877,8 +877,9 @@ main#main-content-area {
     padding-top: 10px;
     margin-top: 10px;
     border-top: 1px solid #e0e0e0;
-    min-height: 380px; /* ADDED: Fail-safe minimum height */
-    flex-grow: 1; /* ADDED: Allow it to grow if crypto-widget-area has space */
+    min-height: 380px;
+    flex-grow: 1;
+    height: 400px; /* Explicit height */
 }
 
 #crypto-back-to-compact-btn {
