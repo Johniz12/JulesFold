@@ -215,25 +215,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadWidgetOrder() { if (!mainContentArea) return; const savedOrder = localStorage.getItem('widgetOrder'); if (savedOrder) { const orderedIds = JSON.parse(savedOrder); const currentWidgetsMap = new Map(); Array.from(mainContentArea.children).forEach(child => { if (child.id) currentWidgetsMap.set(child.id, child); }); orderedIds.forEach(id => { const widget = currentWidgetsMap.get(id); if (widget) mainContentArea.appendChild(widget); }); } }
 
     // --- NEW Crypto Widget (3-Slot) Functions ---
-    async function fetchAvailableCryptoCoinsList() {
-        try {
-            const response = await fetch(COINGECKO_COINS_LIST_URL);
-            if (!response.ok) throw new Error(`CoinGecko API error: ${response.status}`);
-            const coins = await response.json();
-            availableCryptoCoins = coins
-                .map(coin => ({
-                    id: coin.id,
-                    symbol: coin.symbol.toUpperCase(),
-                    name: coin.name,
-                    tvSymbol: `BINANCE:${coin.symbol.toUpperCase()}USDT`
-                }))
-                .filter(coin => coin.tvSymbol.startsWith('BINANCE:'))
-                .sort((a, b) => a.name.localeCompare(b.name));
-        } catch (error) {
-            console.error("Error fetching crypto coins list:", error);
-            availableCryptoCoins = [...DEFAULT_CRYPTO_SLOT_PAIRS];
-        }
-    }
 
     function populateAllCryptoPairSelectors() {
         cryptoPairSelectors.forEach((selector, index) => {
@@ -413,7 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
             activeCryptoChartSlotIndex = 0;
         }
 
-        await fetchAvailableCryptoCoinsList();
+        availableCryptoCoins = [...DEFAULT_CRYPTO_SLOT_PAIRS];
         populateAllCryptoPairSelectors();
 
         if (compactCryptoDisplay) {
