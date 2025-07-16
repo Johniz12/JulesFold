@@ -320,6 +320,10 @@ document.addEventListener('DOMContentLoaded', () => {
     async function getPriceFromTradingView(tvSymbol) {
         if (!tvSymbol) return 'N/A';
         return new Promise(resolve => {
+            const tempContainer = document.createElement('div');
+            tempContainer.style.display = 'none';
+            document.body.appendChild(tempContainer);
+
             const widget = new TradingView.widget({
                 "symbol": tvSymbol,
                 "width": "0",
@@ -333,10 +337,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 "details": true,
                 "autosize": true,
                 "hide_side_toolbar": true,
-                "container_id": `tv-chart-container-slot-${Math.floor(Math.random() * 1000)}`, // Temporary container
+                "container_id": tempContainer,
                 "onready": function(widget) {
                     const price = widget.chart().price().value();
                     widget.remove();
+                    document.body.removeChild(tempContainer);
                     resolve(price.toLocaleString(undefined, { style: 'currency', currency: 'USD' }));
                 }
             });
