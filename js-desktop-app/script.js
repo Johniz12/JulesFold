@@ -394,7 +394,6 @@ document.addEventListener('DOMContentLoaded', () => {
             activeCryptoChartSlotIndex = 0;
         }
 
-        availableCryptoCoins = [...DEFAULT_CRYPTO_SLOT_PAIRS];
         populateAllCryptoPairSelectors();
 
         if (compactCryptoDisplay) {
