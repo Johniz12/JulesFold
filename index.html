@@ -1,1 +1,115 @@
-index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Developer Portfolio</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="#about">About</a></li>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#testimonials">Testimonials</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero">
+            <div class="hero-content">
+                <h1>John Doe</h1>
+                <p>Creative Web Developer</p>
+                <a href="#projects" class="cta-button">View My Work</a>
+            </div>
+            <div class="wavy-background">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+                    <path fill="#0099ff" fill-opacity="0.7" d="M0,160L48,181.3C96,203,192,245,288,256C384,267,480,245,576,213.3C672,181,768,139,864,138.7C960,139,1056,181,1152,192C1248,203,1344,181,1392,170.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+                </svg>
+            </div>
+        </section>
+
+        <section id="about">
+            <h2>About Me</h2>
+            <p>I am a passionate web developer with a focus on creating beautiful and functional websites. I have experience in various web technologies and I am always eager to learn new things.</p>
+            <h3>Skills</h3>
+            <ul class="skills-list">
+                <li>HTML5 & CSS3</li>
+                <li>JavaScript (ES6+)</li>
+                <li>React</li>
+                <li>Node.js</li>
+                <li>UI/UX Design</li>
+            </ul>
+        </section>
+
+        <section id="projects">
+            <h2>Projects</h2>
+            <div class="project-cards">
+                <div class="card">
+                    <h3>Project One</h3>
+                    <div class="card-content">
+                        <p>A brief description of the project.</p>
+                        <iframe src="https://codepen.io/your-username/embed/preview/your-pen-id" loading="lazy"></iframe>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Project Two</h3>
+                    <div class="card-content">
+                        <p>A brief description of the project.</p>
+                        <iframe src="https://codepen.io/your-username/embed/preview/your-pen-id" loading="lazy"></iframe>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Project Three</h3>
+                    <div class="card-content">
+                        <p>A brief description of the project.</p>
+                        <iframe src="https://codepen.io/your-username/embed/preview/your-pen-id" loading="lazy"></iframe>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="testimonials">
+            <h2>Testimonials</h2>
+            <div class="testimonial-cards">
+                <div class="testimonial-card">
+                    <p>"John is a fantastic developer. He delivered the project on time and exceeded my expectations."</p>
+                    <span>- Client A</span>
+                </div>
+                <div class="testimonial-card">
+                    <p>"I'm so happy with the website John built for me. It's beautiful, functional, and easy to use."</p>
+                    <span>- Client B</span>
+                </div>
+                <div class="testimonial-card">
+                    <p>"Working with John was a great experience. He is a true professional."</p>
+                    <span>- Client C</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact">
+            <h2>Contact Me</h2>
+            <form>
+                <input type="text" name="name" placeholder="Your Name" required>
+                <input type="email" name="email" placeholder="Your Email" required>
+                <textarea name="message" placeholder="Your Message" required></textarea>
+                <button type="submit">Send Message</button>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <div class="social-media">
+            <a href="#">LinkedIn</a>
+            <a href="#">GitHub</a>
+            <a href="#">Twitter</a>
+        </div>
+        <p>&copy; 2024 John Doe. All rights reserved.</p>
+    </footer>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
