@@ -49,22 +49,23 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        let dependencies = {};
         try {
             const packageJsonHandle = await dirHandle.getFileHandle('package.json');
             const packageJsonFile = await packageJsonHandle.getFile();
             const packageJsonText = await packageJsonFile.text();
             const packageJson = JSON.parse(packageJsonText);
+            dependencies = packageJson.dependencies || {};
 
-            const deps = packageJson.dependencies || {};
             const devDeps = packageJson.devDependencies || {};
 
             let depsHtml = '<h3>Dependencies:</h3>';
-            if (Object.keys(deps).length === 0 && Object.keys(devDeps).length === 0) {
+            if (Object.keys(dependencies).length === 0 && Object.keys(devDeps).length === 0) {
                  depsHtml += '<p>No dependencies found.</p>';
             } else {
-                if (Object.keys(deps).length > 0) {
+                if (Object.keys(dependencies).length > 0) {
                     depsHtml += '<ul>';
-                    for (const [name, version] of Object.entries(deps)) {
+                    for (const [name, version] of Object.entries(dependencies)) {
                         depsHtml += `<li>${name}: ${version}</li>`;
                     }
                     depsHtml += '</ul>';
@@ -85,17 +86,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 2. Render Project
+        await renderProject(dirHandle, indexHtmlHandle, dependencies);
+    }
+
+    async function renderProject(dirHandle, indexHtmlHandle, dependencies) {
+        const iframe = document.getElementById('project-iframe');
         updateStatus('Rendering project...');
         try {
             const indexHtmlFile = await indexHtmlHandle.getFile();
-            const indexHtmlText = await indexHtmlFile.text();
+            let indexHtmlText = await indexHtmlFile.text();
 
             const parser = new DOMParser();
             const doc = parser.parseFromString(indexHtmlText, 'text/html');
 
+            // Fetch and inject CDN dependencies
+            if (Object.keys(dependencies).length > 0) {
+                updateStatus('Fetching dependencies from CDN...');
+                const cdnUrls = [];
+                const depPromises = Object.entries(dependencies).map(async ([name, version]) => {
+                    try {
+                        const response = await fetch(`https://data.jsdelivr.com/v1/package/npm/${name}@${version}/entrypoints`);
+                        if (!response.ok) {
+                            throw new Error(`Failed to fetch metadata for ${name}@${version}`);
+                        }
+                        const data = await response.json();
+                        if (data.js) {
+                            const cdnUrl = `https://cdn.jsdelivr.net/npm/${name}@${version}${data.js.file}`;
+                            cdnUrls.push(cdnUrl);
+                        }
+                    } catch (e) {
+                        console.warn(`Failed to resolve dependency: ${name}@${version}`, e);
+                    }
+                });
+                await Promise.all(depPromises);
+
+                // Inject script tags for CDN URLs
+                cdnUrls.forEach(url => {
+                    const script = doc.createElement('script');
+                    script.src = url;
+                    script.defer = true;
+                    doc.head.prepend(script);
+                });
+            }
+
+            // Process local assets
+            updateStatus('Resolving local assets...');
             const assetPromises = [];
             const elements = doc.querySelectorAll('[href], [src]');
-
             elements.forEach(el => {
                 const attribute = el.hasAttribute('href') ? 'href' : 'src';
                 const path = el.getAttribute(attribute);
@@ -119,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
             });
-
             await Promise.all(assetPromises.map(p => p()));
 
             const finalHtml = new XMLSerializer().serializeToString(doc);
