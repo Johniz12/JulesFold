@@ -1,1 +1,28 @@
-index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Project Runner</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Web Project Runner</h1>
+    </header>
+    <main>
+        <div id="controls">
+            <button id="load-project-btn">Load Project</button>
+        </div>
+        <div id="project-info">
+            <h2>Project Information</h2>
+            <div id="status-messages"></div>
+            <div id="dependencies"></div>
+        </div>
+        <div id="render-area">
+            <iframe id="project-iframe" sandbox="allow-scripts allow-same-origin"></iframe>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
