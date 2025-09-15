@@ -4,16 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Resume</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-    <!-- The generated resume will be injected here -->
+    <div class="controls">
+        <button id="back-btn">Back to Edit</button>
+        <button id="save-html-btn">Save as HTML</button>
+        <button id="save-jpg-btn">Save Screenshot (JPG)</button>
+        <button id="save-pdf-btn">Generate PDF</button>
+    </div>
+    <div id="resume-content">
+        <!-- The generated resume will be injected here -->
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const template = localStorage.getItem('resumeTemplate');
             const dataJSON = localStorage.getItem('resumeData');
+            const contentArea = document.getElementById('resume-content');
 
             if (!template || !dataJSON) {
-                document.body.innerHTML = '<h1>Error: Template or data not found. Please start over.</h1>';
+                contentArea.innerHTML = '<h1>Error: Template or data not found. Please start over.</h1>';
                 return;
             }
 
@@ -35,19 +48,15 @@
                 const skillsList = data.skills.split(',').map(s => `<li>${s.trim()}</li>`).join('');
                 populatedTemplate = populatedTemplate.replace(/{{skills_list}}/g, `<ul>${skillsList}</ul>`);
             } else {
-                populatedTemplate = populatedTemplate.replace(/{{skills_list}}/g, ''); // Clear placeholder if no skills
+                populatedTemplate = populatedTemplate.replace(/{{skills_list}}/g, '');
             }
 
             // Handle work experience
             let workHtml = '';
             if (data.workExperience) {
                 data.workExperience.forEach(exp => {
-                    if(exp.jobTitle) { // Only add if job title exists
-                        workHtml += `<div class="work-item">
-                                        <h3>${exp.jobTitle} at ${exp.company || ''}</h3>
-                                        <p><em>${exp.startDate || ''} - ${exp.endDate || 'Present'}</em></p>
-                                        <p>${exp.description || ''}</p>
-                                    </div>`;
+                    if(exp.jobTitle) {
+                        workHtml += `<div class="work-item"><h3>${exp.jobTitle} at ${exp.company || ''}</h3><p><em>${exp.startDate || ''} - ${exp.endDate || 'Present'}</em></p><p>${exp.description || ''}</p></div>`;
                     }
                 });
             }
@@ -57,19 +66,69 @@
             let eduHtml = '';
             if (data.education) {
                 data.education.forEach(edu => {
-                    if(edu.degree) { // Only add if degree exists
-                        eduHtml += `<div class="edu-item">
-                                        <h3>${edu.degree}</h3>
-                                        <p>${edu.school || ''}</p>
-                                        <p><em>${edu.startDate || ''} - ${edu.endDate || 'Present'}</em></p>
-                                    </div>`;
+                    if(edu.degree) {
+                        eduHtml += `<div class="edu-item"><h3>${edu.degree}</h3><p>${edu.school || ''}</p><p><em>${edu.startDate || ''} - ${edu.endDate || 'Present'}</em></p></div>`;
                     }
                 });
             }
             populatedTemplate = populatedTemplate.replace(/{{education}}/g, eduHtml);
 
-            // Inject the final HTML into the body
-            document.body.innerHTML = populatedTemplate;
+            // Inject the final HTML into the content area
+            contentArea.innerHTML = populatedTemplate;
+
+            // --- BUTTON EVENT LISTENERS ---
+            document.getElementById('back-btn').addEventListener('click', function() {
+                window.location.href = 'details.html';
+            });
+
+            document.getElementById('save-html-btn').addEventListener('click', function() {
+                // To create a downloadable standalone HTML, we should reconstruct the full HTML document
+                const resumeContent = document.getElementById('resume-content').innerHTML;
+                const originalTemplate = localStorage.getItem('resumeTemplate') || '';
+                const headMatch = originalTemplate.match(/<head>([\s\S]*?)<\/head>/i);
+                const headContent = headMatch ? headMatch[0] : '<head><meta charset="UTF-8"><title>Your Resume</title></head>';
+
+                const fullHtml = `<!DOCTYPE html><html lang="en">${headContent}<body>${resumeContent}</body></html>`;
+
+                const blob = new Blob([fullHtml], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'resume.html';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+
+            // Save Screenshot Button
+            document.getElementById('save-jpg-btn').addEventListener('click', function() {
+                html2canvas(document.getElementById('resume-content'), { scale: 2 }).then(canvas => {
+                    const a = document.createElement('a');
+                    a.href = canvas.toDataURL('image/jpeg', 0.9);
+                    a.download = 'resume.jpg';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                });
+            });
+
+            // Generate PDF Button
+            document.getElementById('save-pdf-btn').addEventListener('click', function() {
+                const { jsPDF } = window.jspdf;
+                const content = document.getElementById('resume-content');
+
+                html2canvas(content, { scale: 2 }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDF({
+                        orientation: 'portrait',
+                        unit: 'px',
+                        format: [canvas.width, canvas.height]
+                    });
+                    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+                    pdf.save('resume.pdf');
+                });
+            });
         });
     </script>
 </body>

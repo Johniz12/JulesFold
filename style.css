@@ -94,3 +94,30 @@ hr {
 .delete-btn:hover {
     background: #c0392b;
 }
+
+.controls {
+    padding: 1rem;
+    background: #333;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.controls button {
+    background-color: #555;
+    margin: 0 0.5rem;
+    color: white;
+}
+
+.controls button:hover {
+    background-color: #777;
+}
+
+#resume-content {
+    margin-top: 1rem;
+    padding: 2rem;
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
