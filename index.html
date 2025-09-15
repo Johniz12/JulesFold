@@ -13,6 +13,7 @@
             <div class="form-group">
                 <label for="profile-picture">Profile Picture</label>
                 <input type="file" id="profile-picture" name="profile-picture" accept="image/*">
+                <img id="image-preview" src="#" alt="Image Preview" />
             </div>
 
             <h2>Personal Details</h2>
@@ -61,6 +62,7 @@
                         <label for="job-description-1">Description</label>
                         <textarea id="job-description-1" name="job-description-1" rows="5"></textarea>
                     </div>
+                    <button type="button" class="delete-btn">Delete Experience</button>
                 </div>
             </div>
             <button type="button" id="add-experience">Add Another Experience</button>
@@ -84,6 +86,7 @@
                         <label for="education-end-date-1">End Date</label>
                         <input type="date" id="education-end-date-1" name="education-end-date-1">
                     </div>
+                    <button type="button" class="delete-btn">Delete Education</button>
                 </div>
             </div>
             <button type="button" id="add-education">Add Another Education</button>
@@ -97,9 +100,25 @@
         </form>
     </div>
     <script>
+        document.getElementById('profile-picture').addEventListener('change', function(event) {
+            const preview = document.getElementById('image-preview');
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = '#';
+                preview.style.display = 'none';
+            }
+        });
+
         document.getElementById('add-experience').addEventListener('click', function() {
             const container = document.getElementById('work-experience-container');
-            const index = container.children.length + 1;
+            const index = Date.now(); // Use a unique index
             const newExperience = document.createElement('div');
             newExperience.classList.add('experience');
             newExperience.innerHTML = `
@@ -124,13 +143,14 @@
                     <label for="job-description-${index}">Description</label>
                     <textarea id="job-description-${index}" name="job-description-${index}" rows="5"></textarea>
                 </div>
+                <button type="button" class="delete-btn">Delete Experience</button>
             `;
             container.appendChild(newExperience);
         });
 
         document.getElementById('add-education').addEventListener('click', function() {
             const container = document.getElementById('education-container');
-            const index = container.children.length + 1;
+            const index = Date.now(); // Use a unique index
             const newEducation = document.createElement('div');
             newEducation.classList.add('education');
             newEducation.innerHTML = `
@@ -151,8 +171,21 @@
                     <label for="education-end-date-${index}">End Date</label>
                     <input type="date" id="education-end-date-${index}" name="education-end-date-${index}">
                 </div>
+                <button type="button" class="delete-btn">Delete Education</button>
             `;
             container.appendChild(newEducation);
+        });
+
+        document.getElementById('work-experience-container').addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('delete-btn')) {
+                e.target.closest('.experience').remove();
+            }
+        });
+
+        document.getElementById('education-container').addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('delete-btn')) {
+                e.target.closest('.education').remove();
+            }
         });
     </script>
 </body>

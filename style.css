@@ -66,4 +66,31 @@ hr {
 
 .experience, .education {
     margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    position: relative;
+}
+
+#image-preview {
+    max-width: 200px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius: 4px;
+    display: none;
+}
+
+.delete-btn {
+    background: #e74c3c;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+
+.delete-btn:hover {
+    background: #c0392b;
 }
