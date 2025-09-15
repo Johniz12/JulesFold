@@ -8,8 +8,12 @@
 </head>
 <body>
     <div class="container">
-        <div style="text-align: right; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <a href="index.html" style="text-decoration: none; color: #333;">&larr; Back to Template Upload</a>
+            <div>
+                <button type="button" id="import-json-btn">Import from JSON</button>
+                <input type="file" id="json-upload" accept=".json,application/json" style="display: none;">
+            </div>
         </div>
         <h1>Resume Details</h1>
         <form id="resume-form">
@@ -63,16 +67,7 @@
         </form>
     </div>
     <script>
-        // --- UTILITY FUNCTIONS ---
-        function getBase64Image(img) {
-            const canvas = document.createElement("canvas");
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0);
-            const dataURL = canvas.toDataURL("image/png");
-            return dataURL;
-        }
+        let profilePictureDataUrl = '';
 
         // --- DYNAMIC SECTION CREATION FUNCTIONS ---
         function addWorkExperience(data = {}) {
@@ -135,41 +130,48 @@
             container.appendChild(newEducation);
         }
 
+        // --- FORM POPULATING FUNCTION ---
+        function populateForm(data) {
+            document.getElementById('name').value = data.name || '';
+            document.getElementById('email').value = data.email || '';
+            document.getElementById('phone').value = data.phone || '';
+            document.getElementById('address').value = data.address || '';
+            document.getElementById('summary').value = data.summary || '';
+            document.getElementById('skills').value = data.skills || '';
+
+            if (data.profilePicture) {
+                profilePictureDataUrl = data.profilePicture;
+                const preview = document.getElementById('image-preview');
+                preview.src = profilePictureDataUrl;
+                preview.style.display = 'block';
+            } else {
+                profilePictureDataUrl = '';
+                document.getElementById('image-preview').style.display = 'none';
+            }
+
+            const workContainer = document.getElementById('work-experience-container');
+            workContainer.innerHTML = '';
+            if (data.workExperience && data.workExperience.length > 0) {
+                data.workExperience.forEach(exp => addWorkExperience(exp));
+            } else {
+                addWorkExperience();
+            }
+
+            const eduContainer = document.getElementById('education-container');
+            eduContainer.innerHTML = '';
+            if (data.education && data.education.length > 0) {
+                data.education.forEach(edu => addEducation(edu));
+            } else {
+                addEducation();
+            }
+        }
+
         // --- DOMContentLoaded: LOAD DATA and SET UP LISTENERS ---
         document.addEventListener('DOMContentLoaded', function() {
-            // --- PRE-FILLING LOGIC ---
+            // Load data from localStorage on initial load
             const resumeDataJSON = localStorage.getItem('resumeData');
             if (resumeDataJSON) {
-                const data = JSON.parse(resumeDataJSON);
-
-                document.getElementById('name').value = data.name || '';
-                document.getElementById('email').value = data.email || '';
-                document.getElementById('phone').value = data.phone || '';
-                document.getElementById('address').value = data.address || '';
-                document.getElementById('summary').value = data.summary || '';
-                document.getElementById('skills').value = data.skills || '';
-
-                if (data.profilePicture) {
-                    const preview = document.getElementById('image-preview');
-                    preview.src = data.profilePicture;
-                    preview.style.display = 'block';
-                }
-
-                const workContainer = document.getElementById('work-experience-container');
-                workContainer.innerHTML = '';
-                if (data.workExperience && data.workExperience.length > 0) {
-                    data.workExperience.forEach(exp => addWorkExperience(exp));
-                } else {
-                    addWorkExperience();
-                }
-
-                const eduContainer = document.getElementById('education-container');
-                eduContainer.innerHTML = '';
-                if (data.education && data.education.length > 0) {
-                    data.education.forEach(edu => addEducation(edu));
-                } else {
-                    addEducation();
-                }
+                populateForm(JSON.parse(resumeDataJSON));
             } else {
                 addWorkExperience();
                 addEducation();
@@ -182,15 +184,41 @@
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        preview.src = e.target.result;
+                        profilePictureDataUrl = e.target.result;
+                        preview.src = profilePictureDataUrl;
                         preview.style.display = 'block';
                     }
                     reader.readAsDataURL(file);
                 } else {
+                    profilePictureDataUrl = '';
                     preview.src = '#';
                     preview.style.display = 'none';
                 }
             });
+
+            // JSON Import Listeners
+            document.getElementById('import-json-btn').addEventListener('click', function() {
+                document.getElementById('json-upload').click();
+            });
+
+            document.getElementById('json-upload').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        populateForm(data);
+                    } catch (error) {
+                        alert('Error parsing JSON file. Please ensure it is valid.');
+                        console.error("JSON Parse Error:", error);
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            });
+
 
             document.getElementById('add-experience').addEventListener('click', () => addWorkExperience());
             document.getElementById('add-education').addEventListener('click', () => addEducation());
@@ -219,13 +247,8 @@
                     skills: document.getElementById('skills').value,
                     workExperience: [],
                     education: [],
-                    profilePicture: ''
+                    profilePicture: profilePictureDataUrl
                 };
-
-                const imgPreview = document.getElementById('image-preview');
-                if (imgPreview.src && !imgPreview.src.endsWith('#')) {
-                    resumeData.profilePicture = getBase64Image(imgPreview);
-                }
 
                 document.querySelectorAll('#work-experience-container .experience').forEach(expDiv => {
                     const experience = {
