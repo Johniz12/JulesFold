@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Resume</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <div class="controls">
@@ -115,19 +114,15 @@
 
             // Generate PDF Button
             document.getElementById('save-pdf-btn').addEventListener('click', function() {
-                const { jsPDF } = window.jspdf;
                 const content = document.getElementById('resume-content');
-
-                html2canvas(content, { scale: 2 }).then(canvas => {
-                    const imgData = canvas.toDataURL('image/png');
-                    const pdf = new jsPDF({
-                        orientation: 'portrait',
-                        unit: 'px',
-                        format: [canvas.width, canvas.height]
-                    });
-                    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-                    pdf.save('resume.pdf');
-                });
+                const opt = {
+                  margin:       0.5,
+                  filename:     'resume.pdf',
+                  image:        { type: 'jpeg', quality: 0.98 },
+                  html2canvas:  { scale: 2 },
+                  jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+                };
+                html2pdf().from(content).set(opt).save();
             });
         });
     </script>
