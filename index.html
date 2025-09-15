@@ -3,189 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resume Details</title>
+    <title>Resume Builder - Upload Template</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Resume Details</h1>
-        <form id="resume-form">
-            <div class="form-group">
-                <label for="profile-picture">Profile Picture</label>
-                <input type="file" id="profile-picture" name="profile-picture" accept="image/*">
-                <img id="image-preview" src="#" alt="Image Preview" />
-            </div>
-
-            <h2>Personal Details</h2>
-            <div class="form-group">
-                <label for="name">Full Name</label>
-                <input type="text" id="name" name="name" required>
-            </div>
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="phone">Phone</label>
-                <input type="tel" id="phone" name="phone" required>
-            </div>
-            <div class="form-group">
-                <label for="address">Address</label>
-                <input type="text" id="address" name="address">
-            </div>
-
-            <h2>Summary</h2>
-            <div class="form-group">
-                <textarea id="summary" name="summary" rows="5"></textarea>
-            </div>
-
-            <h2>Work Experience</h2>
-            <div id="work-experience-container">
-                <div class="experience">
-                    <div class="form-group">
-                        <label for="job-title-1">Job Title</label>
-                        <input type="text" id="job-title-1" name="job-title-1">
-                    </div>
-                    <div class="form-group">
-                        <label for="company-1">Company</label>
-                        <input type="text" id="company-1" name="company-1">
-                    </div>
-                    <div class="form-group">
-                        <label for="start-date-1">Start Date</label>
-                        <input type="date" id="start-date-1" name="start-date-1">
-                    </div>
-                    <div class="form-group">
-                        <label for="end-date-1">End Date</label>
-                        <input type="date" id="end-date-1" name="end-date-1">
-                    </div>
-                    <div class="form-group">
-                        <label for="job-description-1">Description</label>
-                        <textarea id="job-description-1" name="job-description-1" rows="5"></textarea>
-                    </div>
-                    <button type="button" class="delete-btn">Delete Experience</button>
-                </div>
-            </div>
-            <button type="button" id="add-experience">Add Another Experience</button>
-
-            <h2>Education</h2>
-            <div id="education-container">
-                <div class="education">
-                    <div class="form-group">
-                        <label for="degree-1">Degree</label>
-                        <input type="text" id="degree-1" name="degree-1">
-                    </div>
-                    <div class="form-group">
-                        <label for="school-1">School/University</label>
-                        <input type="text" id="school-1" name="school-1">
-                    </div>
-                    <div class="form-group">
-                        <label for="education-start-date-1">Start Date</label>
-                        <input type="date" id="education-start-date-1" name="education-start-date-1">
-                    </div>
-                    <div class="form-group">
-                        <label for="education-end-date-1">End Date</label>
-                        <input type="date" id="education-end-date-1" name="education-end-date-1">
-                    </div>
-                    <button type="button" class="delete-btn">Delete Education</button>
-                </div>
-            </div>
-            <button type="button" id="add-education">Add Another Education</button>
-
-            <h2>Skills</h2>
-            <div class="form-group">
-                <textarea id="skills" name="skills" rows="5" placeholder="Enter skills, separated by commas"></textarea>
-            </div>
-
-            <button type="submit">Submit</button>
-        </form>
+        <h1>Step 1: Upload Your Resume Template</h1>
+        <p>Please upload an HTML file to be used as your resume template. The template should contain placeholders like {{name}}, {{email}}, etc., which will be replaced with your details.</p>
+        <div class="form-group">
+            <label for="template-upload">Upload HTML Template</label>
+            <input type="file" id="template-upload" accept=".html,text/html">
+        </div>
+        <button id="proceed-btn">Proceed to Enter Details</button>
     </div>
     <script>
-        document.getElementById('profile-picture').addEventListener('change', function(event) {
-            const preview = document.getElementById('image-preview');
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                }
-                reader.readAsDataURL(file);
-            } else {
-                preview.src = '#';
-                preview.style.display = 'none';
+        document.getElementById('proceed-btn').addEventListener('click', function() {
+            const fileInput = document.getElementById('template-upload');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Please select an HTML template file first.');
+                return;
             }
-        });
 
-        document.getElementById('add-experience').addEventListener('click', function() {
-            const container = document.getElementById('work-experience-container');
-            const index = Date.now(); // Use a unique index
-            const newExperience = document.createElement('div');
-            newExperience.classList.add('experience');
-            newExperience.innerHTML = `
-                <hr>
-                <div class="form-group">
-                    <label for="job-title-${index}">Job Title</label>
-                    <input type="text" id="job-title-${index}" name="job-title-${index}">
-                </div>
-                <div class="form-group">
-                    <label for="company-${index}">Company</label>
-                    <input type="text" id="company-${index}" name="company-${index}">
-                </div>
-                <div class="form-group">
-                    <label for="start-date-${index}">Start Date</label>
-                    <input type="date" id="start-date-${index}" name="start-date-${index}">
-                </div>
-                <div class="form-group">
-                    <label for="end-date-${index}">End Date</label>
-                    <input type="date" id="end-date-${index}" name="end-date-${index}">
-                </div>
-                <div class="form-group">
-                    <label for="job-description-${index}">Description</label>
-                    <textarea id="job-description-${index}" name="job-description-${index}" rows="5"></textarea>
-                </div>
-                <button type="button" class="delete-btn">Delete Experience</button>
-            `;
-            container.appendChild(newExperience);
-        });
-
-        document.getElementById('add-education').addEventListener('click', function() {
-            const container = document.getElementById('education-container');
-            const index = Date.now(); // Use a unique index
-            const newEducation = document.createElement('div');
-            newEducation.classList.add('education');
-            newEducation.innerHTML = `
-                <hr>
-                <div class="form-group">
-                    <label for="degree-${index}">Degree</label>
-                    <input type="text" id="degree-${index}" name="degree-${index}">
-                </div>
-                <div class="form-group">
-                    <label for="school-${index}">School/University</label>
-                    <input type="text" id="school-${index}" name="school-${index}">
-                </div>
-                <div class="form-group">
-                    <label for="education-start-date-${index}">Start Date</label>
-                    <input type="date" id="education-start-date-${index}" name="education-start-date-${index}">
-                </div>
-                <div class="form-group">
-                    <label for="education-end-date-${index}">End Date</label>
-                    <input type="date" id="education-end-date-${index}" name="education-end-date-${index}">
-                </div>
-                <button type="button" class="delete-btn">Delete Education</button>
-            `;
-            container.appendChild(newEducation);
-        });
-
-        document.getElementById('work-experience-container').addEventListener('click', function(e) {
-            if (e.target && e.target.classList.contains('delete-btn')) {
-                e.target.closest('.experience').remove();
-            }
-        });
-
-        document.getElementById('education-container').addEventListener('click', function(e) {
-            if (e.target && e.target.classList.contains('delete-btn')) {
-                e.target.closest('.education').remove();
-            }
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const templateContent = event.target.result;
+                localStorage.setItem('resumeTemplate', templateContent);
+                window.location.href = 'details.html';
+            };
+            reader.onerror = function() {
+                alert('Error reading the file.');
+            };
+            reader.readAsText(file);
         });
     </script>
 </body>

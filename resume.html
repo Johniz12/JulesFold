@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Resume</title>
+</head>
+<body>
+    <!-- The generated resume will be injected here -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const template = localStorage.getItem('resumeTemplate');
+            const dataJSON = localStorage.getItem('resumeData');
+
+            if (!template || !dataJSON) {
+                document.body.innerHTML = '<h1>Error: Template or data not found. Please start over.</h1>';
+                return;
+            }
+
+            let populatedTemplate = template;
+            const data = JSON.parse(dataJSON);
+
+            // Replace simple placeholders
+            populatedTemplate = populatedTemplate.replace(/{{name}}/g, data.name || '');
+            populatedTemplate = populatedTemplate.replace(/{{email}}/g, data.email || '');
+            populatedTemplate = populatedTemplate.replace(/{{phone}}/g, data.phone || '');
+            populatedTemplate = populatedTemplate.replace(/{{address}}/g, data.address || '');
+            populatedTemplate = populatedTemplate.replace(/{{summary}}/g, data.summary || '');
+
+            // Replace image source
+            populatedTemplate = populatedTemplate.replace(/{{profile_picture_src}}/g, data.profilePicture || '#');
+
+            // Handle skills
+            if (data.skills) {
+                const skillsList = data.skills.split(',').map(s => `<li>${s.trim()}</li>`).join('');
+                populatedTemplate = populatedTemplate.replace(/{{skills_list}}/g, `<ul>${skillsList}</ul>`);
+            } else {
+                populatedTemplate = populatedTemplate.replace(/{{skills_list}}/g, ''); // Clear placeholder if no skills
+            }
+
+            // Handle work experience
+            let workHtml = '';
+            if (data.workExperience) {
+                data.workExperience.forEach(exp => {
+                    if(exp.jobTitle) { // Only add if job title exists
+                        workHtml += `<div class="work-item">
+                                        <h3>${exp.jobTitle} at ${exp.company || ''}</h3>
+                                        <p><em>${exp.startDate || ''} - ${exp.endDate || 'Present'}</em></p>
+                                        <p>${exp.description || ''}</p>
+                                    </div>`;
+                    }
+                });
+            }
+            populatedTemplate = populatedTemplate.replace(/{{work_experience}}/g, workHtml);
+
+            // Handle education
+            let eduHtml = '';
+            if (data.education) {
+                data.education.forEach(edu => {
+                    if(edu.degree) { // Only add if degree exists
+                        eduHtml += `<div class="edu-item">
+                                        <h3>${edu.degree}</h3>
+                                        <p>${edu.school || ''}</p>
+                                        <p><em>${edu.startDate || ''} - ${edu.endDate || 'Present'}</em></p>
+                                    </div>`;
+                    }
+                });
+            }
+            populatedTemplate = populatedTemplate.replace(/{{education}}/g, eduHtml);
+
+            // Inject the final HTML into the body
+            document.body.innerHTML = populatedTemplate;
+        });
+    </script>
+</body>
+</html>
