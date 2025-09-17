@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Resume</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
@@ -102,7 +103,10 @@
 
             // Save Screenshot Button
             document.getElementById('save-jpg-btn').addEventListener('click', function() {
-                html2canvas(document.getElementById('resume-content'), { scale: 2 }).then(canvas => {
+                html2canvas(document.getElementById('resume-content'), {
+                    scale: 2,
+                    useCORS: true
+                }).then(canvas => {
                     const a = document.createElement('a');
                     a.href = canvas.toDataURL('image/jpeg', 0.9);
                     a.download = 'resume.jpg';

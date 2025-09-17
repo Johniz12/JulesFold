@@ -95,6 +95,23 @@ hr {
     background: #c0392b;
 }
 
+/* --- New Styles for Details Page Header --- */
+.details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.back-link {
+    text-decoration: none;
+    color: #333;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
 .controls {
     padding: 1rem;
     background: #333;
@@ -109,6 +126,7 @@ hr {
     background-color: #555;
     margin: 0 0.5rem;
     color: white;
+    border: none; /* Ensure no default borders */
 }
 
 .controls button:hover {
@@ -116,8 +134,76 @@ hr {
 }
 
 #resume-content {
-    margin-top: 1rem;
+    /* Adding a max-width and margin for better desktop reading */
+    max-width: 8.5in; /* Standard paper width */
+    margin: 1rem auto;
     padding: 2rem;
     background: white;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* --- Responsive Styles --- */
+
+/* Tablet Styles */
+@media (max-width: 1024px) {
+    .controls {
+        padding: 0.75rem;
+    }
+    .controls button {
+        padding: 0.4rem 0.8rem;
+    }
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    body {
+        -webkit-text-size-adjust: 100%; /* Prevent font scaling in landscape on iOS */
+    }
+
+    .container, #resume-content {
+        margin: 0;
+        padding: 1rem;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    .preview-container {
+        margin: 1rem;
+        padding: 1rem;
+    }
+
+    .details-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .import-group {
+        margin-top: 1rem;
+        width: 100%;
+    }
+
+    #import-json-btn {
+        width: 100%;
+    }
+
+    .preview-profile-pic {
+        float: none;
+        display: block;
+        margin: 0 auto 1rem auto;
+    }
+
+    #personal-details h2, #personal-details p {
+        text-align: center;
+    }
+
+    .controls {
+        flex-direction: column;
+        padding: 0.5rem;
+        position: static;
+    }
+
+    .controls button {
+        margin: 0.25rem 0;
+        width: 100%;
+    }
 }
