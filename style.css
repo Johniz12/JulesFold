@@ -1,0 +1,263 @@
+/* General Body Styles */
+body {
+    font-family: 'Lato', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Button Container */
+.button-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+button {
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 0 10px;
+}
+
+button:hover {
+    background-color: #357bd8;
+}
+
+@media print {
+    .button-container {
+        display: none;
+    }
+    body {
+        padding: 0;
+    }
+    .resume-container {
+        box-shadow: none;
+    }
+}
+
+/* Resume Container */
+.resume-container {
+    display: flex;
+    width: 900px;
+    min-height: 1200px;
+    background-color: #fff;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Left Column */
+.left-column {
+    background-color: #f2f5f8;
+    width: 35%;
+    padding: 40px 30px;
+    position: relative;
+    color: #555;
+}
+
+.left-column::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 250px;
+    background-color: #4a90e2; /* A shade of blue */
+    clip-path: polygon(0 0, 100% 0, 100% 40%, 0 100%);
+}
+
+.profile-pic-container {
+    position: relative;
+    text-align: center;
+    margin-bottom: 20px;
+    padding-top: 50px;
+}
+
+.profile-pic {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 5px solid #fff;
+    background-image: url('images/Modern Professional CV Resume.png');
+    background-size: 600% 800%;
+    background-position: 14% 6%;
+    background-repeat: no-repeat;
+}
+
+.name-section {
+    text-align: center;
+    color: #4a90e2;
+    margin-bottom: 40px;
+}
+
+.name-section h1 {
+    font-size: 36px;
+    margin: 0;
+}
+
+.name-section h2 {
+    font-size: 18px;
+    font-weight: 300;
+    color: #666;
+    margin-top: 5px;
+}
+
+.contact-section, .about-me-section, .skills-section {
+    margin-bottom: 30px;
+}
+
+.left-column h3 {
+    font-size: 18px;
+    color: #333;
+    border-bottom: 2px solid #4a90e2;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+.left-column h3 .fas {
+    margin-right: 10px;
+    color: #4a90e2;
+}
+
+.contact-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.contact-section li {
+    margin-bottom: 10px;
+}
+
+.about-me-section p {
+    line-height: 1.6;
+}
+
+.skills-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.skills-section li {
+    margin-bottom: 10px;
+    background-color: #e8eef3;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+/* Right Column */
+.right-column {
+    width: 65%;
+    padding: 40px 30px;
+}
+
+.right-column h2 {
+    font-size: 24px;
+    color: #333;
+    border-bottom: 2px solid #4a90e2;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.right-column h2 .fas {
+    margin-right: 15px;
+    color: #4a90e2;
+}
+
+.education-section .education-item, .experience-section .experience-item {
+    margin-bottom: 20px;
+    position: relative;
+    padding-left: 20px;
+}
+
+/* Timeline effect */
+.education-section, .experience-section {
+    position: relative;
+}
+
+.education-item::before, .experience-item::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 5px;
+    width: 10px;
+    height: 10px;
+    background-color: #4a90e2;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    z-index: 1;
+}
+
+.education-section .education-item:not(:last-child)::after,
+.experience-section .experience-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 1px;
+    height: 100%;
+    background-color: #4a90e2;
+}
+
+
+.education-item h4, .experience-item h4 {
+    font-size: 18px;
+    margin: 0;
+    color: #444;
+}
+
+.education-item h5, .experience-item h5 {
+    font-size: 16px;
+    font-weight: normal;
+    font-style: italic;
+    color: #666;
+    margin: 5px 0;
+}
+
+.education-item p, .experience-item p {
+    color: #555;
+    line-height: 1.5;
+    margin: 5px 0;
+}
+
+.education-item span, .experience-item span {
+    position: absolute;
+    top: 0;
+    right: 0;
+    color: #888;
+    font-style: italic;
+}
+
+.references-section {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.reference-item {
+    width: 48%;
+    margin-bottom: 20px;
+}
+
+.reference-item h4 {
+    margin: 0 0 5px 0;
+    color: #444;
+}
+
+.reference-item h5 {
+    margin: 0 0 10px 0;
+    font-weight: normal;
+    color: #666;
+}
+
+.reference-item p {
+    margin: 0;
+    color: #555;
+    font-size: 14px;
+}
