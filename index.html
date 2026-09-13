@@ -1,1 +1,629 @@
-index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PVC ID Design Studio | Professional Print-Ready ID Card Layouts</title>
+    <meta name="description" content="Custom PVC ID card layouts, editing, and print-ready designs for schools, businesses, organizations, and events. Fast 24-48h turnaround.">
+
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- =================================================================
+         1. SITE NAVIGATION
+         ================================================================= -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="#home" class="brand-logo" aria-label="PVC ID Studio Homepage">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                    <line x1="6" y1="8" x2="10" y2="8"></line>
+                    <line x1="6" y1="12" x2="14" y2="12"></line>
+                    <circle cx="17" cy="9" r="2"></circle>
+                </svg>
+                <span data-config="business.name">PVC ID Design Studio</span>
+            </a>
+
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#services" class="nav-link">Services</a></li>
+                <li><a href="#samples" class="nav-link">Samples</a></li>
+                <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
+                <li><a href="#pricing" class="nav-link">Pricing</a></li>
+                <li><a href="#faq" class="nav-link">FAQ</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+                <li><a href="#order" class="btn btn-primary btn-sm">Start an Order</a></li>
+            </ul>
+
+            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle Navigation Menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- =================================================================
+         2. HERO SECTION
+         ================================================================= -->
+    <section class="section hero-section" id="home">
+        <div class="container hero-grid">
+            <div class="hero-content">
+                <span class="section-subtitle">Legitimate Identification & Organizational Cards</span>
+                <h1>Professional <span>PVC ID Layouts</span> Made Simple</h1>
+                <p class="hero-lead">Custom ID card layouts, editing, and print-ready designs for schools, businesses, organizations, events, and legitimate personal projects.</p>
+
+                <div class="hero-cta-group">
+                    <a href="#order" class="btn btn-primary">Start an Order</a>
+                    <a href="#samples" class="btn btn-secondary">View Samples</a>
+                </div>
+
+                <div class="legitimacy-notice">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        <polyline points="9 12 11 14 15 10"></polyline>
+                    </svg>
+                    <div>
+                        <strong>100% Legitimate Service Policy:</strong>
+                        <span>We strictly create designs for verified employee, school, event, and club cards. We do not recreate government IDs or official licenses.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-mockup-wrap">
+                <div class="mockup-stack">
+                    <!-- Sample Card 1 (Front) -->
+                    <div class="pvc-card-mockup mockup-main">
+                        <div class="pvc-card-header">
+                            <span class="pvc-brand-title">Apex Logistics</span>
+                            <div class="pvc-chip"></div>
+                        </div>
+                        <div class="pvc-card-body">
+                            <div class="pvc-photo">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <div class="pvc-details">
+                                <div class="pvc-name">Alexander Hayes</div>
+                                <div class="pvc-role">Operations Manager</div>
+                                <div class="pvc-meta">ID: EMP-2025-0842</div>
+                                <div class="pvc-meta">Dept: Logistics</div>
+                            </div>
+                        </div>
+                        <div class="pvc-card-footer">
+                            <span class="badge badge-legit">Official Staff</span>
+                            <div class="pvc-barcode"></div>
+                        </div>
+                    </div>
+
+                    <!-- Sample Card 2 (Back/Secondary) -->
+                    <div class="pvc-card-mockup mockup-sub">
+                        <div class="pvc-card-header">
+                            <span class="pvc-brand-title">St. Jude Academy</span>
+                            <span style="font-size:0.7rem; font-weight:700; color:var(--primary-color)">2024-2025</span>
+                        </div>
+                        <div class="pvc-card-body">
+                            <div class="pvc-photo" style="background-color:#dbeafe;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <div class="pvc-details">
+                                <div class="pvc-name">Sophia Rose Mendoza</div>
+                                <div class="pvc-role">Grade 11 - STEM</div>
+                                <div class="pvc-meta">ID: SJA-2024-9102</div>
+                            </div>
+                        </div>
+                        <div class="pvc-card-footer">
+                            <span style="font-size:0.65rem; color:var(--text-muted)">Student Pass</span>
+                            <div class="pvc-barcode"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         3. SERVICES SECTION
+         ================================================================= -->
+    <section class="section section-bg-light" id="services">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-subtitle">What We Offer</span>
+                <h2 class="section-title">Tailored PVC ID Layout Services</h2>
+                <p class="section-description">Choose from single custom card designs, fast layout edits, or batch template creation for your entire organization.</p>
+            </div>
+
+            <div class="services-grid" id="servicesGrid">
+                <!-- Dynamically rendered from CONFIG.services -->
+            </div>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         4. PORTFOLIO / SAMPLE DESIGNS SECTION
+         ================================================================= -->
+    <section class="section" id="samples">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-subtitle">Portfolio Showcase</span>
+                <h2 class="section-title">Explore Sample ID Designs</h2>
+                <p class="section-description">Clean, high-resolution PVC ID layouts designed for diverse organizational and event needs. All samples use fictional information.</p>
+            </div>
+
+            <div class="portfolio-filter" id="portfolioFilter">
+                <button class="filter-btn active" data-filter="all">All Samples</button>
+                <button class="filter-btn" data-filter="employee">Employee</button>
+                <button class="filter-btn" data-filter="school">School</button>
+                <button class="filter-btn" data-filter="membership">Membership</button>
+                <button class="filter-btn" data-filter="event">Event</button>
+                <button class="filter-btn" data-filter="organization">Organization</button>
+            </div>
+
+            <div class="portfolio-grid" id="portfolioGrid">
+                <!-- Dynamically rendered from CONFIG.portfolio -->
+            </div>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         5. WHY CHOOSE US SECTION
+         ================================================================= -->
+    <section class="section section-bg-alt" id="why-choose-us">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-subtitle">Trust & Reliability</span>
+                <h2 class="section-title">Why Business Owners Choose Us</h2>
+                <p class="section-description">We combine professional graphic design standards with fast turnaround times and reliable communication.</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-color)" stroke-width="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <h3>Clean Professional Layouts</h3>
+                    <p>Designed according to modern graphic standards with proper font hierarchy, high clarity, and high-contrast photo areas.</p>
+                </div>
+
+                <div class="feature-card">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-color)" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    </svg>
+                    <h3>Print-Ready 300 DPI Files</h3>
+                    <p>Delivered in standard CR80 size (85.6mm x 53.98mm) ready to send straight to thermal or inkjet PVC printers.</p>
+                </div>
+
+                <div class="feature-card">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-color)" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <h3>24-48 Hour Turnaround</h3>
+                    <p>Get initial design proofs delivered directly to your email within 1 to 2 business days.</p>
+                </div>
+
+                <div class="feature-card">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-color)" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                    <h3>Direct Email Communication</h3>
+                    <p>No complicated dashboard logins or account setups required. Easy human communication via email.</p>
+                </div>
+
+                <div class="feature-card">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-color)" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    <h3>Revision Support Included</h3>
+                    <p>We work closely with you to adjust details, spelling, colors, or photo placements before final approval.</p>
+                </div>
+
+                <div class="feature-card">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-color)" stroke-width="2">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                        <line x1="1" y1="10" x2="23" y2="10"></line>
+                    </svg>
+                    <h3>Transparent Pricing</h3>
+                    <p>No hidden fees. Affordable flat rates for individual card layouts and custom discounts for bulk orders.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         6. HOW IT WORKS SECTION
+         ================================================================= -->
+    <section class="section" id="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-subtitle">Simple 4-Step Process</span>
+                <h2 class="section-title">How Ordering Works</h2>
+                <p class="section-description">Getting your custom PVC ID card layout is fast, structured, and hassle-free.</p>
+            </div>
+
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Choose Your Service</h3>
+                    <p>Select whether you need a design from scratch, layout editing, or bulk organization template generation.</p>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>Send Your Details</h3>
+                    <p>Fill out our simple order intake form below with your text content, logo files, and photo assets.</p>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Confirm Payment</h3>
+                    <p>Follow our manual GCash, Maya, or Bank Transfer payment instructions to initiate design production.</p>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h3>Receive Your Proof</h3>
+                    <p>Review your digital proof sent via email. Once approved, receive your high-resolution print-ready files!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         7. PRICING SECTION
+         ================================================================= -->
+    <section class="section section-bg-light" id="pricing">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-subtitle">Affordable Rates</span>
+                <h2 class="section-title">Simple & Transparent Pricing</h2>
+                <p class="section-description">Clear upfront prices with no surprise charges. Select the package that matches your needs.</p>
+            </div>
+
+            <div class="pricing-grid" id="pricingGrid">
+                <!-- Dynamically rendered from CONFIG.pricing -->
+            </div>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         8. ORDER INTAKE FORM SECTION
+         ================================================================= -->
+    <section class="section" id="order">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-subtitle">Primary Intake Form</span>
+                <h2 class="section-title">Start Your ID Design Order</h2>
+                <p class="section-description">Fill out the form below to submit your project requirements. You will receive an immediate confirmation and email summary.</p>
+            </div>
+
+            <div class="order-container">
+                <form id="orderForm" novalidate>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="clientName">Your Full Name <span class="required">*</span></label>
+                            <input type="text" id="clientName" name="clientName" class="form-input" placeholder="e.g. Maria Santos" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="clientEmail">Email Address <span class="required">*</span></label>
+                            <input type="email" id="clientEmail" name="clientEmail" class="form-input" placeholder="e.g. maria@example.com" required>
+                            <span class="form-hint">Proof copies and download links will be sent here.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="serviceType">Service Type Needed <span class="required">*</span></label>
+                            <select id="serviceType" name="serviceType" class="form-select" required>
+                                <option value="">-- Select a Service --</option>
+                                <option value="Basic ID Layout">Basic ID Layout (Front Only) - ₱250</option>
+                                <option value="Custom ID Design">Custom ID Design (Front & Back) - ₱450</option>
+                                <option value="Existing ID Editing">Existing ID Layout Editing - From ₱150</option>
+                                <option value="Bulk Organization Order">Bulk / Organization Order - Custom Quote</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="quantity">Number of IDs Needed <span class="required">*</span></label>
+                            <input type="number" id="quantity" name="quantity" class="form-input" min="1" value="1" required>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label class="form-label" for="orgName">Organization / School / Company Name <span class="required">*</span></label>
+                            <input type="text" id="orgName" name="orgName" class="form-input" placeholder="e.g. ABC Logistics Inc. or St. Jude School" required>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label class="form-label" for="requiredText">Required Text / ID Fields <span class="required">*</span></label>
+                            <textarea id="requiredText" name="requiredText" rows="3" class="form-textarea" placeholder="Provide details like: Name, Position/Role, ID Number, Department, Contact Person, Terms & Conditions for back." required></textarea>
+                            <span class="form-hint">Double-check all names and dates for spelling accuracy.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="designPreference">Color & Style Preferences</label>
+                            <input type="text" id="designPreference" name="designPreference" class="form-input" placeholder="e.g. Corporate Navy Blue & Gold, Modern, Minimalist">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="preferredDate">Preferred Delivery Date</label>
+                            <input type="date" id="preferredDate" name="preferredDate" class="form-input">
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label class="form-label">Reference Material / Logo / Photo Files</label>
+                            <div class="file-upload-box" id="fileUploadBox">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-color)" stroke-width="2" style="margin:0 auto 0.5rem auto;">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <div>Click or drag reference files here (Logos, Photos, Samples)</div>
+                                <span class="form-hint">Accepted formats: PNG, JPG, PDF, SVG, ZIP (Max 10MB)</span>
+                                <input type="file" id="fileInput" name="fileInput" multiple style="display:none;">
+                                <div id="fileList" style="margin-top:0.5rem; font-size:0.85rem; font-weight:600; color:var(--primary-color);"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label class="form-label" for="additionalNotes">Additional Instructions or Questions</label>
+                            <textarea id="additionalNotes" name="additionalNotes" rows="2" class="form-textarea" placeholder="Any special notes or specific barcode/QR requirements..."></textarea>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <button type="submit" class="btn btn-primary btn-block">Submit Order Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         9. PAYMENT INFORMATION SECTION
+         ================================================================= -->
+    <section class="section section-bg-alt" id="payment">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-subtitle">Manual Payment Methods</span>
+                <h2 class="section-title">Payment Instructions</h2>
+                <p class="section-description">We accept GCash, Maya, and Direct Bank Transfer. Payment account details are listed below.</p>
+            </div>
+
+            <div class="payment-grid" id="paymentGrid">
+                <!-- Dynamically rendered from CONFIG.payment -->
+            </div>
+
+            <!-- What Happens After Payment Explanation -->
+            <div style="max-width: 800px; margin: 2.5rem auto 0 auto; background: var(--surface-white); padding: 1.75rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                <h4 style="color: var(--primary-color); margin-bottom: 0.75rem;">What Happens After You Pay?</h4>
+                <ol style="padding-left: 1.25rem; font-size: 0.925rem; color: var(--text-secondary); line-height: 1.7;">
+                    <li>Send your payment screenshot or reference number to <strong data-config="business.email">contact@pvciddesign.com</strong> or via Messenger.</li>
+                    <li>Our team reviews your submission and begins drafting your ID layout proof immediately.</li>
+                    <li>Your digital proof will be delivered within 24-48 hours for review and spelling approval.</li>
+                    <li>Upon final approval, high-resolution print-ready files (300 DPI PDF/PNG) will be released.</li>
+                </ol>
+            </div>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         10. REVISION / APPROVAL WORKFLOW SECTION
+         ================================================================= -->
+    <section class="section" id="workflow">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-subtitle">Quality Assurance</span>
+                <h2 class="section-title">Design & Approval Workflow</h2>
+                <p class="section-description">We follow a rigorous review procedure to guarantee accuracy and print alignment.</p>
+            </div>
+
+            <div class="workflow-steps">
+                <div class="workflow-node">
+                    <span class="badge" style="background:#eff6ff; color:var(--accent-color)">Step 1</span>
+                    <h4>Order Received</h4>
+                </div>
+                <div class="workflow-arrow">→</div>
+                <div class="workflow-node">
+                    <span class="badge" style="background:#eff6ff; color:var(--accent-color)">Step 2</span>
+                    <h4>Requirements Review</h4>
+                </div>
+                <div class="workflow-arrow">→</div>
+                <div class="workflow-node">
+                    <span class="badge" style="background:#eff6ff; color:var(--accent-color)">Step 3</span>
+                    <h4>Initial Proof Delivery</h4>
+                </div>
+                <div class="workflow-arrow">→</div>
+                <div class="workflow-node">
+                    <span class="badge" style="background:#eff6ff; color:var(--accent-color)">Step 4</span>
+                    <h4>Revisions & Approval</h4>
+                </div>
+                <div class="workflow-arrow">→</div>
+                <div class="workflow-node">
+                    <span class="badge" style="background:#dcfce7; color:#15803d">Step 5</span>
+                    <h4>Print-Ready Release</h4>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         11. FREQUENTLY ASKED QUESTIONS (FAQ) SECTION
+         ================================================================= -->
+    <section class="section section-bg-light" id="faq">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-subtitle">Got Questions?</span>
+                <h2 class="section-title">Frequently Asked Questions</h2>
+                <p class="section-description">Find quick answers to common questions about our PVC ID layout services, file formats, and turnaround times.</p>
+            </div>
+
+            <div class="faq-container" id="faqAccordion">
+                <!-- Dynamically rendered from CONFIG.faqs -->
+            </div>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         12. CONTACT SECTION
+         ================================================================= -->
+    <section class="section" id="contact">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-subtitle">Get In Touch</span>
+                <h2 class="section-title">Have Questions Before Ordering?</h2>
+                <p class="section-description">Reach out directly through email or social channels for custom requests or quick inquiries.</p>
+            </div>
+
+            <div class="contact-grid">
+                <div class="contact-info-box">
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
+                        </div>
+                        <div class="contact-details">
+                            <h4>Email Us Directly</h4>
+                            <p><a href="mailto:contact@pvciddesign.com" id="contactEmailLink" data-config="business.email">contact@pvciddesign.com</a></p>
+                        </div>
+                    </div>
+
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                            </svg>
+                        </div>
+                        <div class="contact-details">
+                            <h4>Phone / Viber Support</h4>
+                            <p data-config="business.phone">+63 917 123 4567</p>
+                        </div>
+                    </div>
+
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </div>
+                        <div class="contact-details">
+                            <h4>Service Hours</h4>
+                            <p data-config="business.hours">Mon - Sat: 8:00 AM - 6:00 PM (PST)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:var(--surface-white); padding:2rem; border-radius:var(--radius-lg); border:1px solid var(--border-color); box-shadow:var(--shadow-sm);">
+                    <h3 style="margin-bottom:1rem; font-size:1.25rem;">Ask a Quick Question</h3>
+                    <form id="contactForm">
+                        <div class="form-group" style="margin-bottom:1rem;">
+                            <label class="form-label" for="contactName">Name</label>
+                            <input type="text" id="contactName" class="form-input" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom:1rem;">
+                            <label class="form-label" for="contactEmail">Email</label>
+                            <input type="email" id="contactEmail" class="form-input" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom:1rem;">
+                            <label class="form-label" for="contactMessage">Question or Message</label>
+                            <textarea id="contactMessage" rows="3" class="form-textarea" placeholder="How can we help you?" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Send Message via Email</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         13. FOOTER
+         ================================================================= -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <h3 data-config="business.name">PVC ID Design Studio</h3>
+                    <p data-config="business.tagline">Professional PVC ID Layouts & Print-Ready Designs for schools, companies, and organizations.</p>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#samples">Samples</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Customer Care</h4>
+                    <ul class="footer-links">
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#order">Start Order</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="#contact">Contact Us</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Legitimacy Guarantee</h4>
+                    <p style="font-size:0.85rem; line-height:1.5;">We strictly design legitimate identification, membership, and staff badges. We do not support counterfeit or fake state documents.</p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div>&copy; <span id="currentYear">2025</span> <span data-config="business.name">PVC ID Design Studio</span>. All rights reserved.</div>
+                <div>Designed for modern digital small business service storefronts.</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- =================================================================
+         14. ORDER CONFIRMATION MODAL
+         ================================================================= -->
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalCloseBtn">&times;</button>
+            <div style="text-align: center; padding: 1rem 0;">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" style="margin-bottom: 1rem;">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Order Request Submitted!</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size:0.95rem;">
+                    Thank you, <strong id="modalClientName">Customer</strong>. Your order details have been registered.
+                </p>
+
+                <div style="background: var(--neutral-bg); padding: 1.25rem; border-radius: var(--radius-md); text-align: left; font-size: 0.9rem; margin-bottom: 1.5rem; border: 1px solid var(--border-color);">
+                    <div style="margin-bottom:0.5rem;"><strong>Service Selected:</strong> <span id="modalServiceType">--</span></div>
+                    <div style="margin-bottom:0.5rem;"><strong>Organization:</strong> <span id="modalOrgName">--</span></div>
+                    <div style="margin-bottom:0.5rem;"><strong>Reference ID:</strong> <code id="modalRefId" style="background:#e2e8f0; padding:2px 6px; border-radius:4px;">#PVC-0000</code></div>
+                    <div><strong>Next Steps:</strong> Please proceed to payment or check your inbox (<span id="modalClientEmail">--</span>) for payment instructions.</div>
+                </div>
+
+                <div style="display:flex; gap:0.75rem; justify-content:center;">
+                    <a href="#payment" class="btn btn-primary" id="modalPaymentBtn">View Payment Instructions</a>
+                    <button class="btn btn-secondary" id="modalDoneBtn">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
