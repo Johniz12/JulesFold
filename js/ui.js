@@ -1,11 +1,11 @@
 /**
  * TEMPOFLOW - UI Controller
- * Renders views, handles interactions, timer display & ring, modals, tabs
+ * Renders views, handles interactions, timer display & ring, modals, tabs,
+ * duration components with seconds precision, and routine audio dropdowns.
  */
 
 class UIController {
   constructor() {
-    // Cache common DOM elements
     this.timerDisplay = document.getElementById('timerDisplay');
     this.timerRingCircle = document.getElementById('timerRingCircle');
     this.timerIntervalBadge = document.getElementById('timerIntervalBadge');
@@ -26,11 +26,9 @@ class UIController {
     this.schedulerCalendar = document.getElementById('schedulerCalendar');
     this.todayScheduleList = document.getElementById('todayScheduleList');
 
-    // Ring circumference (2 * PI * r = 2 * PI * 100 = 628.3)
     this.ringCircumference = 628.318;
   }
 
-  // --- Header & Date Update ---
   updateHeaderDate() {
     const now = new Date();
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -45,7 +43,6 @@ class UIController {
     if (dateEl) dateEl.textContent = dateStr;
   }
 
-  // --- View Tab Switching ---
   switchTab(tabName) {
     document.querySelectorAll('.nav-link').forEach(link => {
       if (link.dataset.tab === tabName) {
@@ -64,28 +61,32 @@ class UIController {
     });
   }
 
-  // --- Timer Centerpiece Display ---
   updateTimer(timeData) {
     if (!timeData) return;
 
     const remainingSecs = Math.max(0, timeData.remainingSeconds || 0);
-    const mins = Math.floor(remainingSecs / 60);
+    const hrs = Math.floor(remainingSecs / 3600);
+    const mins = Math.floor((remainingSecs % 3600) / 60);
     const secs = remainingSecs % 60;
-    const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+    let formatted = '';
+    if (hrs > 0) {
+      formatted = `${hrs}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    } else {
+      formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
 
     if (this.timerDisplay) {
       this.timerDisplay.textContent = formatted;
       document.title = `${formatted} — TempoFlow`;
     }
 
-    // Circular Progress Ring update
     if (this.timerRingCircle) {
       const progress = Math.min(1, Math.max(0, timeData.progress || 0));
       const offset = this.ringCircumference * progress;
       this.timerRingCircle.style.strokeDashoffset = offset;
     }
 
-    // Current and upcoming interval details
     const current = timeData.currentInterval;
     const next = timeData.nextInterval;
 
@@ -94,10 +95,8 @@ class UIController {
         this.timerIntervalName.textContent = current.name || 'Interval';
       }
 
-      // Update Centerpiece & Badge Theme
       this._updateTimerStateVisuals(current.type, timeData.state);
 
-      // Session / Round details
       if (this.timerCycleBadge) {
         const cycleText = timeData.totalCycles === 0
           ? `Cycle ${timeData.currentCycle} (Loop)`
@@ -122,18 +121,18 @@ class UIController {
 
     if (this.upcomingIntervalText) {
       if (next) {
-        const nextMins = Math.floor((next.duration || 0) / 60);
-        const nextSecs = (next.duration || 0) % 60;
-        const durStr = nextMins > 0
-          ? `${nextMins}:${String(nextSecs).padStart(2, '0')}`
-          : `${nextSecs}s`;
+        const nSec = next.duration || 0;
+        const nMins = Math.floor(nSec / 60);
+        const nRemainingSec = nSec % 60;
+        const durStr = nMins > 0
+          ? (nRemainingSec > 0 ? `${nMins}m ${nRemainingSec}s` : `${nMins}m`)
+          : `${nRemainingSec}s`;
         this.upcomingIntervalText.textContent = `${next.name} (${durStr})`;
       } else {
         this.upcomingIntervalText.textContent = 'End of Routine';
       }
     }
 
-    // Main Timer Play/Pause Button State
     this._updateMainButtonState(timeData.state);
   }
 
@@ -141,14 +140,12 @@ class UIController {
     if (!this.btnTimerMainIcon) return;
 
     if (state === 'running') {
-      // Pause icon
       this.btnTimerMainIcon.innerHTML = `
         <rect x="6" y="4" width="4" height="16" />
         <rect x="14" y="4" width="4" height="16" />
       `;
       this.btnTimerMain.title = 'Pause Timer';
     } else {
-      // Play icon
       this.btnTimerMainIcon.innerHTML = `
         <polygon points="5 3 19 12 5 21 5 3"/>
       `;
@@ -159,7 +156,6 @@ class UIController {
   _updateTimerStateVisuals(type, state) {
     if (!this.timerCenterpiece || !this.timerIntervalBadge) return;
 
-    // Reset modifier classes
     this.timerCenterpiece.className = 'card timer-centerpiece';
     this.timerIntervalBadge.className = 'interval-badge';
 
@@ -190,7 +186,6 @@ class UIController {
     }
   }
 
-  // --- Populate Routine Selector on Dashboard ---
   renderRoutineOptions(routines, activeRoutineId) {
     if (!this.selectActiveRoutine) return;
     this.selectActiveRoutine.innerHTML = '';
@@ -206,7 +201,6 @@ class UIController {
     });
   }
 
-  // --- Populate Routines Grid View ---
   renderRoutinesList(routines, routineManager) {
     if (!this.routinesGrid) return;
     this.routinesGrid.innerHTML = '';
@@ -250,7 +244,6 @@ class UIController {
     });
   }
 
-  // --- Populate Weekly Scheduler View ---
   renderWeeklyScheduler(scheduler, routineManager) {
     if (!this.schedulerCalendar) return;
     this.schedulerCalendar.innerHTML = '';
@@ -277,7 +270,6 @@ class UIController {
       entries.forEach(entry => {
         const routine = routineManager.getById(entry.routineId);
         const name = routine ? routine.name : 'Unknown Routine';
-        const mode = routine ? routine.mode : 'pomodoro';
 
         entriesHtml += `
           <div class="schedule-card ${!entry.enabled ? 'disabled' : ''}" data-schedule-id="${entry.id}">
@@ -315,7 +307,6 @@ class UIController {
     });
   }
 
-  // --- Populate Today's Schedule on Dashboard ---
   renderTodaySchedule(scheduler, routineManager) {
     if (!this.todayScheduleList) return;
     this.todayScheduleList.innerHTML = '';
@@ -345,12 +336,10 @@ class UIController {
     });
   }
 
-  // --- Render Statistics Page and Mini Dashboard Stats ---
   renderStatistics(statsTracker) {
     const summary = statsTracker.getSummary();
     const todaySummary = statsTracker.getTodaySummary();
 
-    // Mini Stats on Dashboard
     const focusMins = Math.round((todaySummary.focusSeconds || 0) / 60);
     const exerciseMins = Math.round((todaySummary.exerciseSeconds || 0) / 60);
 
@@ -364,7 +353,6 @@ class UIController {
     if (miniExercise) miniExercise.textContent = `${exerciseMins}m`;
     if (miniRoutines) miniRoutines.textContent = `${summary.completedRoutines || 0}`;
 
-    // Full Stats Page Numbers
     const totalFocusHours = ((summary.totalFocusSeconds || 0) / 3600).toFixed(1);
     const totalWorkoutHours = ((summary.totalExerciseSeconds || 0) / 3600).toFixed(1);
 
@@ -378,7 +366,6 @@ class UIController {
     if (statTotalWorkout) statTotalWorkout.textContent = `${totalWorkoutHours}h`;
     if (statTotalRoutines) statTotalRoutines.textContent = `${summary.completedRoutines || 0}`;
 
-    // History Table
     const tableBody = document.getElementById('statsHistoryTableBody');
     if (tableBody) {
       tableBody.innerHTML = '';
@@ -404,7 +391,6 @@ class UIController {
     }
   }
 
-  // --- Notification Banner ---
   showNotificationBanner(title, desc, onStartNow) {
     const banner = document.getElementById('scheduledNotificationBanner');
     const titleEl = document.getElementById('notifBannerTitle');
@@ -428,6 +414,172 @@ class UIController {
         banner.classList.remove('show');
       };
     }
+  }
+
+  // --- Custom Timer Studio Rendering ---
+  renderStudioCountdown(state) {
+    const titleEl = document.getElementById('studioCountdownTitleDisplay');
+    const dispEl = document.getElementById('studioCountdownDisplay');
+    const iconEl = document.getElementById('btnStudioCountdownIcon');
+    const btn = document.getElementById('btnStudioCountdownToggle');
+
+    if (titleEl) titleEl.textContent = state.title;
+
+    if (dispEl) {
+      const rem = state.remainingSeconds || 0;
+      const hrs = Math.floor(rem / 3600);
+      const mins = Math.floor((rem % 3600) / 60);
+      const secs = rem % 60;
+      if (hrs > 0) {
+        dispEl.textContent = `${hrs}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      } else {
+        dispEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }
+    }
+
+    if (iconEl && btn) {
+      if (state.state === 'running') {
+        iconEl.innerHTML = `<rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" />`;
+        btn.title = 'Pause Countdown';
+      } else {
+        iconEl.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"/>`;
+        btn.title = 'Start Countdown';
+      }
+    }
+  }
+
+  renderStudioRepeating(state) {
+    const titleEl = document.getElementById('studioRepeatingTitleDisplay');
+    const dispEl = document.getElementById('studioRepeatingDisplay');
+    const cyclesEl = document.getElementById('studioRepeatingCyclesDisplay');
+    const iconEl = document.getElementById('btnStudioRepeatingIcon');
+    const btn = document.getElementById('btnStudioRepeatingToggle');
+
+    if (titleEl) titleEl.textContent = state.title;
+
+    if (dispEl) {
+      const rem = state.remainingSeconds || 0;
+      const mins = Math.floor(rem / 60);
+      const secs = rem % 60;
+      dispEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    if (cyclesEl) {
+      cyclesEl.textContent = state.totalCycles > 0
+        ? `${state.completedCycles} / ${state.totalCycles}`
+        : `${state.completedCycles} (indefinite)`;
+    }
+
+    if (iconEl && btn) {
+      if (state.state === 'running') {
+        iconEl.innerHTML = `<rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" />`;
+        btn.title = 'Pause Interval';
+      } else {
+        iconEl.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"/>`;
+        btn.title = 'Start Interval';
+      }
+    }
+  }
+
+  renderClockAlarms(alarms) {
+    const container = document.getElementById('clockAlarmsListContainer');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (!alarms || alarms.length === 0) {
+      container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">No clock-aligned alarms configured yet. Click "+ Add Alarm" to create one.</div>`;
+      return;
+    }
+
+    alarms.forEach(alarm => {
+      const item = document.createElement('div');
+      item.className = 'audio-track-item';
+      const timeBadge = alarm.type === 'hourly'
+        ? `Hourly at :${String(alarm.minute).padStart(2, '0')}`
+        : `Daily at ${alarm.time}`;
+
+      item.innerHTML = `
+        <div class="audio-track-details">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="audio-track-name">${alarm.label}</span>
+            <span class="routine-badge ${alarm.type === 'hourly' ? 'pomodoro' : 'trading'}">${timeBadge}</span>
+          </div>
+          <div class="audio-track-meta">
+            <span>Sound: ${alarm.sound}</span>
+            <span>Category: ${alarm.soundCategory || 'Notification Sounds'}</span>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <label class="switch" style="width:34px; height:18px;">
+            <input type="checkbox" class="toggle-clock-alarm" data-id="${alarm.id}" ${alarm.enabled ? 'checked' : ''}>
+            <span class="slider" style="border-radius:18px;"></span>
+          </label>
+          <button class="btn-icon btn-delete-alarm" data-id="${alarm.id}" title="Delete Alarm" style="width:28px; height:28px;">
+            &times;
+          </button>
+        </div>
+      `;
+      container.appendChild(item);
+    });
+  }
+
+  // --- Audio Library Manager Rendering ---
+  renderAudioLibrary(tracks, activeCategoryFilter = 'all') {
+    const container = document.getElementById('audio-lib-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    let filtered = tracks || [];
+    if (activeCategoryFilter !== 'all') {
+      filtered = filtered.filter(t => (t.category || 'Custom Sounds') === activeCategoryFilter);
+    }
+
+    if (filtered.length === 0) {
+      container.innerHTML = `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.85rem;">No audio tracks found in this category. Upload tracks via the audio toolbar.</div>`;
+      return;
+    }
+
+    const categories = [
+      'Background Music',
+      'Work Sounds',
+      'Rest Sounds',
+      'Notification Sounds',
+      'Completion Sounds',
+      'Custom Sounds'
+    ];
+
+    filtered.forEach(track => {
+      const row = document.createElement('div');
+      row.className = 'audio-track-item';
+
+      const sizeKb = track.size ? `${(track.size / 1024).toFixed(1)} KB` : '';
+      const durSec = track.duration ? `${track.duration}s` : '';
+      const metaInfo = [track.category || 'Custom Sounds', sizeKb, durSec].filter(Boolean).join(' • ');
+
+      const catOptions = categories.map(cat => `
+        <option value="${cat}" ${cat === track.category ? 'selected' : ''}>${cat}</option>
+      `).join('');
+
+      row.innerHTML = `
+        <div class="audio-track-details">
+          <span class="audio-track-name">${track.name}</span>
+          <span class="audio-track-meta">${metaInfo}</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <select class="form-control select-track-category" data-id="${track.id}" style="padding:4px 8px; font-size:0.78rem; width:140px;">
+            ${catOptions}
+          </select>
+          <button class="btn-header btn-preview-track" data-id="${track.id}" style="padding:4px 8px; font-size:0.75rem;">Preview</button>
+          <button class="btn-icon btn-rename-track" data-id="${track.id}" title="Rename Track" style="width:28px; height:28px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </button>
+          <button class="btn-icon btn-delete-track" data-id="${track.id}" title="Delete Track" style="width:28px; height:28px;">
+            &times;
+          </button>
+        </div>
+      `;
+      container.appendChild(row);
+    });
   }
 }
 

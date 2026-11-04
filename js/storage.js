@@ -23,6 +23,8 @@ const DEFAULT_SETTINGS = {
   autoTransitions: true,
   audioEnabled: true,
   warningCountdown: true, // 3-second warning beep
+  defaultWorkMusic: 'ambient_focus',
+  defaultRestMusic: 'none',
   defaultPomodoro: {
     focusDuration: 50 * 60,
     shortBreakDuration: 10 * 60,
@@ -222,7 +224,7 @@ class StorageManager {
     return this._initIndexedDBPromise;
   }
 
-  async saveAudioTrack(id, name, blob) {
+  async saveAudioTrack(id, name, blob, metadata = {}) {
     try {
       const db = await this.initIndexedDB();
       if (!db) return false;
@@ -230,13 +232,47 @@ class StorageManager {
       return new Promise((resolve, reject) => {
         const tx = db.transaction([this.audioStoreName], 'readwrite');
         const store = tx.objectStore(this.audioStoreName);
-        store.put({ id, name, blob, dateAdded: Date.now() });
+        store.put({
+          id,
+          name,
+          blob,
+          category: metadata.category || 'Custom Sounds',
+          duration: metadata.duration || null,
+          size: blob ? blob.size : (metadata.size || 0),
+          dateAdded: Date.now()
+        });
 
         tx.oncomplete = () => resolve(true);
         tx.onerror = () => resolve(false);
       });
     } catch (e) {
       console.warn('Error saving audio track to IndexedDB:', e);
+      return false;
+    }
+  }
+
+  async updateAudioMetadata(id, updates = {}) {
+    try {
+      const db = await this.initIndexedDB();
+      if (!db) return false;
+
+      return new Promise((resolve) => {
+        const tx = db.transaction([this.audioStoreName], 'readwrite');
+        const store = tx.objectStore(this.audioStoreName);
+        const req = store.get(id);
+
+        req.onsuccess = () => {
+          if (!req.result) {
+            resolve(false);
+            return;
+          }
+          const updated = { ...req.result, ...updates };
+          store.put(updated);
+        };
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+      });
+    } catch (e) {
       return false;
     }
   }

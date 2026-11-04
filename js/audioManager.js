@@ -2,7 +2,7 @@
  * TEMPOFLOW - Centralized Audio Manager
  * Web Audio API synthesizer for clean notification beeps, chimes, and ambient soundscapes
  * HTML5 Audio element for user-uploaded MP3/WAV tracks stored in IndexedDB
- * Timer synchronization: Work -> plays/resumes music, Rest -> pauses music, Stop -> stops music
+ * Timer synchronization: Work -> plays/resumes music, Rest -> pauses or switches music, Stop -> stops music
  * Handles browser autoplay policies and audio context unlock gracefully
  */
 
@@ -18,26 +18,32 @@ class AudioManager {
     this.isMusicPlaying = false;
     this.currentTrack = { id: 'ambient_focus', name: 'Ambient Focus (Synth)', type: 'synth' };
 
+    // Preview audio player
+    this.previewAudio = new Audio();
+    this.isPreviewPlaying = false;
+
     // Synth generator for ambient soundscape
     this.synthOscillators = [];
     this.synthGain = null;
     this.isSynthPlaying = false;
 
-    // Volumes
+    // Volumes & preferences
     const settings = this.storage ? this.storage.getSettings() : {};
     this.notificationVolume = settings.notificationVolume !== undefined ? settings.notificationVolume : 0.8;
     this.musicVolume = settings.musicVolume !== undefined ? settings.musicVolume : 0.5;
     this.audioEnabled = settings.audioEnabled !== false;
+    this.notificationSound = settings.notificationSound || 'chime';
 
     this.musicAudio.volume = this.musicVolume;
+    this.previewAudio.volume = this.musicVolume;
 
-    // Custom uploaded tracks cache
+    // Uploaded audio tracks cache
     this.userTracks = [];
   }
 
   // --- Audio Context Initialization & Unlock ---
   initAudioContext() {
-    if (!this.audioCtx && (window.AudioContext || window.webkitAudioContext)) {
+    if (!this.audioCtx && (typeof window !== 'undefined') && (window.AudioContext || window.webkitAudioContext)) {
       const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
       this.audioCtx = new AudioCtxClass();
     }
@@ -56,7 +62,8 @@ class AudioManager {
   setMusicVolume(volume) {
     this.musicVolume = Math.max(0, Math.min(1, volume));
     this.musicAudio.volume = this.musicVolume;
-    if (this.synthGain) {
+    this.previewAudio.volume = this.musicVolume;
+    if (this.synthGain && this.audioCtx) {
       this.synthGain.gain.setValueAtTime(this.musicVolume * 0.15, this.audioCtx.currentTime);
     }
   }
@@ -65,42 +72,37 @@ class AudioManager {
     this.audioEnabled = !!enabled;
     if (!this.audioEnabled) {
       this.stopMusic();
+      this.stopPreview();
     }
   }
 
   // --- Web Audio API Notification Sounds ---
-  // Start Beep (Crisp high-mid tone)
   playStartBeep() {
     if (!this.audioEnabled) return;
     this._playTone({ freq: 880, type: 'sine', duration: 0.15, gain: this.notificationVolume });
   }
 
-  // Rest Beep (Softer, lower descending tone)
   playRestBeep() {
     if (!this.audioEnabled) return;
     this._playTone({ freq: 520, type: 'triangle', duration: 0.25, gain: this.notificationVolume });
   }
 
-  // Warning Tick (Brief 100ms pulse for 3-2-1 countdown)
   playWarningBeep() {
     if (!this.audioEnabled) return;
     this._playTone({ freq: 740, type: 'sine', duration: 0.08, gain: this.notificationVolume * 0.7 });
   }
 
-  // Interval Completion Chime (Pleasant 2-chord chime)
   playIntervalCompleteChime() {
     if (!this.audioEnabled) return;
-    const now = Date.now();
-    this._playTone({ freq: 659.25, type: 'sine', duration: 0.2, gain: this.notificationVolume }); // E5
+    this._playTone({ freq: 659.25, type: 'sine', duration: 0.2, gain: this.notificationVolume });
     setTimeout(() => {
-      this._playTone({ freq: 880, type: 'sine', duration: 0.35, gain: this.notificationVolume }); // A5
+      this._playTone({ freq: 880, type: 'sine', duration: 0.35, gain: this.notificationVolume });
     }, 150);
   }
 
-  // Routine Completion Fanfare
   playRoutineCompleteFanfare() {
     if (!this.audioEnabled) return;
-    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    const notes = [523.25, 659.25, 783.99, 1046.50];
     notes.forEach((freq, idx) => {
       setTimeout(() => {
         this._playTone({
@@ -124,7 +126,6 @@ class AudioManager {
       osc.type = type;
       osc.frequency.setValueAtTime(freq, ctx.currentTime);
 
-      // Smooth attack and release envelope to prevent audible clicks
       gainNode.gain.setValueAtTime(0.001, ctx.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(gain, ctx.currentTime + 0.02);
       gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
@@ -140,20 +141,30 @@ class AudioManager {
   }
 
   // --- Background Music: Synthesizer & Custom Audio ---
-  async playMusic() {
+  async playMusic(trackOverride = null) {
     if (!this.audioEnabled) return;
 
-    if (this.currentTrack.type === 'synth') {
+    const track = trackOverride || this.currentTrack;
+    if (!track || track.id === 'none') {
+      this.stopMusic();
+      return;
+    }
+
+    if (track.type === 'synth') {
+      if (this.musicAudio.src) {
+        this.musicAudio.pause();
+      }
       this._startSynthMusic();
-    } else if (this.currentTrack.type === 'user' && this.currentTrack.objectUrl) {
+    } else if (track.type === 'user' && track.objectUrl) {
       try {
-        if (this.musicAudio.src !== this.currentTrack.objectUrl) {
-          this.musicAudio.src = this.currentTrack.objectUrl;
+        this._stopSynthMusic();
+        if (this.musicAudio.src !== track.objectUrl) {
+          this.musicAudio.src = track.objectUrl;
         }
         await this.musicAudio.play();
         this.isMusicPlaying = true;
       } catch (e) {
-        console.warn('Playback error (user interaction might be needed):', e);
+        console.warn('Playback error:', e);
       }
     }
   }
@@ -180,7 +191,7 @@ class AudioManager {
     }
   }
 
-  // Synthesized peaceful ambient chord drone (calming focus/study soundscape)
+  // Ambient chord drone
   _startSynthMusic() {
     try {
       if (this.isSynthPlaying) return;
@@ -191,12 +202,11 @@ class AudioManager {
       this.synthGain.gain.setValueAtTime(this.musicVolume * 0.12, ctx.currentTime);
       this.synthGain.connect(ctx.destination);
 
-      // Ambient chord frequencies: C3, G3, C4, E4
       const frequencies = [130.81, 196.00, 261.63, 329.63];
       this.synthOscillators = frequencies.map((f, i) => {
         const osc = ctx.createOscillator();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(f + (i * 0.5), ctx.currentTime); // gentle natural detuning
+        osc.frequency.setValueAtTime(f + (i * 0.5), ctx.currentTime);
         osc.connect(this.synthGain);
         osc.start();
         return osc;
@@ -228,6 +238,36 @@ class AudioManager {
     this.isSynthPlaying = false;
   }
 
+  // --- Track Previewing ---
+  async playPreview(track) {
+    this.stopPreview();
+    if (!track) return;
+
+    if (track.type === 'synth') {
+      this._startSynthMusic();
+      this.isPreviewPlaying = true;
+    } else if (track.objectUrl) {
+      try {
+        this.previewAudio.src = track.objectUrl;
+        await this.previewAudio.play();
+        this.isPreviewPlaying = true;
+      } catch (e) {
+        console.warn('Preview error:', e);
+      }
+    }
+  }
+
+  stopPreview() {
+    if (this.isPreviewPlaying) {
+      if (this.isSynthPlaying && !this.isMusicPlaying) {
+        this._stopSynthMusic();
+      }
+      this.previewAudio.pause();
+      this.previewAudio.currentTime = 0;
+      this.isPreviewPlaying = false;
+    }
+  }
+
   // --- Track Selection & Custom Upload Management ---
   selectTrack(track) {
     const wasPlaying = this.isMusicPlaying;
@@ -238,6 +278,23 @@ class AudioManager {
     }
   }
 
+  getTrackById(id) {
+    if (id === 'ambient_focus') {
+      return { id: 'ambient_focus', name: 'Ambient Focus (Synth)', type: 'synth' };
+    }
+    if (id === 'none') {
+      return { id: 'none', name: 'None (Silent)', type: 'none' };
+    }
+    return this.userTracks.find(t => t.id === id) || null;
+  }
+
+  getAllAvailableTracks() {
+    return [
+      { id: 'ambient_focus', name: 'Ambient Focus (Synth)', type: 'synth' },
+      ...this.userTracks
+    ];
+  }
+
   async loadUserTracks() {
     if (!this.storage) return [];
     try {
@@ -246,6 +303,9 @@ class AudioManager {
         id: item.id,
         name: item.name,
         type: 'user',
+        category: item.category || 'Custom Sounds',
+        duration: item.duration || null,
+        size: item.size || (item.blob ? item.blob.size : 0),
         objectUrl: URL.createObjectURL(item.blob)
       }));
       return this.userTracks;
@@ -255,15 +315,35 @@ class AudioManager {
     }
   }
 
-  async uploadUserTrack(file) {
+  async uploadUserTrack(file, category = 'Custom Sounds') {
     if (!file || !this.storage) return null;
     const id = 'user_track_' + Date.now();
-    const success = await this.storage.saveAudioTrack(id, file.name, file);
+
+    // Attempt duration estimation via HTMLAudio
+    let duration = null;
+    try {
+      const tempAudio = new Audio(URL.createObjectURL(file));
+      await new Promise(res => {
+        tempAudio.onloadedmetadata = () => { duration = Math.round(tempAudio.duration); res(); };
+        tempAudio.onerror = () => res();
+        setTimeout(res, 400);
+      });
+    } catch (e) {}
+
+    const success = await this.storage.saveAudioTrack(id, file.name, file, {
+      category,
+      duration,
+      size: file.size
+    });
+
     if (success) {
       const track = {
         id,
         name: file.name,
         type: 'user',
+        category,
+        duration,
+        size: file.size,
         objectUrl: URL.createObjectURL(file)
       };
       this.userTracks.push(track);
@@ -272,20 +352,74 @@ class AudioManager {
     return null;
   }
 
+  async updateTrackMetadata(id, updates = {}) {
+    if (!this.storage) return false;
+    const ok = await this.storage.updateAudioMetadata(id, updates);
+    if (ok) {
+      const track = this.userTracks.find(t => t.id === id);
+      if (track) {
+        Object.assign(track, updates);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  async deleteTrack(id) {
+    if (!this.storage) return false;
+    const ok = await this.storage.deleteAudioTrack(id);
+    if (ok) {
+      const idx = this.userTracks.findIndex(t => t.id === id);
+      if (idx >= 0) {
+        if (this.userTracks[idx].objectUrl) {
+          URL.revokeObjectURL(this.userTracks[idx].objectUrl);
+        }
+        this.userTracks.splice(idx, 1);
+      }
+      if (this.currentTrack.id === id) {
+        this.selectTrack({ id: 'ambient_focus', name: 'Ambient Focus (Synth)', type: 'synth' });
+      }
+      return true;
+    }
+    return false;
+  }
+
   // --- Synchronize with Timer Engine Events ---
   bindToTimerEngine(timerEngine) {
     timerEngine.on('intervalChange', (data) => {
       const interval = data.interval;
       if (!interval) return;
 
-      // Check interval type and play appropriate sound
+      const routineAudio = timerEngine.routine && timerEngine.routine.audioConfig ? timerEngine.routine.audioConfig : {};
+
       if (interval.type === 'rest' || interval.type === 'exercise_rest') {
-        this.playRestBeep();
-        this.pauseMusic();
+        if (routineAudio.restStartSound !== 'disable') {
+          this.playRestBeep();
+        }
+
+        // Optional rest music vs pausing
+        if (routineAudio.restMusic && routineAudio.restMusic !== 'none') {
+          const restTrack = this.getTrackById(routineAudio.restMusic);
+          if (restTrack) {
+            this.playMusic(restTrack);
+          } else {
+            this.pauseMusic();
+          }
+        } else {
+          this.pauseMusic();
+        }
       } else if (interval.type === 'work' || interval.type === 'exercise_work') {
-        this.playStartBeep();
+        if (routineAudio.workStartSound !== 'disable') {
+          this.playStartBeep();
+        }
+
         if (interval.music !== false && timerEngine.state === 'running') {
-          this.resumeMusic();
+          if (routineAudio.workMusic) {
+            const track = this.getTrackById(routineAudio.workMusic);
+            this.playMusic(track || this.currentTrack);
+          } else {
+            this.resumeMusic();
+          }
         } else {
           this.pauseMusic();
         }

@@ -36,6 +36,12 @@
             </a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" data-tab="studio">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>Custom Studio</span>
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" data-tab="scheduler">
               <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               <span>Schedule</span>
@@ -65,7 +71,7 @@
           <button id="btnUnlockAudio" class="btn-header" style="padding:2px 6px; font-size:0.7rem;">Unlock</button>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span>TempoFlow v1.0</span>
+          <span>TempoFlow v1.1</span>
           <span>Offline Ready</span>
         </div>
       </div>
@@ -227,7 +233,7 @@
 
             <button id="btnUploadTrack" class="btn-header" style="padding:6px 10px; font-size:0.8rem;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <span>Upload MP3</span>
+              <span>Upload MP3/WAV</span>
             </button>
             <input type="file" id="inputAudioUpload" accept="audio/mp3,audio/wav,audio/*" style="display:none;">
 
@@ -244,7 +250,7 @@
         <div class="view-header">
           <div>
             <h2 class="view-title">Routines Library</h2>
-            <p class="view-desc">Configure, duplicate, and customize your Pomodoro, Tabata workouts, and trading flows.</p>
+            <p class="view-desc">Configure, duplicate, and customize your Pomodoro, Tabata workouts, and trading flows with hours, minutes, and seconds support.</p>
           </div>
           <button id="btnCreateNewRoutine" class="btn-primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -254,6 +260,135 @@
 
         <div class="routines-grid" id="routinesGrid">
           <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- TAB: CUSTOM STUDIO -->
+      <section id="tab-studio" class="tab-content">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Custom Timer Studio</h2>
+            <p class="view-desc">High-precision standalone countdowns, repeating alerts, and real-time clock-aligned alarms.</p>
+          </div>
+        </div>
+
+        <!-- Studio Subtabs -->
+        <div class="mode-switcher" id="studioSubtabs">
+          <button class="mode-tab-btn active" data-subtab="countdown">Countdown Timer</button>
+          <button class="mode-tab-btn" data-subtab="repeating">Repeating Interval</button>
+          <button class="mode-tab-btn" data-subtab="clock">Clock-Aligned Alarms</button>
+        </div>
+
+        <!-- 1. Countdown Subtab Panel -->
+        <div id="studioPanelCountdown" class="studio-subpanel active">
+          <div class="card" style="max-width:640px; margin: 0 auto; text-align:center;">
+            <h3 id="studioCountdownTitleDisplay" style="font-size:1.25rem; font-weight:700; margin-bottom:8px;">Quick Focus Countdown</h3>
+            <div id="studioCountdownDisplay" style="font-size:3.5rem; font-weight:800; font-family:monospace; margin: 20px 0;">05:00</div>
+            <div style="display:flex; justify-content:center; gap:16px; margin-bottom:24px;">
+              <button id="btnStudioCountdownReset" class="btn-timer btn-timer-secondary" title="Reset">
+                <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.85 20 14.48 20 13c0-4.42-3.58-8-8-8zm-6 8c0-1.01.25-1.97.7-2.8L5.24 8.74C4.46 10.15 4 11.52 4 13c0 4.42 3.58 8 8 8v4l5-5-5-5v4c-3.31 0-6-2.69-6-6z"/></svg>
+              </button>
+              <button id="btnStudioCountdownToggle" class="btn-timer btn-timer-primary" title="Start / Pause">
+                <svg id="btnStudioCountdownIcon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </button>
+            </div>
+
+            <div style="text-align:left; border-top:1px solid var(--border-color); padding-top:20px;">
+              <h4 style="margin-bottom:12px; font-size:0.95rem;">Configure Countdown</h4>
+              <div class="form-group">
+                <label class="form-label" for="studioCountdownTitleInput">Title / Purpose</label>
+                <input type="text" id="studioCountdownTitleInput" class="form-control" value="Quick Focus Countdown">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Duration</label>
+                <div class="duration-hms-group">
+                  <input type="number" id="studioCountdownHours" class="form-control" min="0" max="23" value="0">
+                  <span class="unit-label">h</span>
+                  <input type="number" id="studioCountdownMins" class="form-control" min="0" max="59" value="5">
+                  <span class="unit-label">m</span>
+                  <input type="number" id="studioCountdownSecs" class="form-control" min="0" max="59" value="0">
+                  <span class="unit-label">s</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="studioCountdownSound">Alert Sound</label>
+                <select id="studioCountdownSound" class="form-control">
+                  <option value="chime">Chime (Harmonic)</option>
+                  <option value="digital">Digital Beep</option>
+                  <option value="bell">Soft Bell</option>
+                </select>
+              </div>
+              <button id="btnApplyStudioCountdown" class="btn-primary" style="width:100%;">Apply Configuration</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Repeating Subtab Panel -->
+        <div id="studioPanelRepeating" class="studio-subpanel" style="display:none;">
+          <div class="card" style="max-width:640px; margin: 0 auto; text-align:center;">
+            <h3 id="studioRepeatingTitleDisplay" style="font-size:1.25rem; font-weight:700; margin-bottom:8px;">Repeating Alert</h3>
+            <div id="studioRepeatingDisplay" style="font-size:3.5rem; font-weight:800; font-family:monospace; margin: 20px 0;">20:00</div>
+            <div style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:16px;">
+              Completed Cycles: <span id="studioRepeatingCyclesDisplay" style="font-weight:700; color:var(--primary);">0</span>
+            </div>
+            <div style="display:flex; justify-content:center; gap:16px; margin-bottom:24px;">
+              <button id="btnStudioRepeatingReset" class="btn-timer btn-timer-secondary" title="Reset">
+                <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.85 20 14.48 20 13c0-4.42-3.58-8-8-8zm-6 8c0-1.01.25-1.97.7-2.8L5.24 8.74C4.46 10.15 4 11.52 4 13c0 4.42 3.58 8 8 8v4l5-5-5-5v4c-3.31 0-6-2.69-6-6z"/></svg>
+              </button>
+              <button id="btnStudioRepeatingToggle" class="btn-timer btn-timer-primary" title="Start / Pause">
+                <svg id="btnStudioRepeatingIcon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </button>
+            </div>
+
+            <div style="text-align:left; border-top:1px solid var(--border-color); padding-top:20px;">
+              <h4 style="margin-bottom:12px; font-size:0.95rem;">Configure Repeating Interval</h4>
+              <div class="form-group">
+                <label class="form-label" for="studioRepeatingTitleInput">Alert Label</label>
+                <input type="text" id="studioRepeatingTitleInput" class="form-control" value="Water & Posture Check">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Interval Every</label>
+                <div class="duration-hms-group">
+                  <input type="number" id="studioRepeatingMins" class="form-control" min="0" max="180" value="20">
+                  <span class="unit-label">m</span>
+                  <input type="number" id="studioRepeatingSecs" class="form-control" min="0" max="59" value="0">
+                  <span class="unit-label">s</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="studioRepeatingCyclesInput">Max Cycles (0 = Indefinite Loop)</label>
+                <input type="number" id="studioRepeatingCyclesInput" class="form-control" min="0" max="100" value="0">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="studioRepeatingSound">Notification Tone</label>
+                <select id="studioRepeatingSound" class="form-control">
+                  <option value="bell">Soft Bell</option>
+                  <option value="chime">Chime (Harmonic)</option>
+                  <option value="digital">Digital Beep</option>
+                </select>
+              </div>
+              <button id="btnApplyStudioRepeating" class="btn-primary" style="width:100%;">Apply Repeating Timer</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Clock-Aligned Alarms Subpanel -->
+        <div id="studioPanelClock" class="studio-subpanel" style="display:none;">
+          <div class="card" style="max-width:760px; margin: 0 auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <div>
+                <h3 style="font-size:1.15rem; font-weight:700;">Clock-Aligned Alarms</h3>
+                <p style="font-size:0.85rem; color:var(--text-secondary); margin-top:2px;">
+                  Triggers alerts aligned with actual wall clock time (hourly minute marks or daily fixed times).
+                </p>
+              </div>
+              <button id="btnAddNewClockAlarm" class="btn-primary" style="padding:6px 12px; font-size:0.8rem;">+ Add Alarm</button>
+            </div>
+
+            <div id="clockAlarmsListContainer" style="display:flex; flex-direction:column; gap:12px;">
+              <!-- Dynamically populated alarm cards -->
+            </div>
+          </div>
         </div>
       </section>
 
@@ -387,6 +522,70 @@
         </div>
 
         <div class="settings-section">
+          <h3>Audio & Music Preferences</h3>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Notification Sound Preference</div>
+              <div class="setting-desc">Preferred tone style for interval notifications</div>
+            </div>
+            <div class="setting-control">
+              <select id="settingsSelectNotifTone">
+                <option value="chime">Chime (Harmonic)</option>
+                <option value="digital">Digital Beep</option>
+                <option value="bell">Soft Bell</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Default Work Music</div>
+              <div class="setting-desc">Background music played during work/focus intervals</div>
+            </div>
+            <div class="setting-control">
+              <select id="settingsSelectDefaultWorkMusic">
+                <option value="ambient_focus">Ambient Focus (Synth Drone)</option>
+                <option value="none">None (Silent)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Default Rest Music</div>
+              <div class="setting-desc">Optional music played during break intervals (default is pause work music)</div>
+            </div>
+            <div class="setting-control">
+              <select id="settingsSelectDefaultRestMusic">
+                <option value="none">Pause Music (Silent Rest)</option>
+                <option value="ambient_focus">Ambient Focus</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Audio Library Manager</h3>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:14px;">
+            Manage and categorize uploaded audio tracks across 6 purpose categories.
+          </p>
+
+          <div class="audio-lib-filter-bar" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;">
+            <button class="filter-chip active" data-cat="all">All Tracks</button>
+            <button class="filter-chip" data-cat="Background Music">Background Music</button>
+            <button class="filter-chip" data-cat="Work Sounds">Work Sounds</button>
+            <button class="filter-chip" data-cat="Rest Sounds">Rest Sounds</button>
+            <button class="filter-chip" data-cat="Notification Sounds">Notification Sounds</button>
+            <button class="filter-chip" data-cat="Completion Sounds">Completion Sounds</button>
+            <button class="filter-chip" data-cat="Custom Sounds">Custom Sounds</button>
+          </div>
+
+          <div id="audio-lib-container" style="display:flex; flex-direction:column; gap:10px;">
+            <!-- Dynamically populated audio library cards -->
+          </div>
+        </div>
+
+        <div class="settings-section">
           <h3>Data Backup & Restore</h3>
           <div class="setting-row">
             <div class="setting-info">
@@ -436,28 +635,45 @@
           </select>
         </div>
 
-        <!-- Conditional form fields based on mode -->
+        <!-- Conditional form fields based on mode with Seconds precision -->
         <div id="routineEditorPomodoroFields">
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div class="duration-control-grid">
             <div class="form-group">
-              <label class="form-label" for="routineFocusDuration">Focus (mins)</label>
-              <input type="number" id="routineFocusDuration" class="form-control" min="1" max="180" value="50">
+              <label class="form-label">Focus Duration</label>
+              <div class="duration-hms-group">
+                <input type="number" id="routineFocusMins" class="form-control" min="0" max="300" value="50" placeholder="Min">
+                <span class="unit-label">m</span>
+                <input type="number" id="routineFocusSecs" class="form-control" min="0" max="59" value="0" placeholder="Sec">
+                <span class="unit-label">s</span>
+              </div>
             </div>
             <div class="form-group">
-              <label class="form-label" for="routineShortBreakDuration">Short Break (mins)</label>
-              <input type="number" id="routineShortBreakDuration" class="form-control" min="1" max="60" value="10">
+              <label class="form-label">Short Break</label>
+              <div class="duration-hms-group">
+                <input type="number" id="routineShortBreakMins" class="form-control" min="0" max="60" value="10" placeholder="Min">
+                <span class="unit-label">m</span>
+                <input type="number" id="routineShortBreakSecs" class="form-control" min="0" max="59" value="0" placeholder="Sec">
+                <span class="unit-label">s</span>
+              </div>
             </div>
           </div>
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+
+          <div class="duration-control-grid">
             <div class="form-group">
-              <label class="form-label" for="routineLongBreakDuration">Long Break (mins)</label>
-              <input type="number" id="routineLongBreakDuration" class="form-control" min="1" max="120" value="30">
+              <label class="form-label">Long Break</label>
+              <div class="duration-hms-group">
+                <input type="number" id="routineLongBreakMins" class="form-control" min="0" max="180" value="30" placeholder="Min">
+                <span class="unit-label">m</span>
+                <input type="number" id="routineLongBreakSecs" class="form-control" min="0" max="59" value="0" placeholder="Sec">
+                <span class="unit-label">s</span>
+              </div>
             </div>
             <div class="form-group">
               <label class="form-label" for="routineSessionsBeforeLong">Sessions Before Long Break</label>
-              <input type="number" id="routineSessionsBeforeLong" class="form-control" min="1" max="10" value="4">
+              <input type="number" id="routineSessionsBeforeLong" class="form-control" min="1" max="12" value="4">
             </div>
           </div>
+
           <div class="form-group">
             <label class="form-label" for="routinePomodoroCycles">Total Cycles (0 = Infinite)</label>
             <input type="number" id="routinePomodoroCycles" class="form-control" min="0" max="20" value="1">
@@ -467,8 +683,8 @@
         <div id="routineEditorExerciseFields" style="display:none;">
           <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
             <div class="form-group">
-              <label class="form-label" for="routineExercisePrep">Prep Time (seconds)</label>
-              <input type="number" id="routineExercisePrep" class="form-control" min="0" max="60" value="10">
+              <label class="form-label" for="routineExercisePrep">Prep Countdown (seconds)</label>
+              <input type="number" id="routineExercisePrep" class="form-control" min="0" max="120" value="10">
             </div>
             <div class="form-group">
               <label class="form-label" for="routineExerciseRoundRest">Rest Between Rounds (seconds)</label>
@@ -497,11 +713,32 @@
           </div>
           <div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <label class="form-label" style="margin-bottom:0;">Intervals Sequence</label>
+              <label class="form-label" style="margin-bottom:0;">Custom Steps Sequence (Hours, Mins, Secs)</label>
               <button type="button" id="btnAddTradingRow" class="btn-header" style="padding:4px 8px; font-size:0.75rem;">+ Add Step</button>
             </div>
             <div class="intervals-list-builder" id="tradingListBuilder">
               <!-- Dynamically populated interval rows -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Routine Audio Configuration Section -->
+        <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border-color);">
+          <h4 style="font-size:0.95rem; font-weight:600; margin-bottom:12px; color:var(--text-primary);">Audio & Music for this Routine</h4>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div class="form-group">
+              <label class="form-label" for="routineWorkMusicSelect">Work Background Music</label>
+              <select id="routineWorkMusicSelect" class="form-control">
+                <option value="ambient_focus">Ambient Focus (Synth)</option>
+                <option value="none">None (Silent)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="routineRestMusicSelect">Rest Music</label>
+              <select id="routineRestMusicSelect" class="form-control">
+                <option value="none">Pause Music (Silent Rest)</option>
+                <option value="ambient_focus">Ambient Focus (Synth)</option>
+              </select>
             </div>
           </div>
         </div>
@@ -563,6 +800,7 @@
   <!-- Application Modules -->
   <script src="js/storage.js"></script>
   <script src="js/timerEngine.js"></script>
+  <script src="js/customStudio.js"></script>
   <script src="js/audioManager.js"></script>
   <script src="js/routineManager.js"></script>
   <script src="js/scheduler.js"></script>

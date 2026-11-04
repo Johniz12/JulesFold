@@ -1,7 +1,8 @@
 /**
  * TEMPOFLOW - Routine Manager
  * Manages routine definitions for Pomodoro, Exercise/Tabata, and Trading/Study
- * Handles CRUD operations, presets, validation, and cloning
+ * Supports hours/minutes/seconds duration settings, routine-level audio configurations,
+ * CRUD operations, presets, validation, and cloning.
  */
 
 const DEFAULT_PRESET_ROUTINES = [
@@ -14,12 +15,19 @@ const DEFAULT_PRESET_ROUTINES = [
     isPreset: true,
     createdAt: 1700000000000,
     updatedAt: 1700000000000,
+    audioConfig: {
+      workMusic: 'ambient_focus',
+      restMusic: 'none',
+      workStartSound: 'default',
+      restStartSound: 'default',
+      completionSound: 'default'
+    },
     config: {
       focusDuration: 50 * 60, // 50 mins
       shortBreakDuration: 10 * 60, // 10 mins
       longBreakDuration: 30 * 60, // 30 mins
       sessionsBeforeLongBreak: 4,
-      totalCycles: 1, // 1 full cycle of 4 focus + breaks, 0 for infinite
+      totalCycles: 1, // 0 for infinite
       autoTransitions: true,
       musicOnFocus: true
     }
@@ -33,6 +41,13 @@ const DEFAULT_PRESET_ROUTINES = [
     isPreset: true,
     createdAt: 1700000000001,
     updatedAt: 1700000000001,
+    audioConfig: {
+      workMusic: 'ambient_focus',
+      restMusic: 'none',
+      workStartSound: 'default',
+      restStartSound: 'default',
+      completionSound: 'default'
+    },
     config: {
       focusDuration: 25 * 60,
       shortBreakDuration: 5 * 60,
@@ -52,10 +67,17 @@ const DEFAULT_PRESET_ROUTINES = [
     isPreset: true,
     createdAt: 1700000000002,
     updatedAt: 1700000000002,
+    audioConfig: {
+      workMusic: 'ambient_focus',
+      restMusic: 'none',
+      workStartSound: 'default',
+      restStartSound: 'default',
+      completionSound: 'default'
+    },
     config: {
       prepDuration: 10,
       roundRestDuration: 60,
-      rounds: 4, // 4 rounds total, 0 for infinite
+      rounds: 4, // 0 for infinite
       musicOnWork: true,
       exercises: [
         { name: 'Jumping Jacks', workDuration: 45, restDuration: 10, notes: 'Warm up rhythm' },
@@ -74,6 +96,13 @@ const DEFAULT_PRESET_ROUTINES = [
     isPreset: true,
     createdAt: 1700000000003,
     updatedAt: 1700000000003,
+    audioConfig: {
+      workMusic: 'ambient_focus',
+      restMusic: 'none',
+      workStartSound: 'default',
+      restStartSound: 'default',
+      completionSound: 'default'
+    },
     config: {
       prepDuration: 5,
       roundRestDuration: 45,
@@ -95,6 +124,13 @@ const DEFAULT_PRESET_ROUTINES = [
     isPreset: true,
     createdAt: 1700000000004,
     updatedAt: 1700000000004,
+    audioConfig: {
+      workMusic: 'ambient_focus',
+      restMusic: 'none',
+      workStartSound: 'default',
+      restStartSound: 'default',
+      completionSound: 'default'
+    },
     config: {
       totalCycles: 1, // 0 for infinite
       autoTransitions: true,
@@ -111,11 +147,18 @@ const DEFAULT_PRESET_ROUTINES = [
   {
     id: 'preset_deep_study',
     name: 'Focused Study & Recall Block',
-    mode: 'study', // categorized under trading/study mode
+    mode: 'study',
     favorite: false,
     isPreset: true,
     createdAt: 1700000000005,
     updatedAt: 1700000000005,
+    audioConfig: {
+      workMusic: 'ambient_focus',
+      restMusic: 'none',
+      workStartSound: 'default',
+      restStartSound: 'default',
+      completionSound: 'default'
+    },
     config: {
       totalCycles: 1,
       autoTransitions: true,
@@ -142,7 +185,6 @@ class RoutineManager {
       this.routines = [...DEFAULT_PRESET_ROUTINES];
       this.storage.saveRoutines(this.routines);
     } else {
-      // Ensure default presets are available if missing
       this.routines = saved;
       const existingIds = new Set(this.routines.map(r => r.id));
       let addedPreset = false;
@@ -178,14 +220,19 @@ class RoutineManager {
     let index = this.routines.findIndex(r => r.id === routineData.id);
 
     if (index >= 0) {
-      // Update
       this.routines[index] = {
         ...this.routines[index],
         ...routineData,
+        audioConfig: routineData.audioConfig || this.routines[index].audioConfig || {
+          workMusic: 'ambient_focus',
+          restMusic: 'none',
+          workStartSound: 'default',
+          restStartSound: 'default',
+          completionSound: 'default'
+        },
         updatedAt: now
       };
     } else {
-      // Create new
       const newRoutine = {
         id: routineData.id || 'routine_' + now + '_' + Math.random().toString(36).substr(2, 6),
         name: routineData.name || 'Untitled Routine',
@@ -194,6 +241,13 @@ class RoutineManager {
         isPreset: false,
         createdAt: now,
         updatedAt: now,
+        audioConfig: routineData.audioConfig || {
+          workMusic: 'ambient_focus',
+          restMusic: 'none',
+          workStartSound: 'default',
+          restStartSound: 'default',
+          completionSound: 'default'
+        },
         config: routineData.config || {}
       };
       this.routines.unshift(newRoutine);
@@ -240,31 +294,41 @@ class RoutineManager {
     return copy;
   }
 
-  /**
-   * Helper to format a routine into human-readable summary string
-   */
+  formatDuration(seconds) {
+    if (!seconds || seconds <= 0) return '0s';
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    const parts = [];
+    if (hrs > 0) parts.push(`${hrs}h`);
+    if (mins > 0) parts.push(`${mins}m`);
+    if (secs > 0 || parts.length === 0) parts.push(`${secs}s`);
+    return parts.join(' ');
+  }
+
   getRoutineSummary(routine) {
     if (!routine || !routine.config) return '';
 
     if (routine.mode === 'pomodoro') {
-      const focusMins = Math.round((routine.config.focusDuration || 1500) / 60);
-      const breakMins = Math.round((routine.config.shortBreakDuration || 300) / 60);
-      const longBreakMins = Math.round((routine.config.longBreakDuration || 1800) / 60);
+      const focus = this.formatDuration(routine.config.focusDuration || 1500);
+      const sBreak = this.formatDuration(routine.config.shortBreakDuration || 300);
+      const lBreak = this.formatDuration(routine.config.longBreakDuration || 1800);
       const sessions = routine.config.sessionsBeforeLongBreak || 4;
-      return `${focusMins}m Focus / ${breakMins}m Break • Long break (${longBreakMins}m) every ${sessions} sessions`;
+      return `${focus} Focus / ${sBreak} Break • Long break (${lBreak}) every ${sessions} sessions`;
     }
 
     if (routine.mode === 'exercise') {
       const exCount = routine.config.exercises ? routine.config.exercises.length : 0;
       const rounds = routine.config.rounds === 0 ? 'Unlimited' : `${routine.config.rounds} Rounds`;
-      return `${exCount} Exercises • ${rounds} • Rest between rounds: ${routine.config.roundRestDuration || 0}s`;
+      const roundRest = this.formatDuration(routine.config.roundRestDuration || 0);
+      return `${exCount} Exercises • ${rounds} • Round Rest: ${roundRest}`;
     }
 
     if (routine.mode === 'trading' || routine.mode === 'study') {
       const intervals = routine.config.intervals || [];
       const totalSecs = intervals.reduce((acc, cur) => acc + (cur.duration || 0), 0);
-      const totalMins = Math.round(totalSecs / 60);
-      return `${intervals.length} Custom Steps • Total: ${totalMins} mins`;
+      return `${intervals.length} Steps • Total: ${this.formatDuration(totalSecs)}`;
     }
 
     return '';

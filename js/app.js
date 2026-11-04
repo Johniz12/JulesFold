@@ -1,6 +1,7 @@
 /**
  * TEMPOFLOW - Main Application Orchestrator
  * Connects TimerEngine, AudioManager, RoutineManager, Scheduler, StatisticsTracker, and UIController
+ * Supports seconds precision across all intervals and routine audio customization
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -11,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const routineManager = new RoutineManager(storage);
   const audioManager = new AudioManager(storage);
   const timerEngine = new TimerEngine();
+  const customStudio = new CustomStudioEngine();
   const scheduler = new Scheduler(storage, routineManager);
   const statsTracker = new StatisticsTracker(storage);
   const ui = new UIController();
@@ -118,8 +120,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (tab === 'routines') {
         ui.renderRoutinesList(routineManager.getAll(), routineManager);
+      } else if (tab === 'studio') {
+        ui.renderStudioCountdown(customStudio.getCountdownState());
+        ui.renderStudioRepeating(customStudio.getRepeatingState());
+        ui.renderClockAlarms(customStudio.getClockAlarms());
       } else if (tab === 'scheduler') {
         ui.renderWeeklyScheduler(scheduler, routineManager);
+      } else if (tab === 'settings') {
+        ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter);
       } else if (tab === 'statistics') {
         ui.renderStatistics(statsTracker);
       }
@@ -243,6 +251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           const subEl = document.getElementById('audioCurrentTrackSub');
           if (titleEl) titleEl.textContent = track.name;
           if (subEl) subEl.textContent = 'Custom User Track';
+          _populateRoutineAudioSelectors();
           alert(`Successfully loaded custom audio track: ${track.name}`);
         }
       }
@@ -250,16 +259,255 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Load previously saved tracks from IndexedDB
-  audioManager.loadUserTracks().then(tracks => {
-    if (tracks.length > 0) {
-      const latest = tracks[tracks.length - 1];
-      audioManager.selectTrack(latest);
-      const titleEl = document.getElementById('audioCurrentTrackTitle');
-      const subEl = document.getElementById('audioCurrentTrackSub');
-      if (titleEl) titleEl.textContent = latest.name;
-      if (subEl) subEl.textContent = 'Custom User Track (Saved)';
+  await audioManager.loadUserTracks();
+  let activeAudioCatFilter = 'all';
+
+  if (audioManager.userTracks.length > 0) {
+    const latest = audioManager.userTracks[audioManager.userTracks.length - 1];
+    audioManager.selectTrack(latest);
+    const titleEl = document.getElementById('audioCurrentTrackTitle');
+    const subEl = document.getElementById('audioCurrentTrackSub');
+    if (titleEl) titleEl.textContent = latest.name;
+    if (subEl) subEl.textContent = 'Custom User Track (Saved)';
+  }
+
+  // --- Wire Custom Timer Studio ---
+  // Subtab switcher
+  document.querySelectorAll('#studioSubtabs .mode-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#studioSubtabs .mode-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const subtab = btn.dataset.subtab;
+      document.getElementById('studioPanelCountdown').style.display = subtab === 'countdown' ? 'block' : 'none';
+      document.getElementById('studioPanelRepeating').style.display = subtab === 'repeating' ? 'block' : 'none';
+      document.getElementById('studioPanelClock').style.display = subtab === 'clock' ? 'block' : 'none';
+    });
+  });
+
+  // Countdown Events
+  customStudio.on('countdown:tick', (state) => ui.renderStudioCountdown(state));
+  customStudio.on('countdown:update', (state) => ui.renderStudioCountdown(state));
+  customStudio.on('countdown:start', (state) => ui.renderStudioCountdown(state));
+  customStudio.on('countdown:pause', (state) => ui.renderStudioCountdown(state));
+  customStudio.on('countdown:complete', (state) => {
+    ui.renderStudioCountdown(state);
+    audioManager.playIntervalCompleteChime();
+    alert(`Countdown "${state.title}" completed!`);
+  });
+
+  document.getElementById('btnStudioCountdownToggle')?.addEventListener('click', () => {
+    unlockAudio();
+    if (customStudio.countdown.state === 'running') {
+      customStudio.pauseCountdown();
+    } else {
+      customStudio.startCountdown();
     }
   });
+
+  document.getElementById('btnStudioCountdownReset')?.addEventListener('click', () => {
+    customStudio.resetCountdown();
+  });
+
+  document.getElementById('btnApplyStudioCountdown')?.addEventListener('click', () => {
+    const title = document.getElementById('studioCountdownTitleInput').value.trim() || 'Countdown';
+    const h = parseInt(document.getElementById('studioCountdownHours').value, 10) || 0;
+    const m = parseInt(document.getElementById('studioCountdownMins').value, 10) || 0;
+    const s = parseInt(document.getElementById('studioCountdownSecs').value, 10) || 0;
+    const sound = document.getElementById('studioCountdownSound').value;
+    const durSec = Math.max(1, h * 3600 + m * 60 + s);
+
+    customStudio.configureCountdown({ title, durationSeconds: durSec, sound });
+    alert('Countdown timer configured!');
+  });
+
+  // Repeating Events
+  customStudio.on('repeating:tick', (state) => ui.renderStudioRepeating(state));
+  customStudio.on('repeating:update', (state) => ui.renderStudioRepeating(state));
+  customStudio.on('repeating:start', (state) => ui.renderStudioRepeating(state));
+  customStudio.on('repeating:pause', (state) => ui.renderStudioRepeating(state));
+  customStudio.on('repeating:cycle_complete', (state) => {
+    audioManager.playRestBeep();
+  });
+  customStudio.on('repeating:complete', (state) => {
+    ui.renderStudioRepeating(state);
+    audioManager.playRoutineCompleteFanfare();
+    alert(`Repeating Alert "${state.title}" completed all cycles!`);
+  });
+
+  document.getElementById('btnStudioRepeatingToggle')?.addEventListener('click', () => {
+    unlockAudio();
+    if (customStudio.repeating.state === 'running') {
+      customStudio.pauseRepeating();
+    } else {
+      customStudio.startRepeating();
+    }
+  });
+
+  document.getElementById('btnStudioRepeatingReset')?.addEventListener('click', () => {
+    customStudio.resetRepeating();
+  });
+
+  document.getElementById('btnApplyStudioRepeating')?.addEventListener('click', () => {
+    const title = document.getElementById('studioRepeatingTitleInput').value.trim() || 'Repeating Alert';
+    const m = parseInt(document.getElementById('studioRepeatingMins').value, 10) || 0;
+    const s = parseInt(document.getElementById('studioRepeatingSecs').value, 10) || 0;
+    const cycles = parseInt(document.getElementById('studioRepeatingCyclesInput').value, 10) || 0;
+    const sound = document.getElementById('studioRepeatingSound').value;
+    const durSec = Math.max(1, m * 60 + s);
+
+    customStudio.configureRepeating({ title, intervalSeconds: durSec, totalCycles: cycles, sound });
+    alert('Repeating alert timer configured!');
+  });
+
+  // Clock Alarms
+  // Load preset alarms
+  customStudio.loadClockAlarms([
+    { id: 'al_hourly_stand', label: 'Stand & Stretch', type: 'hourly', minute: 50, sound: 'bell', soundCategory: 'Notification Sounds', enabled: true },
+    { id: 'al_daily_lunch', label: 'Midday Reset', type: 'daily', time: '12:00', sound: 'chime', soundCategory: 'Notification Sounds', enabled: true }
+  ]);
+
+  customStudio.on('alarms:change', (alarms) => {
+    ui.renderClockAlarms(alarms);
+  });
+
+  customStudio.on('alarm:trigger', (alarm) => {
+    audioManager.playIntervalCompleteChime();
+    ui.showNotificationBanner(
+      `Alarm Triggered: ${alarm.label}`,
+      `Wall-clock scheduled alert fired at ${alarm.time || (':' + alarm.minute)}.`,
+      () => {}
+    );
+  });
+
+  document.getElementById('btnAddNewClockAlarm')?.addEventListener('click', () => {
+    const type = prompt('Alarm type? Enter "hourly" or "daily":', 'hourly');
+    if (!type) return;
+
+    if (type.toLowerCase() === 'hourly') {
+      const minStr = prompt('Minute of each hour (0 to 59):', '45');
+      if (minStr !== null) {
+        const minute = parseInt(minStr, 10) || 0;
+        const label = prompt('Label for this alarm:', `Hourly Stretch (:${String(minute).padStart(2, '0')})`);
+        customStudio.addClockAlarm({ label, type: 'hourly', minute });
+      }
+    } else {
+      const timeStr = prompt('Time of day in HH:MM format (24-hour):', '09:30');
+      if (timeStr) {
+        const label = prompt('Label for this alarm:', `Daily Alarm (${timeStr})`);
+        customStudio.addClockAlarm({ label, type: 'daily', time: timeStr });
+      }
+    }
+  });
+
+  document.getElementById('clockAlarmsListContainer')?.addEventListener('click', (e) => {
+    const toggle = e.target.closest('.toggle-clock-alarm');
+    if (toggle) {
+      customStudio.toggleClockAlarm(toggle.dataset.id);
+      return;
+    }
+    const del = e.target.closest('.btn-delete-alarm');
+    if (del) {
+      customStudio.deleteClockAlarm(del.dataset.id);
+      return;
+    }
+  });
+
+  // --- Wire Audio Library Manager in Settings ---
+  document.querySelectorAll('.audio-lib-filter-bar .filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.audio-lib-filter-bar .filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeAudioCatFilter = chip.dataset.cat;
+      ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter);
+    });
+  });
+
+  document.getElementById('audio-lib-container')?.addEventListener('click', async (e) => {
+    const previewBtn = e.target.closest('.btn-preview-track');
+    if (previewBtn) {
+      const track = audioManager.getTrackById(previewBtn.dataset.id);
+      if (track) {
+        if (audioManager.isPreviewPlaying) {
+          audioManager.stopPreview();
+          previewBtn.textContent = 'Preview';
+        } else {
+          await audioManager.playPreview(track);
+          previewBtn.textContent = 'Stop';
+        }
+      }
+      return;
+    }
+
+    const renameBtn = e.target.closest('.btn-rename-track');
+    if (renameBtn) {
+      const track = audioManager.getTrackById(renameBtn.dataset.id);
+      if (track) {
+        const newName = prompt('Enter new track name:', track.name);
+        if (newName && newName.trim()) {
+          await audioManager.updateTrackMetadata(track.id, { name: newName.trim() });
+          ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter);
+          _populateRoutineAudioSelectors();
+        }
+      }
+      return;
+    }
+
+    const delBtn = e.target.closest('.btn-delete-track');
+    if (delBtn) {
+      if (confirm('Delete this track permanently from IndexedDB?')) {
+        await audioManager.deleteTrack(delBtn.dataset.id);
+        ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter);
+        _populateRoutineAudioSelectors();
+      }
+      return;
+    }
+  });
+
+  document.getElementById('audio-lib-container')?.addEventListener('change', async (e) => {
+    const selectCat = e.target.closest('.select-track-category');
+    if (selectCat) {
+      await audioManager.updateTrackMetadata(selectCat.dataset.id, { category: selectCat.value });
+      ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter);
+    }
+  });
+
+  function _populateRoutineAudioSelectors() {
+    const workSelect = document.getElementById('routineWorkMusicSelect');
+    const restSelect = document.getElementById('routineRestMusicSelect');
+    const defaultWorkSelect = document.getElementById('settingsSelectDefaultWorkMusic');
+    const defaultRestSelect = document.getElementById('settingsSelectDefaultRestMusic');
+
+    const tracks = audioManager.getAllAvailableTracks();
+
+    [workSelect, restSelect, defaultWorkSelect, defaultRestSelect].forEach(sel => {
+      if (!sel) return;
+      const currentVal = sel.value;
+      sel.innerHTML = '';
+
+      if (sel === restSelect || sel === defaultRestSelect) {
+        const silentOpt = document.createElement('option');
+        silentOpt.value = 'none';
+        silentOpt.textContent = 'Pause Music (Silent Rest)';
+        sel.appendChild(silentOpt);
+      } else {
+        const silentOpt = document.createElement('option');
+        silentOpt.value = 'none';
+        silentOpt.textContent = 'None (Silent)';
+        sel.appendChild(silentOpt);
+      }
+
+      tracks.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = t.name;
+        sel.appendChild(opt);
+      });
+
+      if (currentVal) sel.value = currentVal;
+    });
+  }
+
+  _populateRoutineAudioSelectors();
 
   // 11. Routine Editor Modal & Management
   const modalRoutine = document.getElementById('modalRoutineEditor');
@@ -268,11 +516,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnSaveRoutine = document.getElementById('btnSaveRoutineModal');
 
   const openRoutineEditor = (routineToEdit = null) => {
+    _populateRoutineAudioSelectors();
     document.getElementById('modalRoutineTitle').textContent = routineToEdit ? 'Edit Routine' : 'Create Routine';
     document.getElementById('routineEditorId').value = routineToEdit ? routineToEdit.id : '';
     document.getElementById('routineEditorName').value = routineToEdit ? routineToEdit.name : '';
     const modeSelect = document.getElementById('routineEditorMode');
     modeSelect.value = routineToEdit ? routineToEdit.mode : currentMode;
+
+    const audioCfg = routineToEdit && routineToEdit.audioConfig ? routineToEdit.audioConfig : {};
+    const workMusicEl = document.getElementById('routineWorkMusicSelect');
+    const restMusicEl = document.getElementById('routineRestMusicSelect');
+    if (workMusicEl) workMusicEl.value = audioCfg.workMusic || 'ambient_focus';
+    if (restMusicEl) restMusicEl.value = audioCfg.restMusic || 'none';
 
     _updateEditorModeFields(modeSelect.value, routineToEdit ? routineToEdit.config : null);
     modalRoutine.classList.add('active');
@@ -292,7 +547,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (activeRoutine) openRoutineEditor(activeRoutine);
   });
 
-  // Mode switcher inside Routine Editor
   document.getElementById('routineEditorMode')?.addEventListener('change', (e) => {
     _updateEditorModeFields(e.target.value);
   });
@@ -307,9 +561,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     tradingFields.style.display = (mode === 'trading' || mode === 'study') ? 'block' : 'none';
 
     if (mode === 'pomodoro') {
-      document.getElementById('routineFocusDuration').value = existingConfig ? Math.round((existingConfig.focusDuration || 1500) / 60) : 50;
-      document.getElementById('routineShortBreakDuration').value = existingConfig ? Math.round((existingConfig.shortBreakDuration || 300) / 60) : 10;
-      document.getElementById('routineLongBreakDuration').value = existingConfig ? Math.round((existingConfig.longBreakDuration || 1800) / 60) : 30;
+      const focusSec = existingConfig ? (existingConfig.focusDuration || 1500) : 3000;
+      const sBreakSec = existingConfig ? (existingConfig.shortBreakDuration || 300) : 600;
+      const lBreakSec = existingConfig ? (existingConfig.longBreakDuration || 1800) : 1800;
+
+      document.getElementById('routineFocusMins').value = Math.floor(focusSec / 60);
+      document.getElementById('routineFocusSecs').value = focusSec % 60;
+      document.getElementById('routineShortBreakMins').value = Math.floor(sBreakSec / 60);
+      document.getElementById('routineShortBreakSecs').value = sBreakSec % 60;
+      document.getElementById('routineLongBreakMins').value = Math.floor(lBreakSec / 60);
+      document.getElementById('routineLongBreakSecs').value = lBreakSec % 60;
+
       document.getElementById('routineSessionsBeforeLong').value = existingConfig ? (existingConfig.sessionsBeforeLongBreak || 4) : 4;
       document.getElementById('routinePomodoroCycles').value = existingConfig ? (existingConfig.totalCycles !== undefined ? existingConfig.totalCycles : 1) : 1;
     } else if (mode === 'exercise') {
@@ -335,17 +597,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   function _renderExerciseRowInputs(exercises) {
     const container = document.getElementById('exerciseListBuilder');
     container.innerHTML = '';
-    exercises.forEach((ex, idx) => {
+    exercises.forEach((ex) => {
       const row = document.createElement('div');
       row.className = 'interval-row-item';
       row.innerHTML = `
         <input type="text" class="ex-name" placeholder="Exercise Name" value="${ex.name || ''}" style="flex:2;" required>
         <div style="display:flex; align-items:center; gap:4px;">
-          <input type="number" class="ex-work" placeholder="Work (s)" value="${ex.workDuration || 45}" style="width:75px;" min="5" max="300" required>
+          <input type="number" class="ex-work" placeholder="Work (s)" value="${ex.workDuration || 45}" style="width:75px;" min="1" max="3600" required>
           <span style="font-size:0.75rem; color:var(--text-muted);">work</span>
         </div>
         <div style="display:flex; align-items:center; gap:4px;">
-          <input type="number" class="ex-rest" placeholder="Rest (s)" value="${ex.restDuration || 10}" style="width:75px;" min="0" max="300" required>
+          <input type="number" class="ex-rest" placeholder="Rest (s)" value="${ex.restDuration || 10}" style="width:75px;" min="0" max="3600" required>
           <span style="font-size:0.75rem; color:var(--text-muted);">rest</span>
         </div>
         <button type="button" class="btn-icon btn-remove-row" style="color:var(--status-danger);">&times;</button>
@@ -358,15 +620,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   function _renderTradingRowInputs(intervals) {
     const container = document.getElementById('tradingListBuilder');
     container.innerHTML = '';
-    intervals.forEach((step, idx) => {
+    intervals.forEach((step) => {
       const row = document.createElement('div');
       row.className = 'interval-row-item';
-      const mins = Math.round((step.duration || 1800) / 60);
+      const dur = step.duration || 1800;
+      const mins = Math.floor(dur / 60);
+      const secs = dur % 60;
+
       row.innerHTML = `
         <input type="text" class="step-name" placeholder="Step Name" value="${step.name || ''}" style="flex:2;" required>
         <div style="display:flex; align-items:center; gap:4px;">
-          <input type="number" class="step-duration" placeholder="Mins" value="${mins}" style="width:70px;" min="1" max="300" required>
-          <span style="font-size:0.75rem; color:var(--text-muted);">mins</span>
+          <input type="number" class="step-mins" placeholder="M" value="${mins}" style="width:55px;" min="0" max="300" required>
+          <span style="font-size:0.75rem; color:var(--text-muted);">m</span>
+          <input type="number" class="step-secs" placeholder="S" value="${secs}" style="width:55px;" min="0" max="59" required>
+          <span style="font-size:0.75rem; color:var(--text-muted);">s</span>
         </div>
         <select class="step-type" style="width:85px;">
           <option value="work" ${step.type === 'work' ? 'selected' : ''}>Work</option>
@@ -386,11 +653,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     row.innerHTML = `
       <input type="text" class="ex-name" placeholder="Exercise Name" value="New Exercise" style="flex:2;" required>
       <div style="display:flex; align-items:center; gap:4px;">
-        <input type="number" class="ex-work" value="45" style="width:75px;" min="5" max="300" required>
+        <input type="number" class="ex-work" value="45" style="width:75px;" min="1" max="3600" required>
         <span style="font-size:0.75rem; color:var(--text-muted);">work</span>
       </div>
       <div style="display:flex; align-items:center; gap:4px;">
-        <input type="number" class="ex-rest" value="15" style="width:75px;" min="0" max="300" required>
+        <input type="number" class="ex-rest" value="15" style="width:75px;" min="0" max="3600" required>
         <span style="font-size:0.75rem; color:var(--text-muted);">rest</span>
       </div>
       <button type="button" class="btn-icon btn-remove-row" style="color:var(--status-danger);">&times;</button>
@@ -406,8 +673,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     row.innerHTML = `
       <input type="text" class="step-name" placeholder="Step Name" value="New Step" style="flex:2;" required>
       <div style="display:flex; align-items:center; gap:4px;">
-        <input type="number" class="step-duration" value="25" style="width:70px;" min="1" max="300" required>
-        <span style="font-size:0.75rem; color:var(--text-muted);">mins</span>
+        <input type="number" class="step-mins" value="25" style="width:55px;" min="0" max="300" required>
+        <span style="font-size:0.75rem; color:var(--text-muted);">m</span>
+        <input type="number" class="step-secs" value="0" style="width:55px;" min="0" max="59" required>
+        <span style="font-size:0.75rem; color:var(--text-muted);">s</span>
       </div>
       <select class="step-type" style="width:85px;">
         <option value="work">Work</option>
@@ -425,13 +694,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     const name = document.getElementById('routineEditorName').value.trim() || 'Untitled Routine';
     const mode = document.getElementById('routineEditorMode').value;
 
+    const workMusic = document.getElementById('routineWorkMusicSelect')?.value || 'ambient_focus';
+    const restMusic = document.getElementById('routineRestMusicSelect')?.value || 'none';
+
     let config = {};
 
     if (mode === 'pomodoro') {
+      const fM = parseInt(document.getElementById('routineFocusMins').value) || 0;
+      const fS = parseInt(document.getElementById('routineFocusSecs').value) || 0;
+      const sbM = parseInt(document.getElementById('routineShortBreakMins').value) || 0;
+      const sbS = parseInt(document.getElementById('routineShortBreakSecs').value) || 0;
+      const lbM = parseInt(document.getElementById('routineLongBreakMins').value) || 0;
+      const lbS = parseInt(document.getElementById('routineLongBreakSecs').value) || 0;
+
       config = {
-        focusDuration: (parseInt(document.getElementById('routineFocusDuration').value) || 25) * 60,
-        shortBreakDuration: (parseInt(document.getElementById('routineShortBreakDuration').value) || 5) * 60,
-        longBreakDuration: (parseInt(document.getElementById('routineLongBreakDuration').value) || 15) * 60,
+        focusDuration: Math.max(1, fM * 60 + fS),
+        shortBreakDuration: Math.max(1, sbM * 60 + sbS),
+        longBreakDuration: Math.max(1, lbM * 60 + lbS),
         sessionsBeforeLongBreak: parseInt(document.getElementById('routineSessionsBeforeLong').value) || 4,
         totalCycles: parseInt(document.getElementById('routinePomodoroCycles').value) || 1,
         autoTransitions: true,
@@ -442,8 +721,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const exercises = [];
       rows.forEach(r => {
         const exName = r.querySelector('.ex-name').value.trim() || 'Exercise';
-        const work = parseInt(r.querySelector('.ex-work').value) || 45;
-        const rest = parseInt(r.querySelector('.ex-rest').value) || 15;
+        const work = Math.max(1, parseInt(r.querySelector('.ex-work').value) || 45);
+        const rest = Math.max(0, parseInt(r.querySelector('.ex-rest').value) || 15);
         exercises.push({ name: exName, workDuration: work, restDuration: rest });
       });
 
@@ -459,7 +738,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       const intervals = [];
       rows.forEach(r => {
         const stepName = r.querySelector('.step-name').value.trim() || 'Step';
-        const dur = (parseInt(r.querySelector('.step-duration').value) || 25) * 60;
+        const sM = parseInt(r.querySelector('.step-mins').value) || 0;
+        const sS = parseInt(r.querySelector('.step-secs').value) || 0;
+        const dur = Math.max(1, sM * 60 + sS);
         const type = r.querySelector('.step-type').value;
         intervals.push({ name: stepName, duration: dur, type: type, music: type === 'work' });
       });
@@ -475,12 +756,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       id: id || undefined,
       name,
       mode,
+      audioConfig: {
+        workMusic,
+        restMusic,
+        workStartSound: 'default',
+        restStartSound: 'default',
+        completionSound: 'default'
+      },
       config
     });
 
     closeRoutineEditor();
 
-    // Reload routine in UI
     routinesForMode = routineManager.getByMode(currentMode);
     ui.renderRoutinesList(routineManager.getAll(), routineManager);
     ui.renderRoutineOptions(routinesForMode, savedId);
@@ -497,7 +784,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('routinesGrid')?.addEventListener('click', (e) => {
     const target = e.target;
 
-    // Run routine
     const runBtn = target.closest('.btn-load-routine');
     if (runBtn) {
       const routine = routineManager.getById(runBtn.dataset.id);
@@ -505,7 +791,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         activeRoutine = routine;
         currentMode = routine.mode === 'study' ? 'trading' : routine.mode;
 
-        // Switch to dashboard and load routine
         document.querySelectorAll('.mode-tab-btn').forEach(b => {
           b.classList.toggle('active', b.dataset.mode === currentMode);
         });
@@ -519,7 +804,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    // Edit routine
     const editBtn = target.closest('.btn-edit-routine');
     if (editBtn) {
       const routine = routineManager.getById(editBtn.dataset.id);
@@ -527,7 +811,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    // Duplicate routine
     const dupBtn = target.closest('.btn-duplicate-routine');
     if (dupBtn) {
       const copy = routineManager.duplicateRoutine(dupBtn.dataset.id);
@@ -537,7 +820,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    // Delete routine
     const delBtn = target.closest('.btn-delete-routine');
     if (delBtn) {
       if (confirm('Are you sure you want to delete this routine?')) {
@@ -547,7 +829,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    // Toggle favorite
     const favBtn = target.closest('.btn-icon.favorite');
     if (favBtn) {
       routineManager.toggleFavorite(favBtn.dataset.favId);
@@ -629,7 +910,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     ui.renderTodaySchedule(scheduler, routineManager);
   });
 
-  // Today Schedule List Play Button
   document.getElementById('todayScheduleList')?.addEventListener('click', (e) => {
     const runBtn = e.target.closest('.btn-run-today-item');
     if (runBtn) {
@@ -646,10 +926,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   scheduler.startMonitoring(({ schedule, routine }) => {
     if (!routine) return;
 
-    // Play notification sound
     audioManager.playIntervalCompleteChime();
 
-    // Show in-app banner
     ui.showNotificationBanner(
       `Scheduled Routine: ${routine.name}`,
       `It's ${schedule.time}. Ready to start your session?`,
@@ -661,7 +939,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     );
 
-    // Browser Notification if granted
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
       new Notification(`TempoFlow: ${routine.name}`, {
         body: `It's time for your ${routine.name} routine!`,
@@ -670,7 +947,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Request Notification Permission on first user interaction
   if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
     document.addEventListener('click', () => {
       Notification.requestPermission().catch(() => {});
@@ -682,6 +958,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const selectDefaultMode = document.getElementById('settingsSelectDefaultMode');
   const toggleAutoTransitions = document.getElementById('settingsToggleAutoTransitions');
   const toggleWarning = document.getElementById('settingsToggleWarningCountdown');
+  const selectNotifTone = document.getElementById('settingsSelectNotifTone');
+  const selectDefaultWorkMusic = document.getElementById('settingsSelectDefaultWorkMusic');
+  const selectDefaultRestMusic = document.getElementById('settingsSelectDefaultRestMusic');
 
   if (selectTheme) {
     selectTheme.value = settings.theme || 'dark';
@@ -712,6 +991,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     toggleWarning.checked = settings.warningCountdown !== false;
     toggleWarning.addEventListener('change', (e) => {
       settings.warningCountdown = e.target.checked;
+      storage.saveSettings(settings);
+    });
+  }
+
+  if (selectNotifTone) {
+    selectNotifTone.value = settings.notificationSound || 'chime';
+    selectNotifTone.addEventListener('change', (e) => {
+      settings.notificationSound = e.target.value;
+      storage.saveSettings(settings);
+    });
+  }
+
+  if (selectDefaultWorkMusic) {
+    selectDefaultWorkMusic.value = settings.defaultWorkMusic || 'ambient_focus';
+    selectDefaultWorkMusic.addEventListener('change', (e) => {
+      settings.defaultWorkMusic = e.target.value;
+      storage.saveSettings(settings);
+    });
+  }
+
+  if (selectDefaultRestMusic) {
+    selectDefaultRestMusic.value = settings.defaultRestMusic || 'none';
+    selectDefaultRestMusic.addEventListener('change', (e) => {
+      settings.defaultRestMusic = e.target.value;
       storage.saveSettings(settings);
     });
   }

@@ -135,4 +135,8 @@
     flex-direction: column;
     align-items: stretch;
   }
+
+  .duration-control-grid {
+    grid-template-columns: 1fr;
+  }
 }

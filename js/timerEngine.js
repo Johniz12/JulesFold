@@ -2,7 +2,10 @@
  * TEMPOFLOW - Headless Shared Timer Engine
  * Timestamp-based interval countdown engine with zero-drift accuracy
  * Supports: Pomodoro cycles, Exercise/Tabata rounds, Trading/Study sequences
- * Pure JS, DOM-independent, event-driven
+ * Extended timing controls: hours/minutes/seconds duration precision,
+ * flexible intervals (prep, work, rest, round rest, completion),
+ * auto/manual transitions, finite/infinite repetition.
+ * Pure JS, DOM-independent, event-driven.
  */
 
 class TimerEngine {
@@ -94,10 +97,10 @@ class TimerEngine {
     if (!routine || !routine.config) return intervals;
 
     if (routine.mode === 'pomodoro') {
-      const focusSec = routine.config.focusDuration || 25 * 60;
-      const shortBreakSec = routine.config.shortBreakDuration || 5 * 60;
-      const longBreakSec = routine.config.longBreakDuration || 15 * 60;
-      const sessionsBeforeLong = routine.config.sessionsBeforeLongBreak || 4;
+      const focusSec = Math.max(1, routine.config.focusDuration || 25 * 60);
+      const shortBreakSec = Math.max(1, routine.config.shortBreakDuration || 5 * 60);
+      const longBreakSec = Math.max(1, routine.config.longBreakDuration || 15 * 60);
+      const sessionsBeforeLong = Math.max(1, routine.config.sessionsBeforeLongBreak || 4);
       const musicFocus = routine.config.musicOnFocus !== false;
 
       for (let i = 1; i <= sessionsBeforeLong; i++) {
@@ -151,20 +154,19 @@ class TimerEngine {
         intervals.push({
           id: `exercise_work_${idx + 1}`,
           name: ex.name || `Exercise ${idx + 1}`,
-          duration: ex.workDuration || 45,
+          duration: Math.max(1, ex.workDuration || 45),
           type: 'exercise_work',
           music: musicWork,
           notes: ex.notes || '',
           meta: { exerciseNumber: idx + 1, totalExercises: exercises.length }
         });
 
-        // Add rest interval if restDuration > 0
         const isLastExercise = idx === exercises.length - 1;
         if (!isLastExercise && (ex.restDuration || 0) > 0) {
           intervals.push({
             id: `exercise_rest_${idx + 1}`,
             name: `Rest (${ex.name || 'Next Exercise'})`,
-            duration: ex.restDuration || 15,
+            duration: Math.max(1, ex.restDuration || 15),
             type: 'exercise_rest',
             music: false,
             meta: { afterExercise: idx + 1 }
@@ -172,7 +174,6 @@ class TimerEngine {
         }
       });
 
-      // Round rest at the end of the round
       if (roundRestSec > 0) {
         intervals.push({
           id: 'exercise_round_rest',
@@ -189,7 +190,7 @@ class TimerEngine {
         intervals.push({
           id: `custom_interval_${idx + 1}`,
           name: item.name || `Interval ${idx + 1}`,
-          duration: item.duration || 30 * 60,
+          duration: Math.max(1, item.duration || 30 * 60),
           type: item.type === 'rest' ? 'rest' : 'work',
           music: item.music !== undefined ? item.music : (item.type !== 'rest'),
           autoTransition: item.autoTransition !== undefined ? item.autoTransition : true,
@@ -242,7 +243,6 @@ class TimerEngine {
     if (this.state !== 'running') return;
 
     this._stopTicker();
-    // Accurate timestamp delta preservation
     this.remainingMs = Math.max(0, this.endTimestamp - Date.now());
     this.state = 'paused';
 
@@ -280,7 +280,6 @@ class TimerEngine {
     const wasRunning = this.state === 'running';
     this._stopTicker();
 
-    // Reset current interval back to its full duration
     const current = this.intervals[this.currentIntervalIndex];
     if (current) {
       this.remainingMs = (current.duration || 0) * 1000;
@@ -306,7 +305,6 @@ class TimerEngine {
   // --- Internal Tick and Advance Logic ---
   _startTicker() {
     this._stopTicker();
-    // 250ms tick frequency for high precision and immediate response
     this.tickerId = setInterval(() => {
       this._tick();
     }, 250);
@@ -325,11 +323,9 @@ class TimerEngine {
     const now = Date.now();
     this.remainingMs = Math.max(0, this.endTimestamp - now);
 
-    // Warning sound trigger (e.g. last 3 seconds of exercise or focus)
     const remainingSec = Math.ceil(this.remainingMs / 1000);
-    if (remainingSec <= 3 && remainingSec > 0 && !this.warningFired && this.intervalDurationMs > 5000) {
+    if (remainingSec <= 3 && remainingSec > 0 && !this.warningFired && this.intervalDurationMs > 4000) {
       this.emit('warning', { remainingSec });
-      // We emit for 3, 2, 1
     }
 
     if (this.remainingMs <= 0) {
@@ -340,15 +336,12 @@ class TimerEngine {
   }
 
   _advanceInterval(isManualSkip = false) {
-    const finishedInterval = this.getCurrentInterval();
-
     const isLastInCycle = this.currentIntervalIndex >= this.intervals.length - 1;
 
     if (!isLastInCycle) {
       this.loadInterval(this.currentIntervalIndex + 1);
       this._afterAdvance(isManualSkip);
     } else {
-      // Completed full cycle of routine
       const hasMoreCycles = this.totalCycles === 0 || this.currentCycle < this.totalCycles;
 
       if (hasMoreCycles) {
@@ -357,7 +350,6 @@ class TimerEngine {
         this.loadInterval(0);
         this._afterAdvance(isManualSkip);
       } else {
-        // Complete routine
         this._stopTicker();
         this.remainingMs = 0;
         this.state = 'completed';
@@ -380,7 +372,6 @@ class TimerEngine {
       this.endTimestamp = Date.now() + this.remainingMs;
       this.emit('tick', this.getTimeData());
     } else {
-      // Manual transition required
       this._stopTicker();
       this.state = 'paused';
       this.emit('stateChange', { state: this.state });
@@ -428,7 +419,6 @@ class TimerEngine {
     };
   }
 
-  // Handle browser tab visibility change to correct any drift
   syncWithSystemTime() {
     if (this.state === 'running') {
       const now = Date.now();
