@@ -1,1 +1,573 @@
-index.html
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TempoFlow — Productivity, Trading, Study & Exercise Timer</title>
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar">
+      <div class="brand-section">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+          </svg>
+        </div>
+        <div class="brand-name">TempoFlow</div>
+      </div>
+
+      <nav>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a class="nav-link active" data-tab="dashboard">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-tab="routines">
+              <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              <span>Routines</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-tab="scheduler">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>Schedule</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-tab="statistics">
+              <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              <span>Statistics</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-tab="settings">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span>Settings</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="nav-footer">
+        <div class="audio-quick-status">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="status-indicator" id="audioQuickIndicator"></span>
+            <span id="audioQuickStatusText">Audio Engine Ready</span>
+          </div>
+          <button id="btnUnlockAudio" class="btn-header" style="padding:2px 6px; font-size:0.7rem;">Unlock</button>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span>TempoFlow v1.0</span>
+          <span>Offline Ready</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-wrapper">
+      <!-- Top Application Header -->
+      <header class="app-header">
+        <div class="header-date-box">
+          <div class="header-day" id="headerCurrentDay">Monday</div>
+          <div class="header-date" id="headerCurrentDate">Nov 4, 2024</div>
+        </div>
+
+        <div class="header-actions">
+          <button id="btnHeaderNewRoutine" class="btn-header">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>New Routine</span>
+          </button>
+          <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- TAB 1: DASHBOARD -->
+      <section id="tab-dashboard" class="tab-content active">
+        <!-- Activity Mode Filter Selector -->
+        <div class="mode-switcher" id="dashboardModeTabs">
+          <button class="mode-tab-btn active" data-mode="pomodoro">Pomodoro Productivity</button>
+          <button class="mode-tab-btn" data-mode="exercise">Exercise & Tabata</button>
+          <button class="mode-tab-btn" data-mode="trading">Trading & Study</button>
+        </div>
+
+        <!-- Routine Picker -->
+        <div class="routine-quick-bar">
+          <label for="selectActiveRoutine" style="font-weight:600; font-size:0.88rem; color:var(--text-secondary);">Active Routine:</label>
+          <select id="selectActiveRoutine"></select>
+          <button id="btnEditActiveRoutine" class="btn-header" title="Edit this routine">Edit Routine</button>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Left Column: Centerpiece Timer -->
+          <div class="card timer-centerpiece" id="timerCenterpiece">
+            <!-- Badges for Interval State -->
+            <div class="timer-badge-container">
+              <span class="interval-badge badge-work" id="timerIntervalBadge">FOCUS INTERVAL</span>
+              <span class="interval-badge" id="timerCycleBadge">Session 1 / 4</span>
+            </div>
+
+            <!-- Circular SVG Ring Countdown -->
+            <div class="timer-ring-container">
+              <svg class="timer-ring-svg" viewBox="0 0 240 240">
+                <circle class="timer-ring-bg" cx="120" cy="120" r="100" />
+                <circle class="timer-ring-progress" id="timerRingCircle" cx="120" cy="120" r="100"
+                        stroke-dasharray="628.3" stroke-dashoffset="0" />
+              </svg>
+              <div class="timer-center-content">
+                <div class="timer-time-display" id="timerDisplay">25:00</div>
+                <div class="timer-interval-title" id="timerIntervalName">Focus Session</div>
+                <div class="timer-session-info" id="timerMetaText">Stay in the flow</div>
+              </div>
+            </div>
+
+            <!-- Controls: Start, Pause, Resume, Skip, Reset, Stop -->
+            <div class="timer-controls-row">
+              <button id="btnTimerReset" class="btn-timer btn-timer-secondary" title="Reset Interval">
+                <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.85 20 14.48 20 13c0-4.42-3.58-8-8-8zm-6 8c0-1.01.25-1.97.7-2.8L5.24 8.74C4.46 10.15 4 11.52 4 13c0 4.42 3.58 8 8 8v4l5-5-5-5v4c-3.31 0-6-2.69-6-6z"/></svg>
+              </button>
+
+              <button id="btnTimerMain" class="btn-timer btn-timer-primary" title="Start / Pause">
+                <svg id="btnTimerMainIcon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </button>
+
+              <button id="btnTimerSkip" class="btn-timer btn-timer-secondary" title="Skip Interval">
+                <svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2.5"/></svg>
+              </button>
+
+              <button id="btnTimerStop" class="btn-timer btn-timer-secondary" title="Stop Routine">
+                <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/></svg>
+              </button>
+            </div>
+
+            <!-- Next Up Preview Bar -->
+            <div class="upcoming-box">
+              <span class="upcoming-label">UPCOMING NEXT</span>
+              <span class="upcoming-value" id="upcomingIntervalText">Short Break (5:00)</span>
+            </div>
+          </div>
+
+          <!-- Right Column: Today's Schedule & Quick Stats -->
+          <div class="dashboard-side">
+            <!-- Today's Routine Schedule Card -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  Today's Schedule
+                </h3>
+                <button class="btn-header" id="btnNavSchedule" style="padding:4px 8px; font-size:0.75rem;">View Week</button>
+              </div>
+              <div class="today-schedule-list" id="todayScheduleList">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Today's Productivity Metrics -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                  Today's Flow
+                </h3>
+              </div>
+              <div class="stats-grid-mini">
+                <div class="stat-card-mini">
+                  <span class="stat-val" id="miniStatFocus">0m</span>
+                  <span class="stat-lbl">Focus Time</span>
+                </div>
+                <div class="stat-card-mini">
+                  <span class="stat-val" id="miniStatPomodoros">0</span>
+                  <span class="stat-lbl">Pomodoros</span>
+                </div>
+                <div class="stat-card-mini">
+                  <span class="stat-val" id="miniStatExercise">0m</span>
+                  <span class="stat-lbl">Workout Time</span>
+                </div>
+                <div class="stat-card-mini">
+                  <span class="stat-val" id="miniStatRoutines">0</span>
+                  <span class="stat-lbl">Completed</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Integrated Audio HUD -->
+        <div class="audio-bar">
+          <div class="audio-track-info">
+            <div class="audio-icon-disc" id="audioDiscIcon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="var(--bg-card)"/></svg>
+            </div>
+            <div>
+              <div class="audio-track-title" id="audioCurrentTrackTitle">Ambient Focus (Synth)</div>
+              <div class="audio-track-sub" id="audioCurrentTrackSub">Plays during active work</div>
+            </div>
+          </div>
+
+          <div class="audio-controls-right" style="display:flex; align-items:center; gap:20px;">
+            <div class="audio-slider-group">
+              <label for="musicVolumeSlider">Music</label>
+              <input type="range" id="musicVolumeSlider" min="0" max="1" step="0.05" value="0.5">
+            </div>
+
+            <div class="audio-slider-group">
+              <label for="notifVolumeSlider">Alerts</label>
+              <input type="range" id="notifVolumeSlider" min="0" max="1" step="0.05" value="0.8">
+            </div>
+
+            <button id="btnUploadTrack" class="btn-header" style="padding:6px 10px; font-size:0.8rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Upload MP3</span>
+            </button>
+            <input type="file" id="inputAudioUpload" accept="audio/mp3,audio/wav,audio/*" style="display:none;">
+
+            <label class="switch" title="Mute/Unmute Audio Engine">
+              <input type="checkbox" id="toggleAudioEngine" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: ROUTINES -->
+      <section id="tab-routines" class="tab-content">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Routines Library</h2>
+            <p class="view-desc">Configure, duplicate, and customize your Pomodoro, Tabata workouts, and trading flows.</p>
+          </div>
+          <button id="btnCreateNewRoutine" class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Create Routine</span>
+          </button>
+        </div>
+
+        <div class="routines-grid" id="routinesGrid">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- TAB 3: WEEKLY SCHEDULER -->
+      <section id="tab-scheduler" class="tab-content">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Weekly Schedule</h2>
+            <p class="view-desc">Plan routine intervals Monday through Sunday with smart in-browser notifications.</p>
+          </div>
+        </div>
+
+        <div class="scheduler-calendar" id="schedulerCalendar">
+          <!-- Dynamically populated 7 day columns -->
+        </div>
+      </section>
+
+      <!-- TAB 4: STATISTICS -->
+      <section id="tab-statistics" class="tab-content">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Statistics & Activity History</h2>
+            <p class="view-desc">Accurate completed timer sessions and active duration breakdown.</p>
+          </div>
+        </div>
+
+        <div class="stats-overview-grid">
+          <div class="stat-box">
+            <div class="stat-box-title">Total Focus Time</div>
+            <div class="stat-box-num" id="statTotalFocus">0h 0m</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-title">Completed Pomodoros</div>
+            <div class="stat-box-num" id="statCompletedPomodoros">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-title">Total Workout Time</div>
+            <div class="stat-box-num" id="statTotalWorkout">0h 0m</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-title">Routines Completed</div>
+            <div class="stat-box-num" id="statTotalRoutines">0</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Completed Sessions History</h3>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="stats-history-table">
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Routine</th>
+                  <th>Mode</th>
+                  <th>Active Duration</th>
+                </tr>
+              </thead>
+              <tbody id="statsHistoryTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: SETTINGS -->
+      <section id="tab-settings" class="tab-content">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Application Settings</h2>
+            <p class="view-desc">Customize sound, default timer options, appearance, and manage your data.</p>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Display & Behavior</h3>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Theme Mode</div>
+              <div class="setting-desc">Switch between deep dark desktop theme and high-contrast light mode</div>
+            </div>
+            <div class="setting-control">
+              <select id="settingsSelectTheme">
+                <option value="dark">Dark Theme</option>
+                <option value="light">Light Theme</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Default Timer Mode</div>
+              <div class="setting-desc">Primary mode selected upon launching the dashboard</div>
+            </div>
+            <div class="setting-control">
+              <select id="settingsSelectDefaultMode">
+                <option value="pomodoro">Pomodoro Productivity</option>
+                <option value="exercise">Exercise & Tabata</option>
+                <option value="trading">Trading & Study</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Automatic Interval Transitions</div>
+              <div class="setting-desc">Automatically transition and start countdown for subsequent intervals</div>
+            </div>
+            <div class="setting-control">
+              <label class="switch">
+                <input type="checkbox" id="settingsToggleAutoTransitions" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">3-Second Warning Beep</div>
+              <div class="setting-desc">Audio warning pulses on the final 3 seconds before an interval finishes</div>
+            </div>
+            <div class="setting-control">
+              <label class="switch">
+                <input type="checkbox" id="settingsToggleWarningCountdown" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Data Backup & Restore</h3>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Export Data (JSON)</div>
+              <div class="setting-desc">Backup all routines, schedules, statistics, and settings to a JSON file</div>
+            </div>
+            <div class="setting-control">
+              <button id="btnExportData" class="btn-primary">Export JSON</button>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Import Data (JSON)</div>
+              <div class="setting-desc">Restore your TempoFlow configuration from an exported JSON backup</div>
+            </div>
+            <div class="setting-control">
+              <button id="btnImportDataTrigger" class="btn-header">Import JSON</button>
+              <input type="file" id="inputImportData" accept="application/json" style="display:none;">
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ROUTINE EDITOR MODAL -->
+  <div class="modal-overlay" id="modalRoutineEditor">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalRoutineTitle">Edit Routine</h3>
+        <button class="modal-close-btn" id="btnCloseRoutineModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="routineEditorId">
+        <div class="form-group">
+          <label class="form-label" for="routineEditorName">Routine Name</label>
+          <input type="text" id="routineEditorName" class="form-control" placeholder="e.g. Deep Work Session">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="routineEditorMode">Mode</label>
+          <select id="routineEditorMode" class="form-control">
+            <option value="pomodoro">Pomodoro Productivity</option>
+            <option value="exercise">Exercise / Tabata</option>
+            <option value="trading">Trading / Custom Sequence</option>
+          </select>
+        </div>
+
+        <!-- Conditional form fields based on mode -->
+        <div id="routineEditorPomodoroFields">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div class="form-group">
+              <label class="form-label" for="routineFocusDuration">Focus (mins)</label>
+              <input type="number" id="routineFocusDuration" class="form-control" min="1" max="180" value="50">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="routineShortBreakDuration">Short Break (mins)</label>
+              <input type="number" id="routineShortBreakDuration" class="form-control" min="1" max="60" value="10">
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div class="form-group">
+              <label class="form-label" for="routineLongBreakDuration">Long Break (mins)</label>
+              <input type="number" id="routineLongBreakDuration" class="form-control" min="1" max="120" value="30">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="routineSessionsBeforeLong">Sessions Before Long Break</label>
+              <input type="number" id="routineSessionsBeforeLong" class="form-control" min="1" max="10" value="4">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="routinePomodoroCycles">Total Cycles (0 = Infinite)</label>
+            <input type="number" id="routinePomodoroCycles" class="form-control" min="0" max="20" value="1">
+          </div>
+        </div>
+
+        <div id="routineEditorExerciseFields" style="display:none;">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div class="form-group">
+              <label class="form-label" for="routineExercisePrep">Prep Time (seconds)</label>
+              <input type="number" id="routineExercisePrep" class="form-control" min="0" max="60" value="10">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="routineExerciseRoundRest">Rest Between Rounds (seconds)</label>
+              <input type="number" id="routineExerciseRoundRest" class="form-control" min="0" max="300" value="60">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="routineExerciseRounds">Rounds Count (0 = Infinite)</label>
+            <input type="number" id="routineExerciseRounds" class="form-control" min="0" max="50" value="4">
+          </div>
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <label class="form-label" style="margin-bottom:0;">Exercises Sequence</label>
+              <button type="button" id="btnAddExerciseRow" class="btn-header" style="padding:4px 8px; font-size:0.75rem;">+ Add Exercise</button>
+            </div>
+            <div class="intervals-list-builder" id="exerciseListBuilder">
+              <!-- Dynamically populated exercise rows -->
+            </div>
+          </div>
+        </div>
+
+        <div id="routineEditorTradingFields" style="display:none;">
+          <div class="form-group">
+            <label class="form-label" for="routineTradingCycles">Total Cycles (0 = Infinite)</label>
+            <input type="number" id="routineTradingCycles" class="form-control" min="0" max="50" value="1">
+          </div>
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <label class="form-label" style="margin-bottom:0;">Intervals Sequence</label>
+              <button type="button" id="btnAddTradingRow" class="btn-header" style="padding:4px 8px; font-size:0.75rem;">+ Add Step</button>
+            </div>
+            <div class="intervals-list-builder" id="tradingListBuilder">
+              <!-- Dynamically populated interval rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-header" id="btnCancelRoutineModal">Cancel</button>
+        <button type="button" class="btn-primary" id="btnSaveRoutineModal">Save Routine</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE ENTRY MODAL -->
+  <div class="modal-overlay" id="modalScheduleEditor">
+    <div class="modal-window" style="max-width:440px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalScheduleTitle">Schedule Routine</h3>
+        <button class="modal-close-btn" id="btnCloseScheduleModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="scheduleEditorId">
+        <div class="form-group">
+          <label class="form-label" for="scheduleEditorDay">Day of Week</label>
+          <select id="scheduleEditorDay" class="form-control">
+            <option value="mon">Monday</option>
+            <option value="tue">Tuesday</option>
+            <option value="wed">Wednesday</option>
+            <option value="thu">Thursday</option>
+            <option value="fri">Friday</option>
+            <option value="sat">Saturday</option>
+            <option value="sun">Sunday</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="scheduleEditorTime">Start Time</label>
+          <input type="time" id="scheduleEditorTime" class="form-control" value="09:00" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="scheduleEditorRoutine">Routine</label>
+          <select id="scheduleEditorRoutine" class="form-control"></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-header" id="btnCancelScheduleModal">Cancel</button>
+        <button type="button" class="btn-primary" id="btnSaveScheduleModal">Save to Schedule</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE DUE NOTIFICATION TOAST -->
+  <div class="notification-banner" id="scheduledNotificationBanner">
+    <div class="banner-content">
+      <div class="banner-title" id="notifBannerTitle">Scheduled Routine Due!</div>
+      <div class="banner-desc" id="notifBannerDesc">It's time for your session.</div>
+    </div>
+    <button class="btn-primary" id="btnStartScheduledNow" style="padding:6px 12px; font-size:0.8rem;">Start Now</button>
+    <button class="btn-header" id="btnDismissNotification" style="padding:6px 10px; font-size:0.8rem;">Dismiss</button>
+  </div>
+
+  <!-- Application Modules -->
+  <script src="js/storage.js"></script>
+  <script src="js/timerEngine.js"></script>
+  <script src="js/audioManager.js"></script>
+  <script src="js/routineManager.js"></script>
+  <script src="js/scheduler.js"></script>
+  <script src="js/statistics.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
