@@ -416,14 +416,16 @@ class UIController {
     }
   }
 
-  // --- Custom Timer Studio Rendering ---
-  renderStudioCountdown(state) {
-    const titleEl = document.getElementById('studioCountdownTitleDisplay');
-    const dispEl = document.getElementById('studioCountdownDisplay');
-    const iconEl = document.getElementById('btnStudioCountdownIcon');
-    const btn = document.getElementById('btnStudioCountdownToggle');
+  // --- Unified Custom Timer Studio Rendering ---
+  renderStudioUnifiedTimer(currentType, state) {
+    const titleEl = document.getElementById('studioUnifiedTitleDisplay');
+    const dispEl = document.getElementById('studioUnifiedTimeDisplay');
+    const metaEl = document.getElementById('studioUnifiedSubMeta');
+    const badgeEl = document.getElementById('studioTimerStatusBadge');
+    const startIcon = document.getElementById('btnStudioStartIcon');
+    const startBtn = document.getElementById('btnStudioStart');
 
-    if (titleEl) titleEl.textContent = state.title;
+    if (titleEl) titleEl.textContent = state.title || 'Timer';
 
     if (dispEl) {
       const rem = state.remainingSeconds || 0;
@@ -437,46 +439,40 @@ class UIController {
       }
     }
 
-    if (iconEl && btn) {
-      if (state.state === 'running') {
-        iconEl.innerHTML = `<rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" />`;
-        btn.title = 'Pause Countdown';
+    if (metaEl) {
+      if (currentType === 'repeating') {
+        const cycleText = state.totalCycles > 0
+          ? `Cycle ${state.completedCycles} of ${state.totalCycles}`
+          : `Cycle ${state.completedCycles} (Infinite Loop)`;
+        metaEl.textContent = `${cycleText} • Sound: ${state.sound || 'Default'}`;
       } else {
-        iconEl.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"/>`;
-        btn.title = 'Start Countdown';
+        metaEl.textContent = `Target Duration: ${Math.round((state.durationSeconds || 0) / 60)}m • Sound: ${state.sound || 'Default'}`;
       }
     }
-  }
 
-  renderStudioRepeating(state) {
-    const titleEl = document.getElementById('studioRepeatingTitleDisplay');
-    const dispEl = document.getElementById('studioRepeatingDisplay');
-    const cyclesEl = document.getElementById('studioRepeatingCyclesDisplay');
-    const iconEl = document.getElementById('btnStudioRepeatingIcon');
-    const btn = document.getElementById('btnStudioRepeatingToggle');
-
-    if (titleEl) titleEl.textContent = state.title;
-
-    if (dispEl) {
-      const rem = state.remainingSeconds || 0;
-      const mins = Math.floor(rem / 60);
-      const secs = rem % 60;
-      dispEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    }
-
-    if (cyclesEl) {
-      cyclesEl.textContent = state.totalCycles > 0
-        ? `${state.completedCycles} / ${state.totalCycles}`
-        : `${state.completedCycles} (indefinite)`;
-    }
-
-    if (iconEl && btn) {
+    if (badgeEl) {
+      badgeEl.className = 'interval-badge';
       if (state.state === 'running') {
-        iconEl.innerHTML = `<rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" />`;
-        btn.title = 'Pause Interval';
+        badgeEl.classList.add('badge-work');
+        badgeEl.textContent = 'RUNNING';
+      } else if (state.state === 'paused') {
+        badgeEl.classList.add('badge-rest');
+        badgeEl.textContent = 'PAUSED';
+      } else if (state.state === 'completed') {
+        badgeEl.classList.add('badge-work');
+        badgeEl.textContent = 'COMPLETED';
       } else {
-        iconEl.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"/>`;
-        btn.title = 'Start Interval';
+        badgeEl.textContent = 'READY';
+      }
+    }
+
+    if (startIcon && startBtn) {
+      if (state.state === 'running') {
+        startIcon.innerHTML = `<rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" />`;
+        startBtn.title = 'Pause Timer';
+      } else {
+        startIcon.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"/>`;
+        startBtn.title = state.state === 'paused' ? 'Resume Timer' : 'Start Timer';
       }
     }
   }
@@ -524,8 +520,8 @@ class UIController {
   }
 
   // --- Audio Library Manager Rendering ---
-  renderAudioLibrary(tracks, activeCategoryFilter = 'all') {
-    const container = document.getElementById('audio-lib-container');
+  renderAudioLibrary(tracks, activeCategoryFilter = 'all', targetContainerId = 'mainAudioLibraryContainer') {
+    const container = document.getElementById(targetContainerId);
     if (!container) return;
     container.innerHTML = '';
 
@@ -535,7 +531,12 @@ class UIController {
     }
 
     if (filtered.length === 0) {
-      container.innerHTML = `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.85rem;">No audio tracks found in this category. Upload tracks via the audio toolbar.</div>`;
+      container.innerHTML = `
+        <div style="text-align:center; padding:32px 16px; background-color:var(--bg-card); border:1px dashed var(--border-color); border-radius:var(--radius-md);">
+          <div style="font-size:1rem; font-weight:600; color:var(--text-secondary); margin-bottom:6px;">No audio tracks found</div>
+          <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">Upload your own MP3, WAV, or OGG audio to customize your timer sounds.</div>
+        </div>
+      `;
       return;
     }
 
@@ -553,7 +554,7 @@ class UIController {
       row.className = 'audio-track-item';
 
       const sizeKb = track.size ? `${(track.size / 1024).toFixed(1)} KB` : '';
-      const durSec = track.duration ? `${track.duration}s` : '';
+      const durSec = track.duration ? `${track.duration}s` : 'audio track';
       const metaInfo = [track.category || 'Custom Sounds', sizeKb, durSec].filter(Boolean).join(' • ');
 
       const catOptions = categories.map(cat => `
@@ -565,11 +566,11 @@ class UIController {
           <span class="audio-track-name">${track.name}</span>
           <span class="audio-track-meta">${metaInfo}</span>
         </div>
-        <div style="display:flex; align-items:center; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
           <select class="form-control select-track-category" data-id="${track.id}" style="padding:4px 8px; font-size:0.78rem; width:140px;">
             ${catOptions}
           </select>
-          <button class="btn-header btn-preview-track" data-id="${track.id}" style="padding:4px 8px; font-size:0.75rem;">Preview</button>
+          <button class="btn-header btn-preview-track" data-id="${track.id}" style="padding:4px 10px; font-size:0.78rem;">Preview</button>
           <button class="btn-icon btn-rename-track" data-id="${track.id}" title="Rename Track" style="width:28px; height:28px;">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           </button>

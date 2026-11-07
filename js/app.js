@@ -111,23 +111,49 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!audioManager.isAudioUnlocked) unlockAudio();
   }, { once: true });
 
-  // 7. Navigation Tabs
+  // 7. Mobile Responsive Drawer Navigation
+  const sidebarEl = document.querySelector('.app-sidebar');
+  const backdropEl = document.getElementById('sidebarBackdrop');
+  const mobileToggleBtn = document.getElementById('mobileMenuToggle');
+
+  const closeMobileDrawer = () => {
+    if (sidebarEl) sidebarEl.classList.remove('drawer-open');
+    if (backdropEl) backdropEl.classList.remove('active');
+  };
+
+  const openMobileDrawer = () => {
+    if (sidebarEl) sidebarEl.classList.add('drawer-open');
+    if (backdropEl) backdropEl.classList.add('active');
+  };
+
+  mobileToggleBtn?.addEventListener('click', () => {
+    if (sidebarEl && sidebarEl.classList.contains('drawer-open')) {
+      closeMobileDrawer();
+    } else {
+      openMobileDrawer();
+    }
+  });
+
+  backdropEl?.addEventListener('click', closeMobileDrawer);
+
+  // Navigation Tabs with auto-close for mobile
   document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
       const tab = link.dataset.tab;
       ui.switchTab(tab);
+      closeMobileDrawer();
 
       if (tab === 'routines') {
         ui.renderRoutinesList(routineManager.getAll(), routineManager);
       } else if (tab === 'studio') {
-        ui.renderStudioCountdown(customStudio.getCountdownState());
-        ui.renderStudioRepeating(customStudio.getRepeatingState());
-        ui.renderClockAlarms(customStudio.getClockAlarms());
+        updateStudioTypeVisibility();
+      } else if (tab === 'audiolib') {
+        ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter, 'mainAudioLibraryContainer');
       } else if (tab === 'scheduler') {
         ui.renderWeeklyScheduler(scheduler, routineManager);
       } else if (tab === 'settings') {
-        ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter);
+        ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter, 'audio-lib-container');
       } else if (tab === 'statistics') {
         ui.renderStatistics(statsTracker);
       }
@@ -271,96 +297,153 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (subEl) subEl.textContent = 'Custom User Track (Saved)';
   }
 
-  // --- Wire Custom Timer Studio ---
-  // Subtab switcher
-  document.querySelectorAll('#studioSubtabs .mode-tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('#studioSubtabs .mode-tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const subtab = btn.dataset.subtab;
-      document.getElementById('studioPanelCountdown').style.display = subtab === 'countdown' ? 'block' : 'none';
-      document.getElementById('studioPanelRepeating').style.display = subtab === 'repeating' ? 'block' : 'none';
-      document.getElementById('studioPanelClock').style.display = subtab === 'clock' ? 'block' : 'none';
-    });
-  });
+  // --- Unified Custom Timer Studio Logic ---
+  let selectedStudioType = 'countdown';
 
-  // Countdown Events
-  customStudio.on('countdown:tick', (state) => ui.renderStudioCountdown(state));
-  customStudio.on('countdown:update', (state) => ui.renderStudioCountdown(state));
-  customStudio.on('countdown:start', (state) => ui.renderStudioCountdown(state));
-  customStudio.on('countdown:pause', (state) => ui.renderStudioCountdown(state));
-  customStudio.on('countdown:complete', (state) => {
-    ui.renderStudioCountdown(state);
-    audioManager.playIntervalCompleteChime();
-    alert(`Countdown "${state.title}" completed!`);
-  });
+  function updateStudioTypeVisibility() {
+    const typeSelect = document.getElementById('studioTimerTypeSelect');
+    selectedStudioType = typeSelect ? typeSelect.value : 'countdown';
 
-  document.getElementById('btnStudioCountdownToggle')?.addEventListener('click', () => {
-    unlockAudio();
-    if (customStudio.countdown.state === 'running') {
-      customStudio.pauseCountdown();
-    } else {
-      customStudio.startCountdown();
+    const helpEl = document.getElementById('studioTypeHelpText');
+    const displayCard = document.getElementById('studioActiveTimerDisplayCard');
+    const cdFields = document.getElementById('studioFieldsCountdown');
+    const repFields = document.getElementById('studioFieldsRepeating');
+    const clkFields = document.getElementById('studioFieldsClock');
+
+    if (selectedStudioType === 'countdown') {
+      if (helpEl) helpEl.textContent = 'Targeted countdown for focused work blocks, tests, or cooking.';
+      if (displayCard) displayCard.style.display = 'block';
+      if (cdFields) cdFields.style.display = 'block';
+      if (repFields) repFields.style.display = 'none';
+      if (clkFields) clkFields.style.display = 'none';
+      ui.renderStudioUnifiedTimer('countdown', customStudio.getCountdownState());
+    } else if (selectedStudioType === 'repeating') {
+      if (helpEl) helpEl.textContent = 'Recurring alerts for hydration, posture checks, or eye rest.';
+      if (displayCard) displayCard.style.display = 'block';
+      if (cdFields) cdFields.style.display = 'none';
+      if (repFields) repFields.style.display = 'block';
+      if (clkFields) clkFields.style.display = 'none';
+      ui.renderStudioUnifiedTimer('repeating', customStudio.getRepeatingState());
+    } else if (selectedStudioType === 'clock') {
+      if (helpEl) helpEl.textContent = 'Triggers real-time alerts aligned with wall-clock hourly minutes or fixed daily times.';
+      if (displayCard) displayCard.style.display = 'none';
+      if (cdFields) cdFields.style.display = 'none';
+      if (repFields) repFields.style.display = 'none';
+      if (clkFields) clkFields.style.display = 'block';
+      ui.renderClockAlarms(customStudio.getClockAlarms());
     }
+  }
+
+  document.getElementById('studioTimerTypeSelect')?.addEventListener('change', updateStudioTypeVisibility);
+
+  // Studio Timer Engine Listeners
+  customStudio.on('countdown:tick', (state) => {
+    if (selectedStudioType === 'countdown') ui.renderStudioUnifiedTimer('countdown', state);
+  });
+  customStudio.on('countdown:update', (state) => {
+    if (selectedStudioType === 'countdown') ui.renderStudioUnifiedTimer('countdown', state);
+  });
+  customStudio.on('countdown:start', (state) => {
+    if (selectedStudioType === 'countdown') ui.renderStudioUnifiedTimer('countdown', state);
+  });
+  customStudio.on('countdown:pause', (state) => {
+    if (selectedStudioType === 'countdown') ui.renderStudioUnifiedTimer('countdown', state);
+  });
+  customStudio.on('countdown:complete', (state) => {
+    if (selectedStudioType === 'countdown') ui.renderStudioUnifiedTimer('countdown', state);
+    audioManager.playIntervalCompleteChime();
+    ui.showNotificationBanner(`Countdown Complete: ${state.title}`, 'Your countdown timer has finished.', () => {});
   });
 
-  document.getElementById('btnStudioCountdownReset')?.addEventListener('click', () => {
-    customStudio.resetCountdown();
+  customStudio.on('repeating:tick', (state) => {
+    if (selectedStudioType === 'repeating') ui.renderStudioUnifiedTimer('repeating', state);
   });
-
-  document.getElementById('btnApplyStudioCountdown')?.addEventListener('click', () => {
-    const title = document.getElementById('studioCountdownTitleInput').value.trim() || 'Countdown';
-    const h = parseInt(document.getElementById('studioCountdownHours').value, 10) || 0;
-    const m = parseInt(document.getElementById('studioCountdownMins').value, 10) || 0;
-    const s = parseInt(document.getElementById('studioCountdownSecs').value, 10) || 0;
-    const sound = document.getElementById('studioCountdownSound').value;
-    const durSec = Math.max(1, h * 3600 + m * 60 + s);
-
-    customStudio.configureCountdown({ title, durationSeconds: durSec, sound });
-    alert('Countdown timer configured!');
+  customStudio.on('repeating:update', (state) => {
+    if (selectedStudioType === 'repeating') ui.renderStudioUnifiedTimer('repeating', state);
   });
-
-  // Repeating Events
-  customStudio.on('repeating:tick', (state) => ui.renderStudioRepeating(state));
-  customStudio.on('repeating:update', (state) => ui.renderStudioRepeating(state));
-  customStudio.on('repeating:start', (state) => ui.renderStudioRepeating(state));
-  customStudio.on('repeating:pause', (state) => ui.renderStudioRepeating(state));
+  customStudio.on('repeating:start', (state) => {
+    if (selectedStudioType === 'repeating') ui.renderStudioUnifiedTimer('repeating', state);
+  });
+  customStudio.on('repeating:pause', (state) => {
+    if (selectedStudioType === 'repeating') ui.renderStudioUnifiedTimer('repeating', state);
+  });
   customStudio.on('repeating:cycle_complete', (state) => {
     audioManager.playRestBeep();
   });
   customStudio.on('repeating:complete', (state) => {
-    ui.renderStudioRepeating(state);
+    if (selectedStudioType === 'repeating') ui.renderStudioUnifiedTimer('repeating', state);
     audioManager.playRoutineCompleteFanfare();
-    alert(`Repeating Alert "${state.title}" completed all cycles!`);
+    ui.showNotificationBanner(`Repeating Alert Finished: ${state.title}`, 'All repetitions have been completed.', () => {});
   });
 
-  document.getElementById('btnStudioRepeatingToggle')?.addEventListener('click', () => {
+  // Unified Start / Pause / Resume Control
+  document.getElementById('btnStudioStart')?.addEventListener('click', () => {
     unlockAudio();
-    if (customStudio.repeating.state === 'running') {
-      customStudio.pauseRepeating();
-    } else {
-      customStudio.startRepeating();
+    if (selectedStudioType === 'countdown') {
+      const state = customStudio.countdown.state;
+      if (state === 'running') {
+        customStudio.pauseCountdown();
+      } else if (state === 'paused') {
+        customStudio.resumeCountdown();
+      } else {
+        customStudio.startCountdown();
+      }
+    } else if (selectedStudioType === 'repeating') {
+      const state = customStudio.repeating.state;
+      if (state === 'running') {
+        customStudio.pauseRepeating();
+      } else if (state === 'paused') {
+        customStudio.resumeRepeating();
+      } else {
+        customStudio.startRepeating();
+      }
     }
   });
 
-  document.getElementById('btnStudioRepeatingReset')?.addEventListener('click', () => {
-    customStudio.resetRepeating();
+  document.getElementById('btnStudioReset')?.addEventListener('click', () => {
+    if (selectedStudioType === 'countdown') {
+      customStudio.resetCountdown();
+    } else if (selectedStudioType === 'repeating') {
+      customStudio.resetRepeating();
+    }
   });
 
-  document.getElementById('btnApplyStudioRepeating')?.addEventListener('click', () => {
-    const title = document.getElementById('studioRepeatingTitleInput').value.trim() || 'Repeating Alert';
-    const m = parseInt(document.getElementById('studioRepeatingMins').value, 10) || 0;
-    const s = parseInt(document.getElementById('studioRepeatingSecs').value, 10) || 0;
-    const cycles = parseInt(document.getElementById('studioRepeatingCyclesInput').value, 10) || 0;
-    const sound = document.getElementById('studioRepeatingSound').value;
-    const durSec = Math.max(1, m * 60 + s);
+  document.getElementById('btnStudioStop')?.addEventListener('click', () => {
+    if (selectedStudioType === 'countdown') {
+      customStudio.stopCountdown();
+    } else if (selectedStudioType === 'repeating') {
+      customStudio.stopRepeating();
+    }
+  });
+
+  // Apply Countdown Configuration
+  document.getElementById('btnApplyStudioCd')?.addEventListener('click', () => {
+    const title = document.getElementById('studioCdName')?.value.trim() || 'Countdown';
+    const h = parseInt(document.getElementById('studioCdHours')?.value, 10) || 0;
+    const m = parseInt(document.getElementById('studioCdMins')?.value, 10) || 0;
+    const s = parseInt(document.getElementById('studioCdSecs')?.value, 10) || 0;
+    const sound = document.getElementById('studioCdSound')?.value || 'chime';
+    const durSec = Math.max(1, h * 3600 + m * 60 + s);
+
+    customStudio.configureCountdown({ title, durationSeconds: durSec, sound });
+    ui.showNotificationBanner('Countdown Configured', `Set to ${title} (${h > 0 ? h + 'h ' : ''}${m}m ${s}s).`, () => {});
+  });
+
+  // Apply Repeating Configuration
+  document.getElementById('btnApplyStudioRep')?.addEventListener('click', () => {
+    const title = document.getElementById('studioRepName')?.value.trim() || 'Repeating Alert';
+    const h = parseInt(document.getElementById('studioRepHours')?.value, 10) || 0;
+    const m = parseInt(document.getElementById('studioRepMins')?.value, 10) || 0;
+    const s = parseInt(document.getElementById('studioRepSecs')?.value, 10) || 0;
+    const cycles = parseInt(document.getElementById('studioRepCycles')?.value, 10) || 0;
+    const sound = document.getElementById('studioRepSound')?.value || 'bell';
+    const durSec = Math.max(1, h * 3600 + m * 60 + s);
 
     customStudio.configureRepeating({ title, intervalSeconds: durSec, totalCycles: cycles, sound });
-    alert('Repeating alert timer configured!');
+    ui.showNotificationBanner('Repeating Timer Configured', `Set to ${title} every ${m}m ${s}s.`, () => {});
   });
 
-  // Clock Alarms
-  // Load preset alarms
+  // Clock Alarms Handling
   customStudio.loadClockAlarms([
     { id: 'al_hourly_stand', label: 'Stand & Stretch', type: 'hourly', minute: 50, sound: 'bell', soundCategory: 'Notification Sounds', enabled: true },
     { id: 'al_daily_lunch', label: 'Midday Reset', type: 'daily', time: '12:00', sound: 'chime', soundCategory: 'Notification Sounds', enabled: true }
@@ -374,29 +457,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     audioManager.playIntervalCompleteChime();
     ui.showNotificationBanner(
       `Alarm Triggered: ${alarm.label}`,
-      `Wall-clock scheduled alert fired at ${alarm.time || (':' + alarm.minute)}.`,
+      `Wall-clock scheduled alert fired at ${alarm.type === 'hourly' ? ':' + alarm.minute : alarm.time}.`,
       () => {}
     );
   });
 
-  document.getElementById('btnAddNewClockAlarm')?.addEventListener('click', () => {
-    const type = prompt('Alarm type? Enter "hourly" or "daily":', 'hourly');
-    if (!type) return;
+  // Inline New Alarm Form Toggle
+  document.getElementById('btnToggleNewAlarmForm')?.addEventListener('click', () => {
+    const form = document.getElementById('studioNewAlarmFormContainer');
+    if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  });
 
-    if (type.toLowerCase() === 'hourly') {
-      const minStr = prompt('Minute of each hour (0 to 59):', '45');
-      if (minStr !== null) {
-        const minute = parseInt(minStr, 10) || 0;
-        const label = prompt('Label for this alarm:', `Hourly Stretch (:${String(minute).padStart(2, '0')})`);
-        customStudio.addClockAlarm({ label, type: 'hourly', minute });
-      }
-    } else {
-      const timeStr = prompt('Time of day in HH:MM format (24-hour):', '09:30');
-      if (timeStr) {
-        const label = prompt('Label for this alarm:', `Daily Alarm (${timeStr})`);
-        customStudio.addClockAlarm({ label, type: 'daily', time: timeStr });
-      }
-    }
+  document.getElementById('btnCancelNewAlarm')?.addEventListener('click', () => {
+    const form = document.getElementById('studioNewAlarmFormContainer');
+    if (form) form.style.display = 'none';
+  });
+
+  document.getElementById('newAlarmScheduleType')?.addEventListener('change', (e) => {
+    const isHourly = e.target.value === 'hourly';
+    document.getElementById('groupAlarmMinuteInput').style.display = isHourly ? 'block' : 'none';
+    document.getElementById('groupAlarmTimeInput').style.display = isHourly ? 'none' : 'block';
+  });
+
+  document.getElementById('btnSaveNewAlarm')?.addEventListener('click', () => {
+    const name = document.getElementById('newAlarmName')?.value.trim() || 'Alarm';
+    const type = document.getElementById('newAlarmScheduleType')?.value || 'hourly';
+    const sound = document.getElementById('newAlarmSound')?.value || 'bell';
+    const minute = parseInt(document.getElementById('newAlarmMinuteValue')?.value, 10) || 0;
+    const time = document.getElementById('newAlarmTimeValue')?.value || '09:30';
+
+    customStudio.addClockAlarm({
+      label: name,
+      type,
+      minute,
+      time,
+      sound,
+      soundCategory: 'Notification Sounds'
+    });
+
+    document.getElementById('studioNewAlarmFormContainer').style.display = 'none';
+    document.getElementById('newAlarmName').value = '';
   });
 
   document.getElementById('clockAlarmsListContainer')?.addEventListener('click', (e) => {
@@ -412,99 +512,235 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // --- Wire Audio Library Manager in Settings ---
-  document.querySelectorAll('.audio-lib-filter-bar .filter-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('.audio-lib-filter-bar .filter-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      activeAudioCatFilter = chip.dataset.cat;
-      ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter);
+  // Sound selectors preview button helper
+  document.addEventListener('click', (e) => {
+    const previewBtn = e.target.closest('.btn-preview-sound-select');
+    if (previewBtn) {
+      const selectId = previewBtn.dataset.select;
+      const selectEl = document.getElementById(selectId);
+      if (selectEl) {
+        unlockAudio();
+        const soundKey = selectEl.value;
+        if (soundKey === 'chime') audioManager.playIntervalCompleteChime();
+        else if (soundKey === 'bell') audioManager._playTone({ freq: 659, type: 'sine', duration: 0.4 });
+        else if (soundKey === 'digital') audioManager._playTone({ freq: 880, type: 'square', duration: 0.15 });
+        else if (soundKey === 'warning') audioManager.playWarningBeep();
+        else {
+          const track = audioManager.getTrackById(soundKey);
+          if (track) audioManager.playPreview(track);
+        }
+      }
+    }
+  });
+
+  // --- Wire Audio Library (Dedicated Tab + Settings) ---
+  const modalAddAudio = document.getElementById('modalAddAudio');
+  const btnOpenAddAudio = document.getElementById('btnOpenAddAudioModal');
+  const btnCloseAddAudio = document.getElementById('btnCloseAddAudioModal');
+  const btnCancelAddAudio = document.getElementById('btnCancelAddAudioModal');
+  const btnConfirmAddAudio = document.getElementById('btnConfirmAddAudioModal');
+  const inputAudioFile = document.getElementById('addAudioFileInput');
+  const selectAudioCat = document.getElementById('addAudioCategorySelect');
+
+  btnOpenAddAudio?.addEventListener('click', () => {
+    if (modalAddAudio) modalAddAudio.classList.add('active');
+  });
+
+  const closeAddAudioModal = () => {
+    if (modalAddAudio) modalAddAudio.classList.remove('active');
+    if (inputAudioFile) inputAudioFile.value = '';
+  };
+
+  btnCloseAddAudio?.addEventListener('click', closeAddAudioModal);
+  btnCancelAddAudio?.addEventListener('click', closeAddAudioModal);
+
+  btnConfirmAddAudio?.addEventListener('click', async () => {
+    const file = inputAudioFile?.files[0];
+    const category = selectAudioCat?.value || 'Custom Sounds';
+
+    if (!file) {
+      alert('Please select an audio file first.');
+      return;
+    }
+
+    unlockAudio();
+    const track = await audioManager.uploadUserTrack(file, category);
+    closeAddAudioModal();
+
+    if (track) {
+      ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter, 'mainAudioLibraryContainer');
+      ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter, 'audio-lib-container');
+      _populateRoutineAudioSelectors();
+      ui.showNotificationBanner('Audio Added', `Successfully saved "${track.name}" to ${category}.`, () => {});
+    }
+  });
+
+  // Filter chips in both main audio lib and settings
+  document.querySelectorAll('.audio-lib-filter-bar').forEach(bar => {
+    bar.addEventListener('click', (e) => {
+      const chip = e.target.closest('.filter-chip');
+      if (chip) {
+        bar.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        activeAudioCatFilter = chip.dataset.cat;
+        ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter, 'mainAudioLibraryContainer');
+        ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter, 'audio-lib-container');
+      }
     });
   });
 
-  document.getElementById('audio-lib-container')?.addEventListener('click', async (e) => {
-    const previewBtn = e.target.closest('.btn-preview-track');
-    if (previewBtn) {
-      const track = audioManager.getTrackById(previewBtn.dataset.id);
-      if (track) {
-        if (audioManager.isPreviewPlaying) {
-          audioManager.stopPreview();
-          previewBtn.textContent = 'Preview';
-        } else {
-          await audioManager.playPreview(track);
-          previewBtn.textContent = 'Stop';
-        }
-      }
-      return;
-    }
+  // Audio track card delegations (mainAudioLibraryContainer and audio-lib-container)
+  ['mainAudioLibraryContainer', 'audio-lib-container'].forEach(containerId => {
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
-    const renameBtn = e.target.closest('.btn-rename-track');
-    if (renameBtn) {
-      const track = audioManager.getTrackById(renameBtn.dataset.id);
-      if (track) {
-        const newName = prompt('Enter new track name:', track.name);
-        if (newName && newName.trim()) {
-          await audioManager.updateTrackMetadata(track.id, { name: newName.trim() });
-          ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter);
+    container.addEventListener('click', async (e) => {
+      const previewBtn = e.target.closest('.btn-preview-track');
+      if (previewBtn) {
+        const track = audioManager.getTrackById(previewBtn.dataset.id);
+        if (track) {
+          if (audioManager.isPreviewPlaying) {
+            audioManager.stopPreview();
+            previewBtn.textContent = 'Preview';
+          } else {
+            await audioManager.playPreview(track);
+            previewBtn.textContent = 'Stop';
+          }
+        }
+        return;
+      }
+
+      const renameBtn = e.target.closest('.btn-rename-track');
+      if (renameBtn) {
+        const track = audioManager.getTrackById(renameBtn.dataset.id);
+        if (track) {
+          const newName = prompt('Enter new track name:', track.name);
+          if (newName && newName.trim()) {
+            await audioManager.updateTrackMetadata(track.id, { name: newName.trim() });
+            ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter, 'mainAudioLibraryContainer');
+            ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter, 'audio-lib-container');
+            _populateRoutineAudioSelectors();
+          }
+        }
+        return;
+      }
+
+      const delBtn = e.target.closest('.btn-delete-track');
+      if (delBtn) {
+        if (confirm('Delete this track permanently from IndexedDB?')) {
+          await audioManager.deleteTrack(delBtn.dataset.id);
+          ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter, 'mainAudioLibraryContainer');
+          ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter, 'audio-lib-container');
           _populateRoutineAudioSelectors();
         }
+        return;
       }
-      return;
-    }
+    });
 
-    const delBtn = e.target.closest('.btn-delete-track');
-    if (delBtn) {
-      if (confirm('Delete this track permanently from IndexedDB?')) {
-        await audioManager.deleteTrack(delBtn.dataset.id);
-        ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter);
+    container.addEventListener('change', async (e) => {
+      const selectCat = e.target.closest('.select-track-category');
+      if (selectCat) {
+        await audioManager.updateTrackMetadata(selectCat.dataset.id, { category: selectCat.value });
+        ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter, 'mainAudioLibraryContainer');
+        ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter, 'audio-lib-container');
         _populateRoutineAudioSelectors();
       }
-      return;
-    }
-  });
-
-  document.getElementById('audio-lib-container')?.addEventListener('change', async (e) => {
-    const selectCat = e.target.closest('.select-track-category');
-    if (selectCat) {
-      await audioManager.updateTrackMetadata(selectCat.dataset.id, { category: selectCat.value });
-      ui.renderAudioLibrary(audioManager.userTracks, activeAudioCatFilter);
-    }
+    });
   });
 
   function _populateRoutineAudioSelectors() {
-    const workSelect = document.getElementById('routineWorkMusicSelect');
-    const restSelect = document.getElementById('routineRestMusicSelect');
+    const workMusicSelect = document.getElementById('routineWorkMusicSelect');
+    const restMusicSelect = document.getElementById('routineRestMusicSelect');
+    const workStartSoundSelect = document.getElementById('routineWorkStartSoundSelect');
+    const restStartSoundSelect = document.getElementById('routineRestStartSoundSelect');
+    const completionSoundSelect = document.getElementById('routineCompletionSoundSelect');
+
+    const studioCdSound = document.getElementById('studioCdSound');
+    const studioRepSound = document.getElementById('studioRepSound');
+    const newAlarmSound = document.getElementById('newAlarmSound');
+
     const defaultWorkSelect = document.getElementById('settingsSelectDefaultWorkMusic');
     const defaultRestSelect = document.getElementById('settingsSelectDefaultRestMusic');
 
-    const tracks = audioManager.getAllAvailableTracks();
+    const userTracks = audioManager.userTracks || [];
 
-    [workSelect, restSelect, defaultWorkSelect, defaultRestSelect].forEach(sel => {
+    // Helper for notification sounds (built-ins + uploaded)
+    const populateNotificationSelect = (sel, defaultLabel = 'Default Tone') => {
       if (!sel) return;
-      const currentVal = sel.value;
+      const cur = sel.value;
+      sel.innerHTML = `
+        <option value="default">${defaultLabel}</option>
+        <option value="chime">Chime (Harmonic)</option>
+        <option value="bell">Soft Bell</option>
+        <option value="digital">Digital Beep</option>
+        <option value="warning">Warning Pulse</option>
+        <option value="fanfare">Completion Fanfare</option>
+        <option value="none">None / Silent</option>
+      `;
+
+      if (userTracks.length > 0) {
+        const optGroup = document.createElement('optgroup');
+        optGroup.label = 'Custom Uploaded Tracks';
+        userTracks.forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t.id;
+          opt.textContent = `${t.name} (${t.category || 'Sound'})`;
+          optGroup.appendChild(opt);
+        });
+        sel.appendChild(optGroup);
+      }
+      if (cur) sel.value = cur;
+    };
+
+    // Helper for background music selects
+    const populateMusicSelect = (sel, isRest = false) => {
+      if (!sel) return;
+      const cur = sel.value;
       sel.innerHTML = '';
 
-      if (sel === restSelect || sel === defaultRestSelect) {
-        const silentOpt = document.createElement('option');
-        silentOpt.value = 'none';
-        silentOpt.textContent = 'Pause Music (Silent Rest)';
-        sel.appendChild(silentOpt);
+      if (isRest) {
+        const pauseOpt = document.createElement('option');
+        pauseOpt.value = 'none';
+        pauseOpt.textContent = 'Pause Music (Silent Rest)';
+        sel.appendChild(pauseOpt);
       } else {
-        const silentOpt = document.createElement('option');
-        silentOpt.value = 'none';
-        silentOpt.textContent = 'None (Silent)';
-        sel.appendChild(silentOpt);
+        const noneOpt = document.createElement('option');
+        noneOpt.value = 'none';
+        noneOpt.textContent = 'None / Silent';
+        sel.appendChild(noneOpt);
       }
 
-      tracks.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t.id;
-        opt.textContent = t.name;
-        sel.appendChild(opt);
-      });
+      const ambientOpt = document.createElement('option');
+      ambientOpt.value = 'ambient_focus';
+      ambientOpt.textContent = 'Ambient Focus (Built-in Synth)';
+      sel.appendChild(ambientOpt);
 
-      if (currentVal) sel.value = currentVal;
-    });
+      if (userTracks.length > 0) {
+        const optGroup = document.createElement('optgroup');
+        optGroup.label = 'Custom Uploaded Music';
+        userTracks.forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t.id;
+          opt.textContent = `${t.name} (${t.category || 'Music'})`;
+          optGroup.appendChild(opt);
+        });
+        sel.appendChild(optGroup);
+      }
+
+      if (cur) sel.value = cur;
+    };
+
+    populateNotificationSelect(workStartSoundSelect, 'Default Start Beep');
+    populateNotificationSelect(restStartSoundSelect, 'Default Rest Beep');
+    populateNotificationSelect(completionSoundSelect, 'Default Fanfare');
+    populateNotificationSelect(studioCdSound, 'Chime (Harmonic)');
+    populateNotificationSelect(studioRepSound, 'Soft Bell');
+    populateNotificationSelect(newAlarmSound, 'Soft Bell');
+
+    populateMusicSelect(workMusicSelect, false);
+    populateMusicSelect(restMusicSelect, true);
+    populateMusicSelect(defaultWorkSelect, false);
+    populateMusicSelect(defaultRestSelect, true);
   }
 
   _populateRoutineAudioSelectors();
@@ -526,8 +762,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const audioCfg = routineToEdit && routineToEdit.audioConfig ? routineToEdit.audioConfig : {};
     const workMusicEl = document.getElementById('routineWorkMusicSelect');
     const restMusicEl = document.getElementById('routineRestMusicSelect');
+    const workSoundEl = document.getElementById('routineWorkStartSoundSelect');
+    const restSoundEl = document.getElementById('routineRestStartSoundSelect');
+    const compSoundEl = document.getElementById('routineCompletionSoundSelect');
+
     if (workMusicEl) workMusicEl.value = audioCfg.workMusic || 'ambient_focus';
     if (restMusicEl) restMusicEl.value = audioCfg.restMusic || 'none';
+    if (workSoundEl) workSoundEl.value = audioCfg.workStartSound || 'default';
+    if (restSoundEl) restSoundEl.value = audioCfg.restStartSound || 'default';
+    if (compSoundEl) compSoundEl.value = audioCfg.completionSound || 'default';
 
     _updateEditorModeFields(modeSelect.value, routineToEdit ? routineToEdit.config : null);
     modalRoutine.classList.add('active');
@@ -696,6 +939,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const workMusic = document.getElementById('routineWorkMusicSelect')?.value || 'ambient_focus';
     const restMusic = document.getElementById('routineRestMusicSelect')?.value || 'none';
+    const workStartSound = document.getElementById('routineWorkStartSoundSelect')?.value || 'default';
+    const restStartSound = document.getElementById('routineRestStartSoundSelect')?.value || 'default';
+    const completionSound = document.getElementById('routineCompletionSoundSelect')?.value || 'default';
 
     let config = {};
 
@@ -759,9 +1005,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       audioConfig: {
         workMusic,
         restMusic,
-        workStartSound: 'default',
-        restStartSound: 'default',
-        completionSound: 'default'
+        workStartSound,
+        restStartSound,
+        completionSound
       },
       config
     });

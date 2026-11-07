@@ -11,7 +11,7 @@ tempoflow/
 ├── css/
 │   ├── themes.css             # Theme variables (Dark/Light mode design system)
 │   ├── style.css              # Core typography, components, timer centerpiece ring
-│   └── responsive.css         # Responsive rules for desktop, tablet, and mobile
+│   └── responsive.css         # Responsive rules, mobile drawer, and layout breakpoints
 ├── js/
 │   ├── timerEngine.js         # Headless zero-drift countdown & interval sequencer
 │   ├── customStudio.js        # High-precision countdown, repeating alert & clock alarms
@@ -36,15 +36,17 @@ tempoflow/
 * Emits state and interval change events to trigger audio and UI reactions.
 
 ### 2. Custom Timer Studio (`js/customStudio.js`)
-* **Countdown Timer:** Standalone countdown with custom title and tone.
-* **Repeating Interval:** Periodic alerts (e.g. hydration, posture checks) with cycle counters.
+* **Unified Mode Selection:** Dropdown selector seamlessly toggles Countdown, Repeating Interval, or Clock Alarm configurations while maintaining live timer state.
+* **Countdown Timer:** Standalone countdown with custom title, H/M/S inputs, and previewable tones.
+* **Repeating Interval:** Periodic alerts (e.g. hydration, posture checks) with cycle counters and audio preview.
 * **Clock-Aligned Alarms:** Fires triggers at exact wall-clock moments (e.g., `:45` of every hour or `09:30` daily).
 
-### 3. Audio Architecture (`js/audioManager.js`)
+### 3. Audio Architecture & Dedicated Library (`js/audioManager.js`, `js/app.js`)
+* **Dedicated Top-Level Audio Library:** Standalone navigation section with "+ Add Audio" modal, filter chips, and card-based track management.
 * **Web Audio Synthesis:** Generates pure tones, harmonic chimes, bells, and warning alerts without external audio files.
-* **IndexedDB Audio Storage:** Stores uploaded MP3/WAV tracks as persistent Blobs.
+* **IndexedDB Audio Storage:** Stores uploaded MP3, WAV, OGG, M4A, WEBM tracks as persistent Blobs.
 * **Categorization:** Classifies audio into 6 categories: Background Music, Work Sounds, Rest Sounds, Notification Sounds, Completion Sounds, and Custom Sounds.
-* **Timer Sync:** Automatically starts/resumes work music on work intervals and pauses during rest intervals.
+* **Event-Driven Routine Audio Sync:** Custom routine definitions support 5 independent sound bindings (Work Start, Rest Start, Completion, Work Background Music, Rest Background Music).
 
 ### 4. Future Electron Portability
 All application core logic (`timerEngine.js`, `customStudio.js`, `storage.js`, `routineManager.js`, `scheduler.js`, `statistics.js`) is decoupled from the DOM and can be directly reused inside an Electron desktop app.

@@ -82,7 +82,20 @@ class CustomStudioEngine {
     this.emit('countdown:pause', this.getCountdownState());
   }
 
+  resumeCountdown() {
+    if (this.countdown.state === 'paused') {
+      this.startCountdown();
+    }
+  }
+
   resetCountdown() {
+    this.countdown.state = 'idle';
+    this.countdown.remainingMs = this.countdown.durationSeconds * 1000;
+    this.countdown.endTimestamp = null;
+    this.emit('countdown:update', this.getCountdownState());
+  }
+
+  stopCountdown() {
     this.countdown.state = 'idle';
     this.countdown.remainingMs = this.countdown.durationSeconds * 1000;
     this.countdown.endTimestamp = null;
@@ -138,7 +151,21 @@ class CustomStudioEngine {
     this.emit('repeating:pause', this.getRepeatingState());
   }
 
+  resumeRepeating() {
+    if (this.repeating.state === 'paused') {
+      this.startRepeating();
+    }
+  }
+
   resetRepeating() {
+    this.repeating.state = 'idle';
+    this.repeating.completedCycles = 0;
+    this.repeating.remainingMs = this.repeating.intervalSeconds * 1000;
+    this.repeating.endTimestamp = null;
+    this.emit('repeating:update', this.getRepeatingState());
+  }
+
+  stopRepeating() {
     this.repeating.state = 'idle';
     this.repeating.completedCycles = 0;
     this.repeating.remainingMs = this.repeating.intervalSeconds * 1000;

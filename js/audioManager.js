@@ -384,6 +384,45 @@ class AudioManager {
     return false;
   }
 
+  // --- Play Sound by Identifier or Custom Track ---
+  playSoundKey(soundKey, defaultAction = 'start') {
+    if (!this.audioEnabled || !soundKey || soundKey === 'none' || soundKey === 'disable') return;
+
+    if (soundKey === 'default') {
+      if (defaultAction === 'start') this.playStartBeep();
+      else if (defaultAction === 'rest') this.playRestBeep();
+      else if (defaultAction === 'complete') this.playRoutineCompleteFanfare();
+      return;
+    }
+
+    if (soundKey === 'chime') {
+      this.playIntervalCompleteChime();
+    } else if (soundKey === 'bell') {
+      this._playTone({ freq: 659.25, type: 'sine', duration: 0.35, gain: this.notificationVolume });
+    } else if (soundKey === 'digital') {
+      this._playTone({ freq: 880, type: 'square', duration: 0.15, gain: this.notificationVolume * 0.7 });
+    } else if (soundKey === 'fanfare') {
+      this.playRoutineCompleteFanfare();
+    } else {
+      // Check user track
+      const track = this.getTrackById(soundKey);
+      if (track && track.objectUrl) {
+        try {
+          const soundAudio = new Audio(track.objectUrl);
+          soundAudio.volume = this.notificationVolume;
+          soundAudio.play().catch(e => console.warn('Sound play error:', e));
+        } catch (e) {
+          console.warn('Track audio error:', e);
+        }
+      } else {
+        // Fallback
+        if (defaultAction === 'start') this.playStartBeep();
+        else if (defaultAction === 'rest') this.playRestBeep();
+        else if (defaultAction === 'complete') this.playRoutineCompleteFanfare();
+      }
+    }
+  }
+
   // --- Synchronize with Timer Engine Events ---
   bindToTimerEngine(timerEngine) {
     timerEngine.on('intervalChange', (data) => {
@@ -393,11 +432,10 @@ class AudioManager {
       const routineAudio = timerEngine.routine && timerEngine.routine.audioConfig ? timerEngine.routine.audioConfig : {};
 
       if (interval.type === 'rest' || interval.type === 'exercise_rest') {
-        if (routineAudio.restStartSound !== 'disable') {
-          this.playRestBeep();
-        }
+        const soundKey = routineAudio.restStartSound || 'default';
+        this.playSoundKey(soundKey, 'rest');
 
-        // Optional rest music vs pausing
+        // Rest music handling
         if (routineAudio.restMusic && routineAudio.restMusic !== 'none') {
           const restTrack = this.getTrackById(routineAudio.restMusic);
           if (restTrack) {
@@ -409,14 +447,15 @@ class AudioManager {
           this.pauseMusic();
         }
       } else if (interval.type === 'work' || interval.type === 'exercise_work') {
-        if (routineAudio.workStartSound !== 'disable') {
-          this.playStartBeep();
-        }
+        const soundKey = routineAudio.workStartSound || 'default';
+        this.playSoundKey(soundKey, 'start');
 
         if (interval.music !== false && timerEngine.state === 'running') {
-          if (routineAudio.workMusic) {
+          if (routineAudio.workMusic && routineAudio.workMusic !== 'none') {
             const track = this.getTrackById(routineAudio.workMusic);
             this.playMusic(track || this.currentTrack);
+          } else if (routineAudio.workMusic === 'none') {
+            this.pauseMusic();
           } else {
             this.resumeMusic();
           }
@@ -436,10 +475,18 @@ class AudioManager {
     timerEngine.on('stateChange', (data) => {
       const current = timerEngine.getCurrentInterval();
       const isWork = current && (current.type === 'work' || current.type === 'exercise_work');
+      const routineAudio = timerEngine.routine && timerEngine.routine.audioConfig ? timerEngine.routine.audioConfig : {};
 
       if (data.state === 'running') {
         if (isWork && current.music !== false) {
-          this.playMusic();
+          if (routineAudio.workMusic && routineAudio.workMusic !== 'none') {
+            const track = this.getTrackById(routineAudio.workMusic);
+            this.playMusic(track || this.currentTrack);
+          } else if (routineAudio.workMusic === 'none') {
+            this.pauseMusic();
+          } else {
+            this.playMusic();
+          }
         }
       } else if (data.state === 'paused') {
         this.pauseMusic();
@@ -447,13 +494,16 @@ class AudioManager {
         this.stopMusic();
       } else if (data.state === 'completed') {
         this.stopMusic();
-        this.playRoutineCompleteFanfare();
+        const compSound = routineAudio.completionSound || 'default';
+        this.playSoundKey(compSound, 'complete');
       }
     });
 
     timerEngine.on('complete', () => {
       this.stopMusic();
-      this.playRoutineCompleteFanfare();
+      const routineAudio = timerEngine.routine && timerEngine.routine.audioConfig ? timerEngine.routine.audioConfig : {};
+      const compSound = routineAudio.completionSound || 'default';
+      this.playSoundKey(compSound, 'complete');
     });
   }
 }

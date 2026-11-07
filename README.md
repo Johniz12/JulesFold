@@ -9,14 +9,27 @@ TempoFlow is a multi-purpose interval timer, routine builder, and weekly activit
 - **Mode B: Exercise / Tabata**: Full workout builder with custom exercises, individual work/rest durations (in exact seconds), preparation countdown, rest between rounds, finite or infinite rounds, 3-second audio warnings, and high-visibility WORK vs REST colorways.
 - **Mode C: Trading / Study**: Fully customizable multi-step interval sequences for chart analysis, trading logs, active recall, flashcards, or research blocks, configurable with exact hours, minutes, and seconds.
 
-### 2. Custom Timer Studio (`js/customStudio.js`)
-- **Standalone Countdown Timer**: Set fast custom countdowns with custom sound notifications.
-- **Repeating Interval Timer**: Periodic repeating alarms (e.g. hydration, posture checks) with cycle counting.
-- **Clock-Aligned Alarms**: Real-time wall-clock alarms supporting hourly marks (`:45`) and daily fixed times (`09:30`).
+### 2. Unified Custom Timer Studio (`js/customStudio.js`)
+- **Unified Mode Selection**: Switch effortlessly between Countdown, Repeating Interval, and Clock-Aligned alarms from a single dropdown that surfaces only relevant controls.
+- **Standalone Countdown Timer**: High-precision hours, minutes, and seconds duration with custom alarm sounds and previewing.
+- **Repeating Interval Timer**: Periodic reminders (hydration, posture, eyes) with finite or indefinite cycles and live cycle count.
+- **Clock-Aligned Alarms**: Real-time wall-clock triggers on exact minute marks (e.g. `:45` every hour) or daily fixed appointments (`09:30`).
+- **Complete Control Suite**: Start, pause, resume, reset, and stop with active timer status badges.
 
-### 3. Dedicated Audio Library Manager in Settings
-- 6 organized categories: Background Music, Work Sounds, Rest Sounds, Notification Sounds, Completion Sounds, and Custom Sounds.
-- Category filter chips, duration and size metadata, renaming, category reassignment, and preview playback.
+### 3. Dedicated Audio Library Section
+- **Dedicated Top-Level Navigation**: Directly manage sound files via the main navigation sidebar.
+- **6 Organized Categories**: Background Music, Work Sounds, Rest Sounds, Notification Sounds, Completion Sounds, and Custom Sounds.
+- **Track Management**: Upload custom audio (`MP3`, `WAV`, `OGG`, `M4A`, `WEBM`), preview sounds inline, edit titles, reassign categories, and delete files safely.
+- **High-Capacity Persistence**: IndexedDB storage ensures uploaded music files persist across browser reloads without localStorage quota limits.
+
+### 4. Comprehensive Routine Audio Configuration
+- Configure 5 distinct audio events per routine:
+  1. *Work Start Notification*: Chime, beep, bell, fanfare, or custom uploaded track.
+  2. *Rest / Break Notification*: Subtle rest beeps, bells, chimes, or uploaded alerts.
+  3. *Routine Completion Notification*: Victorious fanfare or custom tone.
+  4. *Work Background Music*: Built-in ambient focus synth or uploaded background tracks.
+  5. *Rest Background Music*: Pause music, resume track, or silent rest.
+- Audio synchronization responds dynamically to interval transitions, pauses, resumes, and stops.
 
 ### 4. Zero-Drift Timestamp-Based Timer Engine (`js/timerEngine.js`)
 - Headless, DOM-independent, event-driven state machine (`idle`, `running`, `paused`, `completed`).
@@ -53,7 +66,7 @@ TempoFlow is a multi-purpose interval timer, routine builder, and weekly activit
 - Dark theme default with instant high-contrast Light theme option.
 - Dynamic circular SVG progress ring and audio visualizer indicators.
 - Configurable audio preferences in Settings: Notification Sound Preference (Chime, Beep, Bell) and Default Work/Rest Music preferences.
-- Fully responsive across Desktop, Tablet, and Mobile devices.
+- Touch-friendly mobile navigation drawer with hamburger toggle button and backdrop overlay.
 - JSON backup export and restore.
 
 ---
