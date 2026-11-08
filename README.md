@@ -1,125 +1,125 @@
-# TempoFlow — Customizable Productivity, Trading, Study & Exercise Timer
+# ALFRED — Modular Desktop Productivity Workspace (Phase 1 Foundation)
 
-TempoFlow is a multi-purpose interval timer, routine builder, and weekly activity scheduler engineered with modern web standards (HTML5, CSS3, Vanilla ES6+ JavaScript, Web Audio API, LocalStorage, and IndexedDB). Designed as a clean, desktop-grade productivity dashboard, TempoFlow is 100% static, requires no external build tools, and is ready for static deployment on Netlify or future packaging into Electron.
+ALFRED is a modular Windows desktop productivity workspace inspired by JARVIS. ALFRED is not a monolithic dashboard; it acts as a host environment that supports independently developed tools and modules (e.g. TempoFlow, To-Do, Bitcoin Monitor, Weather, Notes) via a standardized module compatibility contract.
 
-## Features
-
-### 1. Three Dedicated Modes with Seconds-Level Precision
-- **Mode A: Pomodoro / Productivity**: Customizable focus duration (hours, minutes, seconds), short break duration, long break duration, sessions before long break, finite or infinite repetition cycles, automatic or manual transitions, and optional ambient focus music.
-- **Mode B: Exercise / Tabata**: Full workout builder with custom exercises, individual work/rest durations (in exact seconds), preparation countdown, rest between rounds, finite or infinite rounds, 3-second audio warnings, and high-visibility WORK vs REST colorways.
-- **Mode C: Trading / Study**: Fully customizable multi-step interval sequences for chart analysis, trading logs, active recall, flashcards, or research blocks, configurable with exact hours, minutes, and seconds.
-
-### 2. Unified Custom Timer Studio (`js/customStudio.js`)
-- **Unified Mode Selection**: Switch effortlessly between Countdown, Repeating Interval, and Clock-Aligned alarms from a single dropdown that surfaces only relevant controls.
-- **Standalone Countdown Timer**: High-precision hours, minutes, and seconds duration with custom alarm sounds and previewing.
-- **Repeating Interval Timer**: Periodic reminders (hydration, posture, eyes) with finite or indefinite cycles and live cycle count.
-- **Clock-Aligned Alarms**: Real-time wall-clock triggers on exact minute marks (e.g. `:45` every hour) or daily fixed appointments (`09:30`).
-- **Complete Control Suite**: Start, pause, resume, reset, and stop with active timer status badges.
-
-### 3. Dedicated Audio Library Section
-- **Dedicated Top-Level Navigation**: Directly manage sound files via the main navigation sidebar.
-- **6 Organized Categories**: Background Music, Work Sounds, Rest Sounds, Notification Sounds, Completion Sounds, and Custom Sounds.
-- **Track Management**: Upload custom audio (`MP3`, `WAV`, `OGG`, `M4A`, `WEBM`), preview sounds inline, edit titles, reassign categories, and delete files safely.
-- **High-Capacity Persistence**: IndexedDB storage ensures uploaded music files persist across browser reloads without localStorage quota limits.
-
-### 4. Comprehensive Routine Audio Configuration
-- Configure 5 distinct audio events per routine:
-  1. *Work Start Notification*: Chime, beep, bell, fanfare, or custom uploaded track.
-  2. *Rest / Break Notification*: Subtle rest beeps, bells, chimes, or uploaded alerts.
-  3. *Routine Completion Notification*: Victorious fanfare or custom tone.
-  4. *Work Background Music*: Built-in ambient focus synth or uploaded background tracks.
-  5. *Rest Background Music*: Pause music, resume track, or silent rest.
-- Audio synchronization responds dynamically to interval transitions, pauses, resumes, and stops.
-
-### 4. Zero-Drift Timestamp-Based Timer Engine (`js/timerEngine.js`)
-- Headless, DOM-independent, event-driven state machine (`idle`, `running`, `paused`, `completed`).
-- Calculated with `remainingMs = endTimestamp - Date.now()`, avoiding `setInterval` cumulative drift.
-- Synchronizes with system clock on browser tab visibility changes.
-- Supports pause, resume, skip, reset, stop, and indefinite loops.
-- Emits real-time events (`tick`, `intervalChange`, `stateChange`, `roundChange`, `warning`, `complete`).
-
-### 3. Centralized Audio Manager (`js/audioManager.js`)
-- Web Audio API synthesizer for crisp start beeps, rest beeps, 3-2-1 warning pulses, interval completion chimes, and routine completion fanfares.
-- Built-in soothing ambient focus chord synthesizer.
-- User custom track upload support (`MP3`, `WAV`) persistently stored in IndexedDB.
-- Track audio preview controls (`Play / Stop Preview`) and track deletion in Audio Controls.
-- Routine-level audio customization: select specific background tracks for work intervals and rest intervals.
-- Timer event synchronization: music plays during active work, pauses during rest intervals, and stops on routine completion or stop.
-- Audio unlock mechanism handling browser autoplay policies gracefully.
-
-### 4. Custom Routine Builder (`js/routineManager.js`)
-- Create, edit, clone, favorite, and delete routines.
-- Pre-loaded with default presets for Deep Work (50/10), Standard Pomodoro (25/5), Tabata Full-Body Burn, HIIT Core Intervals, Crypto Trading, and Deep Study.
-- Supports routine-specific audio configurations (`workMusicTrack`, `restMusicAction`).
-
-### 5. Weekly Activity Scheduler (`js/scheduler.js`)
-- Monday through Sunday calendar view.
-- Assign routines to specific days and times.
-- Real-time monitor with duplicate-safe notification alarms (Web Notifications & in-app toast banner).
-
-### 6. Statistics & Activity History (`js/statistics.js`)
-- Tracks active time (excluding paused durations).
-- Breakdowns for focus time, exercise time, trading time, and study time.
-- Completed routines and session history log.
-
-### 7. Modern Desktop Productivity Aesthetic & Settings
-- Dark theme default with instant high-contrast Light theme option.
-- Dynamic circular SVG progress ring and audio visualizer indicators.
-- Configurable audio preferences in Settings: Notification Sound Preference (Chime, Beep, Bell) and Default Work/Rest Music preferences.
-- Touch-friendly mobile navigation drawer with hamburger toggle button and backdrop overlay.
-- JSON backup export and restore.
+The repository also contains the standalone web application **TempoFlow** and its full test suite, preserved in parallel.
 
 ---
 
-## Architecture & Electron Compatibility
+## Architecture Overview
 
-TempoFlow is structured with modular separation of concerns:
-- **Core Logic:** `js/timerEngine.js`, `js/routineManager.js`, `js/scheduler.js`, `js/statistics.js`, and `js/storage.js` have zero direct DOM dependencies.
-- **Audio Logic:** `js/audioManager.js` handles audio lifecycle and Web Audio synthesis cleanly.
-- **Presentation:** `js/ui.js` handles rendering and DOM events, while `js/app.js` wires modules together.
+ALFRED maintains a strict separation of concerns across four layers:
 
-This architecture enables 1:1 reuse in future desktop wrappers such as Electron without rewriting core timing or storage subsystems.
+1. **Electron Main Process (`electron/main.cjs`):**
+   - Creates and manages application windows.
+   - Lifecycle management (`whenReady`, `window-all-closed`, `activate`).
+   - Hardened security configuration: `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`, `webSecurity: true`.
+   - IPC communication handlers for window actions and system details with parameter validation.
+   - Restricts unvetted navigation and external window popups.
+
+2. **Preload Script (`electron/preload.cjs`):**
+   - Securely bridges Electron IPC to the renderer via `contextBridge.exposeInMainWorld('alfredAPI', ...)`.
+   - Exposes only explicit, safe window control primitives (`isElectron`, `minimizeWindow`, `maximizeWindow`, `closeWindow`, `getAppInfo`).
+   - Prevents unrestricted Node.js and IPC access from frontend components.
+
+3. **React Renderer & Dashboard (`src/`):**
+   - Built with React and Vite using plain JavaScript (ESM) and vanilla CSS (no Tailwind, no Redux).
+   - Futuristic dark JARVIS-inspired aesthetic with CSS custom properties (`src/styles/variables.css`).
+   - **Header (`src/components/Header.jsx`):** ALFRED branding, live digital clock, current date, time-based dynamic greeting ("Good morning / afternoon / evening"), operational status indicators, and settings launcher.
+   - **Module Launcher (`src/components/ModuleLauncher.jsx`):** Subsystem overview displaying registered tools with active badges and one-click "+ Open" / "Hide" toggling.
+   - **Widget Container Area (`src/components/WidgetContainer.jsx`):** Grid layout housing active tool widgets with headers, category tags, and close controls.
+   - **Empty State (`src/components/EmptyState.jsx`):** Displays helpful guidance when no modules are active.
+   - **Settings Modal (`src/components/SettingsModal.jsx`):** Allows users to configure call sign / user name, 12h/24h time format, and clock seconds.
+   - **Persistence Service (`src/services/storage.js`):** Lightweight LocalStorage service persisting active modules and user preferences across reloads.
+
+4. **Module Compatibility Contract & Demonstration Module (`src/modules/`):**
+   - **Contract Specification (`src/modules/registry.js`):** Standard schema defining module ID, title, description, category, dimensions, and compatibility flags (`canBeWidget`, `canBeWindow`).
+   - **Demonstration Module — Precision Chrono (`src/modules/demo-clock/`):**
+     - Module ID: `demo-clock`
+     - Independent component (`DemoClock.jsx`) and isolated stylesheet (`demo-clock.css`).
+     - Features 12h/24h toggle, seconds toggle, UTC conversion mode, and widget uptime session counter.
+     - Can be removed from the dashboard without affecting ALFRED and reopened at any time via the launcher.
 
 ---
 
-## Local Development & Running
+## Project Structure
 
-You can run TempoFlow locally using any static web server or VS Code Live Server:
-
-```bash
-# Using Python
-python3 -m http.server 3000
-
-# Or using npx serve
-npx serve .
 ```
-
-Open `http://localhost:3000` in your web browser.
-
----
-
-## Running Automated Tests
-
-TempoFlow includes headless automated unit tests for the timer engine, scheduler, and statistics tracker:
-
-```bash
-node --test tests/test_timer.js
-node --test tests/test_scheduler_stats.js
-node --test tests/test_custom_studio.js
+├── electron/
+│   ├── main.cjs                # Electron main process
+│   └── preload.cjs             # Hardened contextBridge preload
+├── src/
+│   ├── index.html              # Vite HTML template
+│   ├── main.jsx                # React root mount
+│   ├── App.jsx                 # Dashboard coordinator
+│   ├── components/
+│   │   ├── Header.jsx          # Branding, greeting, live clock & date
+│   │   ├── ModuleLauncher.jsx  # Subsystem module activator
+│   │   ├── WidgetContainer.jsx # Frame container for active widgets
+│   │   ├── EmptyState.jsx      # Placeholder when no widgets are open
+│   │   └── SettingsModal.jsx   # Call sign & clock preferences modal
+│   ├── modules/
+│   │   ├── registry.js         # Module compatibility contract & registry
+│   │   ├── components.jsx      # Dynamic component resolver
+│   │   └── demo-clock/
+│   │       ├── DemoClock.jsx   # Demonstration module
+│   │       └── demo-clock.css  # Isolated module styles
+│   ├── services/
+│   │   └── storage.js          # LocalStorage persistence service
+│   └── styles/
+│       ├── variables.css       # Theme tokens (JARVIS dark palette)
+│       ├── global.css          # Reset, scrollbars, base styles
+│       └── dashboard.css       # Layout, header, launcher, modal styles
+├── tests/
+│   ├── test_alfred_registry.mjs # Contract validator & registry tests
+│   ├── test_alfred_storage.mjs  # Preferences & widget state persistence tests
+│   ├── verify_electron.cjs      # Electron headless verification harness
+│   ├── test_timer.js            # TempoFlow TimerEngine unit tests
+│   ├── test_scheduler_stats.js  # TempoFlow Scheduler & Stats unit tests
+│   └── test_custom_studio.js    # TempoFlow Custom Studio unit tests
+├── vite.config.js              # Vite build configuration
+├── package.json                # Project dependencies & scripts
+├── netlify.toml                # Static deployment configuration
+└── js/, css/, index.html       # Standalone TempoFlow web app
 ```
 
 ---
 
-## Netlify Deployment
+## Running ALFRED Locally
 
-TempoFlow is ready for deployment to Netlify as a static web application:
+### Prerequisites
+- Node.js (v18+ or v22+)
+- npm
 
-1. Connect your repository to Netlify.
-2. Build command: None required (static web files).
-3. Publish directory: `.` (repository root).
+### 1. Install Dependencies
+```bash
+npm install
+```
 
-Configured in `netlify.toml`:
-```toml
-[build]
-  publish = "."
+### 2. Run in Development Mode
+Start Vite dev server:
+```bash
+npm run dev
+```
+
+### 3. Build Production Bundle
+Build the React renderer bundle into `dist/`:
+```bash
+npm run build
+```
+
+### 4. Run Electron Desktop App
+```bash
+npm start
+```
+
+### 5. Run Automated Tests
+Execute all unit tests (ALFRED registry & storage tests alongside TempoFlow tests):
+```bash
+npm test
+```
+
+### 6. Verify Electron Headless (Linux / CI)
+```bash
+xvfb-run -a ./node_modules/.bin/electron tests/verify_electron.cjs
 ```
