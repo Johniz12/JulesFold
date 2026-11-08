@@ -1,0 +1,22 @@
+{
+  "name": "alfred",
+  "version": "1.0.0",
+  "description": "ALFRED — Modular Desktop Productivity Workspace",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "electron electron/main.cjs",
+    "test": "node --test tests/test_timer.js tests/test_scheduler_stats.js tests/test_custom_studio.js tests/test_alfred_registry.mjs tests/test_alfred_storage.mjs"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^35.0.0",
+    "vite": "^6.2.0"
+  }
+}
