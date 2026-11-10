@@ -1,0 +1,23 @@
+{
+  "id": "demo-react",
+  "name": "React Demo",
+  "version": "1.0.0",
+  "amcsVersion": "1.0",
+  "description": "Independent React demonstration module subscribing to broker events",
+  "entry": "index.html",
+  "runtime": "web",
+  "window": {
+    "width": 680,
+    "height": 560,
+    "minWidth": 480,
+    "minHeight": 400,
+    "resizable": true
+  },
+  "capabilities": [
+    "events"
+  ],
+  "lifecycle": {
+    "hide": "keep-alive",
+    "close": "keep-alive"
+  }
+}

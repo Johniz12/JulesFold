@@ -11,11 +11,24 @@ export default function App() {
   const [preferences, setPreferences] = useState(() => storageService.getPreferences());
   const [activeModuleIds, setActiveModuleIds] = useState(() => storageService.getActiveModules(['demo-clock']));
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [amcsModules, setAmcsModules] = useState([]);
 
-  // Available registered modules
+  useEffect(() => {
+    async function loadAmcsModules() {
+      if (window.alfredAPI && window.alfredAPI.getDiscoveredModules) {
+        try {
+          const list = await window.alfredAPI.getDiscoveredModules();
+          setAmcsModules(list || []);
+        } catch (err) {
+          console.warn('[ALFRED] Failed to load AMCS modules:', err);
+        }
+      }
+    }
+    loadAmcsModules();
+  }, []);
+
   const allModules = getAllModules();
 
-  // Save active modules to storage on change
   const handleToggleModule = (id) => {
     setActiveModuleIds((prev) => {
       let updated;
@@ -37,12 +50,21 @@ export default function App() {
     });
   };
 
+  const handleLaunchAmcsWindow = async (moduleId) => {
+    if (window.alfredAPI && window.alfredAPI.launchModuleWindow) {
+      try {
+        await window.alfredAPI.launchModuleWindow(moduleId);
+      } catch (err) {
+        console.error('[ALFRED] Launch error:', err);
+      }
+    }
+  };
+
   const handleSavePreferences = (newPrefs) => {
     setPreferences(newPrefs);
     storageService.savePreferences(newPrefs);
   };
 
-  // Get active module objects in preserved order
   const activeModules = activeModuleIds
     .map((id) => getModuleById(id))
     .filter(Boolean);
@@ -61,6 +83,8 @@ export default function App() {
           modules={allModules}
           activeModuleIds={activeModuleIds}
           onToggleModule={handleToggleModule}
+          amcsModules={amcsModules}
+          onLaunchAmcsWindow={handleLaunchAmcsWindow}
         />
 
         {activeModules.length === 0 ? (

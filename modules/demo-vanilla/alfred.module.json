@@ -1,0 +1,24 @@
+{
+  "id": "demo-vanilla",
+  "name": "Vanilla Demo",
+  "version": "1.0.0",
+  "amcsVersion": "1.0",
+  "description": "Independent plain HTML/JS/CSS demonstration module",
+  "entry": "index.html",
+  "runtime": "web",
+  "window": {
+    "width": 640,
+    "height": 520,
+    "minWidth": 480,
+    "minHeight": 400,
+    "resizable": true
+  },
+  "capabilities": [
+    "notifications",
+    "events"
+  ],
+  "lifecycle": {
+    "hide": "keep-alive",
+    "close": "keep-alive"
+  }
+}

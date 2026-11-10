@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vanilla Demo — ALFRED Module</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="vanilla-app">
+    <header class="vanilla-header">
+      <h2>Vanilla Demo</h2>
+      <span class="badge">AMCS v1</span>
+    </header>
+
+    <div class="vanilla-body">
+      <p class="description">
+        This independent module is written in plain HTML, CSS, and vanilla JS. It publishes events to the ALFRED host event broker.
+      </p>
+
+      <div class="form-group">
+        <label for="msg-input">Message payload:</label>
+        <input type="text" id="msg-input" value="Hello from Vanilla Demo!" />
+      </div>
+
+      <div class="button-group">
+        <button id="send-event-btn" class="primary-btn">Publish demo.message</button>
+        <button id="notify-btn" class="secondary-btn">Trigger Host Notification</button>
+      </div>
+
+      <div class="status-panel">
+        <div class="status-label">Broker Delivery Status:</div>
+        <div id="status-text" class="status-val">Ready</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
