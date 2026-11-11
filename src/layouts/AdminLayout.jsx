@@ -46,7 +46,7 @@ export const AdminLayout = () => {
           <div className="admin-logo" style={{ minWidth: '32px' }}>
             <GraduationCap size={22} />
           </div>
-          <span className="admin-brand-title">LearnHub <small className="badge badge-primary">Admin</small></span>
+          <span className="admin-brand-title">LearningMate <small className="badge badge-primary">Admin</small></span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-2)' }}>
           <ThemeToggle />
@@ -68,7 +68,7 @@ export const AdminLayout = () => {
               <GraduationCap size={24} />
             </div>
             <div>
-              <h1 className="admin-brand-title">LearnHub</h1>
+              <h1 className="admin-brand-title">LearningMate</h1>
               <div className="admin-brand-badge">
                 <Shield size={12} /> Administrator
               </div>

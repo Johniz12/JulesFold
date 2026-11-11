@@ -1,6 +1,6 @@
-# LearnHub — Learning Management & Examination Platform
+# LearningMate — Learning Management & Examination Platform
 
-LearnHub is a full-stack, responsive, and secure Learning Management and Examination System built with **React**, **Vite**, standard **CSS** (no Tailwind/utility bloat), and **Supabase** (PostgreSQL, Row Level Security, and Authentication).
+LearningMate is a full-stack, responsive, and secure Learning Management and Examination System built with **React**, **Vite**, standard **CSS** (no Tailwind/utility bloat), and **Supabase** (PostgreSQL, Row Level Security, and Authentication).
 
 The architecture is designed to decouple presentation from business logic and data access, enabling future packaging as an Electron desktop application without rewriting application modules.
 
@@ -43,7 +43,7 @@ The architecture is designed to decouple presentation from business logic and da
 
 ## Step-by-Step Supabase Setup Guide
 
-Follow these steps to connect LearnHub to a live Supabase project:
+Follow these steps to connect LearningMate to a live Supabase project:
 
 ### Step 1: Create a Supabase Project
 1. Log in to [Supabase](https://app.supabase.com) and click **"New Project"**.
@@ -56,7 +56,7 @@ Follow these steps to connect LearnHub to a live Supabase project:
    - This sets up all 9 tables, indexes, RLS policies, trigger-based profile creation, sanitized question retrieval RPC, and the `submit_and_grade_exam` server-side grading function.
 
 ### Step 3: Assign Initial Administrator Account
-1. Register your administrator user through the LearnHub web UI (`/register`) or create the user in the Supabase **Authentication -> Users** tab.
+1. Register your administrator user through the LearningMate web UI (`/register`) or create the user in the Supabase **Authentication -> Users** tab.
 2. In the Supabase SQL Editor, execute the script in `supabase/admin_setup.sql`:
    ```sql
    UPDATE public.profiles
@@ -83,7 +83,7 @@ Follow these steps to connect LearnHub to a live Supabase project:
    npm run dev
    ```
 
-*Note: If no Supabase environment variables are provided, LearnHub automatically runs in Standalone Demo Mode with local persistence, pre-seeded sample courses, lessons, questions, and 1-click test role switches.*
+*Note: If no Supabase environment variables are provided, LearningMate automatically runs in Standalone Demo Mode with local persistence, pre-seeded sample courses, lessons, questions, and 1-click test role switches.*
 
 ---
 
@@ -115,7 +115,7 @@ Production assets are generated in `dist/`.
 
 ## Netlify Deployment Configuration
 
-LearnHub is pre-configured for static deployment on Netlify using `netlify.toml`:
+LearningMate is pre-configured for static deployment on Netlify using `netlify.toml`:
 
 ```toml
 [build]

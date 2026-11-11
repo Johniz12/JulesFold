@@ -19,7 +19,7 @@ export const AuthLayout = () => {
             <GraduationCap size={28} />
           </div>
           <div className="auth-brand-text">
-            <h2>LearnHub</h2>
+            <h2>LearningMate</h2>
             <span className="auth-tagline">Learning Management & Examination Platform</span>
           </div>
         </div>

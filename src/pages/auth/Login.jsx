@@ -50,7 +50,7 @@ export const Login = () => {
     <div>
       <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-6)' }}>
         <h2 style={{ marginBottom: 'var(--spacing-2)', fontSize: '1.75rem' }}>Welcome Back</h2>
-        <p className="text-muted text-base">Sign in with your LearnHub credentials</p>
+        <p className="text-muted text-base">Sign in with your LearningMate credentials</p>
       </div>
 
       {error && (

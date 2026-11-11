@@ -38,7 +38,7 @@ const RootRedirect = () => {
     return (
       <div className="loading-container" style={{ minHeight: '100vh' }}>
         <div className="spinner spinner-lg"></div>
-        <p>Loading LearnHub...</p>
+        <p>Loading LearningMate...</p>
       </div>
     );
   }

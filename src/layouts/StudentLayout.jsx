@@ -41,7 +41,7 @@ export const StudentLayout = () => {
               <div className="student-logo">
                 <GraduationCap size={24} />
               </div>
-              <span className="student-brand-title">LearnHub</span>
+              <span className="student-brand-title">LearningMate</span>
             </NavLink>
           </div>
 
