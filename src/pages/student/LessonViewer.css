@@ -102,6 +102,10 @@
   cursor: pointer;
   width: 100%;
   font-family: inherit;
+  isolation: isolate;
+  position: relative;
+  box-sizing: border-box;
+  margin: 0;
   transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 

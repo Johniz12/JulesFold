@@ -171,11 +171,33 @@ export const LessonViewer = () => {
     }
   };
 
-  // For single-page lessons, student reaches the end of the content and confirms finishing
-  const handleFinishSinglePageLesson = () => {
-    hasUserNavigatedToFinalPageRef.current = true;
-    triggerLessonCompletion(currentLesson);
-  };
+  // Ref for end-of-lesson sentinel element (for single-page lessons)
+  const endOfLessonSentinelRef = useRef(null);
+
+  // Auto-complete single-page lessons when the student reaches/scrolls to the end of the lesson
+  useEffect(() => {
+    if (!currentLesson || totalPages > 1) return;
+    if (completedLessonIds.includes(currentLesson.id)) return;
+
+    const sentinel = endOfLessonSentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry && entry.isIntersecting) {
+          triggerLessonCompletion(currentLesson);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(sentinel);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [currentLesson?.id, totalPages, completedLessonIds]);
 
   // Identify quizzes vs comprehensive exams associated with this course
   const quizzes = courseAssessments.filter((a) => {
@@ -449,11 +471,9 @@ export const LessonViewer = () => {
                 </button>
               )}
 
-              {/* Single-page lesson: Student confirms finishing to record completion */}
-              {isLastPage && totalPages === 1 && !isCompleted && (
-                <button className="btn btn-primary" onClick={handleFinishSinglePageLesson}>
-                  Finish Lesson & Mark Complete <Check size={18} />
-                </button>
+              {/* Sentinel for single-page automatic completion when viewed to the end */}
+              {totalPages === 1 && !isCompleted && (
+                <div ref={endOfLessonSentinelRef} style={{ width: 1, height: 1, opacity: 0 }} aria-hidden="true" />
               )}
 
               {/* Next Lesson navigation when on last page */}
