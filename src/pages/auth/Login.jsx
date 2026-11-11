@@ -49,8 +49,8 @@ export const Login = () => {
   return (
     <div>
       <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-6)' }}>
-        <h2 style={{ marginBottom: 'var(--spacing-1)' }}>Welcome Back</h2>
-        <p className="text-muted text-sm">Sign in with your LearnHub credentials</p>
+        <h2 style={{ marginBottom: 'var(--spacing-2)', fontSize: '1.75rem' }}>Welcome Back</h2>
+        <p className="text-muted text-base">Sign in with your LearnHub credentials</p>
       </div>
 
       {error && (
@@ -93,15 +93,15 @@ export const Login = () => {
 
         <button
           type="submit"
-          className="btn btn-primary"
-          style={{ width: '100%', marginTop: 'var(--spacing-2)' }}
+          className="btn btn-primary btn-lg"
+          style={{ width: '100%', marginTop: 'var(--spacing-3)' }}
           disabled={loading}
         >
           {loading ? (
-            <div className="spinner" style={{ width: '18px', height: '18px' }} />
+            <div className="spinner" style={{ width: '20px', height: '20px' }} />
           ) : (
             <>
-              <LogIn size={18} /> Sign In
+              <LogIn size={20} /> Sign In
             </>
           )}
         </button>
@@ -131,10 +131,10 @@ export const Login = () => {
         </div>
       )}
 
-      <div style={{ marginTop: 'var(--spacing-6)', textAlign: 'center', fontSize: '0.875rem' }}>
+      <div style={{ marginTop: 'var(--spacing-6)', textAlign: 'center', fontSize: '0.9375rem' }}>
         <span className="text-muted">Don't have an account yet? </span>
         <Link to="/register" style={{ color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'none' }}>
-          Register as Student <ArrowRight size={14} style={{ verticalAlign: 'middle' }} />
+          Register as Student <ArrowRight size={16} style={{ verticalAlign: 'middle', marginLeft: '4px' }} />
         </Link>
       </div>
     </div>

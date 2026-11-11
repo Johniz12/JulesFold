@@ -12,6 +12,7 @@ import {
   UserCheck
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { ThemeToggle } from '../components/common/ThemeToggle';
 import './StudentLayout.css';
 
 export const StudentLayout = () => {
@@ -81,6 +82,8 @@ export const StudentLayout = () => {
                 <UserCheck size={14} /> Test as Admin
               </button>
             )}
+
+            <ThemeToggle />
 
             <div className="student-profile-pill">
               <div className="student-avatar">

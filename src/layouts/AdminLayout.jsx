@@ -16,6 +16,7 @@ import {
   FileUp
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { ThemeToggle } from '../components/common/ThemeToggle';
 import './AdminLayout.css';
 
 export const AdminLayout = () => {
@@ -42,18 +43,21 @@ export const AdminLayout = () => {
       {/* Mobile top navigation bar */}
       <header className="admin-mobile-header">
         <div className="admin-brand">
-          <div className="admin-logo">
+          <div className="admin-logo" style={{ minWidth: '32px' }}>
             <GraduationCap size={22} />
           </div>
           <span className="admin-brand-title">LearnHub <small className="badge badge-primary">Admin</small></span>
         </div>
-        <button
-          className="btn btn-secondary btn-icon"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle navigation menu"
-        >
-          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-2)' }}>
+          <ThemeToggle />
+          <button
+            className="btn btn-secondary btn-icon"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </header>
 
       {/* Sidebar navigation */}
@@ -102,6 +106,10 @@ export const AdminLayout = () => {
         </nav>
 
         <div className="admin-sidebar-footer">
+          <div style={{ marginBottom: 'var(--spacing-3)' }}>
+            <ThemeToggle style={{ width: '100%' }} />
+          </div>
+
           {!isConfigured && (
             <div className="mock-role-switch">
               <small className="text-muted">Test Role Switcher:</small>

@@ -3,15 +3,19 @@
   flex-direction: column;
   min-height: 100vh;
   background-color: var(--color-background);
+  color: var(--color-text-main);
+  transition: background-color var(--transition-base), color var(--transition-base);
+  overflow-x: hidden;
 }
 
 .student-header {
-  background-color: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-header-bg);
+  border-bottom: 1px solid var(--color-header-border);
   position: sticky;
   top: 0;
   z-index: 100;
   box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition-base), border-color var(--transition-base);
 }
 
 .student-header-inner {
@@ -34,18 +38,19 @@
 }
 
 .student-logo {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   background-color: var(--color-primary);
   color: white;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .student-brand-title {
-  font-size: 1.25rem;
+  font-size: 1.375rem;
   font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--color-primary);
@@ -61,8 +66,9 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
-  padding: 0.5rem 0.875rem;
-  font-size: 0.9375rem;
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9375rem; /* 15px */
   font-weight: 500;
   color: var(--color-text-muted);
   text-decoration: none;
@@ -84,46 +90,49 @@
 .student-user-actions {
   display: flex;
   align-items: center;
-  gap: var(--spacing-3);
+  gap: var(--spacing-2);
 }
 
 .student-profile-pill {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
-  padding: 4px 10px 4px 4px;
+  padding: 4px 12px 4px 4px;
+  min-height: 40px;
   background-color: var(--color-secondary-light);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
 }
 
 .student-avatar {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-full);
   background-color: var(--color-primary);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 700;
 }
 
 .student-name-display {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-text-main);
 }
 
 .admin-portal-btn {
-  background-color: #fee2e2;
-  border-color: #fca5a5;
-  color: #b91c1c;
+  background-color: var(--color-danger-bg);
+  border-color: var(--color-danger);
+  color: var(--color-danger-text);
+  font-weight: 600;
 }
 
 .admin-portal-btn:hover {
-  background-color: #fecaca;
-  color: #991b1b;
+  background-color: var(--color-danger);
+  color: #ffffff;
 }
 
 .mobile-menu-toggle {
@@ -132,9 +141,9 @@
 
 .student-mobile-nav {
   display: none;
-  padding: var(--spacing-3) var(--spacing-6);
-  border-top: 1px solid var(--color-border);
-  background-color: var(--color-surface);
+  padding: var(--spacing-3) var(--spacing-4);
+  border-top: 1px solid var(--color-header-border);
+  background-color: var(--color-header-bg);
   flex-direction: column;
   gap: var(--spacing-2);
 }
@@ -143,11 +152,13 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-3);
-  padding: 0.625rem 0.75rem;
+  min-height: 44px;
+  padding: 0.625rem 0.875rem;
   text-decoration: none;
   color: var(--color-text-main);
   border-radius: var(--radius-md);
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 1rem;
 }
 
 .student-mobile-link.active {
@@ -158,9 +169,11 @@
 .student-main {
   flex: 1;
   min-width: 0;
+  width: 100%;
 }
 
-@media (max-width: 840px) {
+/* Responsive Breakpoints */
+@media (max-width: 900px) {
   .student-desktop-nav {
     display: none;
   }
@@ -174,6 +187,29 @@
   }
 
   .student-name-display {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .student-header-inner {
+    padding: 0 var(--spacing-3);
+  }
+
+  .student-brand-title {
+    font-size: 1.125rem;
+  }
+
+  .student-logo {
+    width: 34px;
+    height: 34px;
+  }
+
+  .student-user-actions {
+    gap: var(--spacing-1);
+  }
+
+  .theme-toggle-label {
     display: none;
   }
 }

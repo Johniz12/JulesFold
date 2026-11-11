@@ -51,12 +51,12 @@ export const Register = () => {
   return (
     <div>
       <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-6)' }}>
-        <h2 style={{ marginBottom: 'var(--spacing-1)' }}>Student Registration</h2>
-        <p className="text-muted text-sm">Create your student account to access courses and examinations</p>
+        <h2 style={{ marginBottom: 'var(--spacing-2)', fontSize: '1.75rem' }}>Student Registration</h2>
+        <p className="text-muted text-base">Create your student account to access courses and examinations</p>
       </div>
 
-      <div className="alert alert-info" style={{ fontSize: '0.8125rem', marginBottom: 'var(--spacing-4)' }}>
-        <Shield size={16} style={{ flexShrink: 0 }} />
+      <div className="alert alert-info" style={{ fontSize: '0.875rem', marginBottom: 'var(--spacing-5)' }}>
+        <Shield size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
         <div>
           <strong>Security Notice:</strong> Public registration automatically assigns the student role. Administrator accounts must be assigned via secure backend database operation.
         </div>
@@ -128,24 +128,24 @@ export const Register = () => {
 
         <button
           type="submit"
-          className="btn btn-primary"
-          style={{ width: '100%', marginTop: 'var(--spacing-2)' }}
+          className="btn btn-primary btn-lg"
+          style={{ width: '100%', marginTop: 'var(--spacing-3)' }}
           disabled={loading}
         >
           {loading ? (
-            <div className="spinner" style={{ width: '18px', height: '18px' }} />
+            <div className="spinner" style={{ width: '20px', height: '20px' }} />
           ) : (
             <>
-              <UserPlus size={18} /> Register Student Account
+              <UserPlus size={20} /> Register Student Account
             </>
           )}
         </button>
       </form>
 
-      <div style={{ marginTop: 'var(--spacing-6)', textAlign: 'center', fontSize: '0.875rem' }}>
+      <div style={{ marginTop: 'var(--spacing-6)', textAlign: 'center', fontSize: '0.9375rem' }}>
         <span className="text-muted">Already have an account? </span>
         <Link to="/login" style={{ color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'none' }}>
-          Sign In Here
+          Sign In Here <ArrowLeft size={16} style={{ verticalAlign: 'middle', marginLeft: '4px', transform: 'rotate(180deg)' }} />
         </Link>
       </div>
     </div>

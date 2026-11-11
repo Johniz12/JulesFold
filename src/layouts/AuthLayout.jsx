@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { GraduationCap, Database, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { ThemeToggle } from '../components/common/ThemeToggle';
 import './AuthLayout.css';
 
 export const AuthLayout = () => {
@@ -9,6 +10,9 @@ export const AuthLayout = () => {
 
   return (
     <div className="auth-container">
+      <div style={{ position: 'absolute', top: 'var(--spacing-4)', right: 'var(--spacing-4)', zIndex: 10 }}>
+        <ThemeToggle />
+      </div>
       <div className="auth-card-wrapper">
         <div className="auth-brand">
           <div className="auth-logo-icon">
