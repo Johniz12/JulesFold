@@ -19,6 +19,7 @@ import { AdminLessons } from './pages/admin/AdminLessons';
 import { AdminExams } from './pages/admin/AdminExams';
 import { AdminStudents } from './pages/admin/AdminStudents';
 import { AdminResults } from './pages/admin/AdminResults';
+import { AdminImportStudio } from './pages/admin/AdminImportStudio';
 
 // Student Pages
 import { StudentDashboard } from './pages/student/StudentDashboard';
@@ -82,6 +83,7 @@ export default function App() {
               <Route path="/admin/courses" element={<AdminCourses />} />
               <Route path="/admin/courses/:courseId/lessons" element={<AdminLessons />} />
               <Route path="/admin/exams" element={<AdminExams />} />
+              <Route path="/admin/import" element={<AdminImportStudio />} />
               <Route path="/admin/students" element={<AdminStudents />} />
               <Route path="/admin/results" element={<AdminResults />} />
             </Route>

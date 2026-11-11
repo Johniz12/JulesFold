@@ -1,5 +1,5 @@
 -- ==============================================================================
--- LearnHub Database Schema & Security Policies
+-- LearnHub Database Schema & Security Policies (Enhanced with Images & Storage)
 -- ==============================================================================
 
 -- Enable UUID extension if not already enabled
@@ -7,8 +7,6 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ------------------------------------------------------------------------------
 -- 1. PROFILES TABLE
--- Extends auth.users to store display name and application role ('student' | 'admin').
--- Default role is ALWAYS 'student'. Public registration NEVER grants 'admin'.
 -- ------------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -22,7 +20,6 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- Helper to check if current user is an administrator
 CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS BOOLEAN AS $$
 BEGIN
@@ -33,28 +30,22 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Profiles Policies:
--- Users can read their own profile; admins can read all profiles
 CREATE POLICY "Profiles viewable by self or admin"
   ON public.profiles FOR SELECT
   USING (auth.uid() = id OR public.is_admin());
 
--- Users can only update their own non-role fields
 CREATE POLICY "Users can update their own profile"
   ON public.profiles FOR UPDATE
   USING (auth.uid() = id)
   WITH CHECK (
     auth.uid() = id AND
-    -- Prevent escalating role from client side
     (role = (SELECT role FROM public.profiles WHERE id = auth.uid()))
   );
 
--- Admin can manage all profiles
 CREATE POLICY "Admins can update any profile"
   ON public.profiles FOR UPDATE
   USING (public.is_admin());
 
--- Automatic profile creation on auth.users insert
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -63,7 +54,7 @@ BEGIN
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
-    'student' -- ALWAYS student!
+    'student'
   )
   ON CONFLICT (id) DO NOTHING;
   RETURN NEW;
@@ -139,9 +130,9 @@ CREATE TABLE IF NOT EXISTS public.exams (
   course_id UUID REFERENCES public.courses(id) ON DELETE SET NULL,
   title TEXT NOT NULL,
   description TEXT,
-  duration_minutes INT NOT NULL DEFAULT 30, -- 0 for unlimited
+  duration_minutes INT NOT NULL DEFAULT 30,
   passing_percentage INT NOT NULL DEFAULT 70 CHECK (passing_percentage BETWEEN 0 AND 100),
-  max_attempts INT NOT NULL DEFAULT 3, -- 0 for unlimited
+  max_attempts INT NOT NULL DEFAULT 3,
   is_enabled BOOLEAN NOT NULL DEFAULT true,
   review_answers_enabled BOOLEAN NOT NULL DEFAULT true,
   randomize_questions BOOLEAN NOT NULL DEFAULT false,
@@ -161,32 +152,27 @@ CREATE POLICY "Admins can manage exams"
   USING (public.is_admin());
 
 -- ------------------------------------------------------------------------------
--- 5. QUESTIONS TABLE
--- CRITICAL SECURITY: Questions contain 'correct_answer' and 'explanation'.
--- Students must NEVER see correct_answer or explanation directly from table queries!
+-- 5. QUESTIONS TABLE (Supports optional question images & choice images)
 -- ------------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.questions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   exam_id UUID NOT NULL REFERENCES public.exams(id) ON DELETE CASCADE,
   question_text TEXT NOT NULL,
-  question_type TEXT NOT NULL CHECK (question_type IN ('multiple_choice', 'true_false')),
-  choices JSONB NOT NULL DEFAULT '[]'::jsonb, -- Array of strings e.g. ["A", "B", "C", "D"]
-  correct_answer TEXT NOT NULL,               -- e.g. "A" or "true"
+  question_type TEXT NOT NULL CHECK (question_type IN ('multiple_choice', 'true_false', 'picture_identification')),
+  choices JSONB NOT NULL DEFAULT '[]'::jsonb, -- Array of strings or objects { id, text, image: { url, alt } }
+  correct_answer TEXT NOT NULL,
   explanation TEXT,
   points INT NOT NULL DEFAULT 1 CHECK (points > 0),
+  image JSONB, -- Optional question illustration: { url, alt, caption }
   created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
 CREATE INDEX IF NOT EXISTS idx_questions_exam ON public.questions (exam_id);
 ALTER TABLE public.questions ENABLE ROW LEVEL SECURITY;
 
--- Admins can query questions directly with answers
 CREATE POLICY "Admins have full access to questions"
   ON public.questions FOR ALL
   USING (public.is_admin());
-
--- Students cannot read from questions table directly to prevent answer scraping!
--- Instead, students access questions sanitized via get_exam_questions() RPC below.
 
 -- ------------------------------------------------------------------------------
 -- 6. ENROLLMENTS & LESSON PROGRESS
@@ -243,12 +229,10 @@ CREATE TABLE IF NOT EXISTS public.exam_attempts (
 CREATE INDEX IF NOT EXISTS idx_exam_attempts_student ON public.exam_attempts (student_id, exam_id);
 ALTER TABLE public.exam_attempts ENABLE ROW LEVEL SECURITY;
 
--- Students can read their own attempts; Admins can read all attempts
 CREATE POLICY "Students view own attempts"
   ON public.exam_attempts FOR SELECT
   USING (student_id = auth.uid() OR public.is_admin());
 
--- Students cannot update attempts directly - only the grading RPC does that!
 CREATE POLICY "Admins can manage exam attempts"
   ON public.exam_attempts FOR ALL
   USING (public.is_admin());
@@ -280,10 +264,30 @@ CREATE POLICY "Admins manage exam answers"
   USING (public.is_admin());
 
 -- ==============================================================================
--- 8. SECURE RPC FUNCTIONS
+-- 8. SUPABASE STORAGE BUCKET CONFIGURATION (for visual images)
+-- ==============================================================================
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('learnhub-media', 'learnhub-media', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Storage policies: Public read for educational illustrations, Admin write
+CREATE POLICY "Public read for learnhub-media"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'learnhub-media');
+
+CREATE POLICY "Admin upload to learnhub-media"
+  ON storage.objects FOR INSERT
+  WITH CHECK (bucket_id = 'learnhub-media' AND public.is_admin());
+
+CREATE POLICY "Admin delete from learnhub-media"
+  ON storage.objects FOR DELETE
+  USING (bucket_id = 'learnhub-media' AND public.is_admin());
+
+-- ==============================================================================
+-- 9. SECURE RPC FUNCTIONS (Strip answer keys, evaluate server-side)
 -- ==============================================================================
 
--- A. Sanitized question fetcher for students (STRIPS correct_answer and explanation)
+-- A. Sanitized question fetcher for students (STRIPS correct_answer and explanation, returns image)
 CREATE OR REPLACE FUNCTION public.get_exam_questions_for_student(p_exam_id UUID)
 RETURNS TABLE (
   id UUID,
@@ -291,7 +295,8 @@ RETURNS TABLE (
   question_text TEXT,
   question_type TEXT,
   choices JSONB,
-  points INT
+  points INT,
+  image JSONB
 ) AS $$
 DECLARE
   v_randomize_questions BOOLEAN;
@@ -308,7 +313,8 @@ BEGIN
     q.question_text,
     q.question_type,
     q.choices,
-    q.points
+    q.points,
+    q.image
   FROM public.questions q
   WHERE q.exam_id = p_exam_id
   ORDER BY
@@ -318,11 +324,9 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- B. Secure Server-Side Examination Grading RPC
--- Validates max attempts, compares answers against secret keys in questions,
--- computes points and percentages, persists attempt and answers, returns result.
 CREATE OR REPLACE FUNCTION public.submit_and_grade_exam(
   p_exam_id UUID,
-  p_answers JSONB -- Array of objects: [{"question_id": "...", "student_answer": "..."}]
+  p_answers JSONB
 )
 RETURNS JSONB AS $$
 DECLARE
@@ -348,13 +352,11 @@ BEGIN
     RAISE EXCEPTION 'Authentication required.';
   END IF;
 
-  -- Load examination rules
   SELECT * INTO v_exam FROM public.exams WHERE id = p_exam_id AND is_enabled = true;
   IF NOT FOUND THEN
     RAISE EXCEPTION 'Exam not found or is currently disabled.';
   END IF;
 
-  -- Verify maximum attempts
   SELECT COUNT(*) INTO v_attempt_count
   FROM public.exam_attempts
   WHERE exam_id = p_exam_id AND student_id = v_user_id AND submitted_at IS NOT NULL;
@@ -363,7 +365,6 @@ BEGIN
     RAISE EXCEPTION 'Maximum attempts limit reached for this examination (% max).', v_exam.max_attempts;
   END IF;
 
-  -- Create attempt record
   INSERT INTO public.exam_attempts (
     exam_id,
     student_id,
@@ -378,13 +379,11 @@ BEGIN
     now()
   ) RETURNING id INTO v_attempt_id;
 
-  -- Calculate total points possible for exam
   SELECT COALESCE(SUM(points), 0), COUNT(*)
   INTO v_total_points, v_total_questions
   FROM public.questions
   WHERE exam_id = p_exam_id;
 
-  -- Grade each submitted answer
   FOR v_elem IN SELECT * FROM jsonb_array_elements(p_answers)
   LOOP
     SELECT * INTO v_question
@@ -420,7 +419,6 @@ BEGIN
     END IF;
   END LOOP;
 
-  -- Compute final score & pass/fail
   IF v_total_points > 0 THEN
     v_score_percentage := ROUND((v_points_earned::NUMERIC / v_total_points::NUMERIC) * 100, 2);
   ELSE
@@ -429,7 +427,6 @@ BEGIN
 
   v_passed := (v_score_percentage >= v_exam.passing_percentage);
 
-  -- Update attempt record
   UPDATE public.exam_attempts
   SET
     score_percentage = v_score_percentage,
@@ -438,7 +435,6 @@ BEGIN
     passed = v_passed
   WHERE id = v_attempt_id;
 
-  -- Return comprehensive grading summary
   RETURN jsonb_build_object(
     'attempt_id', v_attempt_id,
     'exam_id', p_exam_id,
@@ -455,7 +451,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- C. Answer review fetcher: ONLY returns answers/explanations if review is enabled and attempt belongs to student
+-- C. Detailed review fetcher with image support
 CREATE OR REPLACE FUNCTION public.get_exam_attempt_review(p_attempt_id UUID)
 RETURNS JSONB AS $$
 DECLARE
@@ -494,6 +490,7 @@ BEGIN
       'correct_answer', q.correct_answer,
       'explanation', q.explanation,
       'points', q.points,
+      'image', q.image,
       'student_answer', ea.student_answer,
       'is_correct', ea.is_correct,
       'points_awarded', ea.points_awarded

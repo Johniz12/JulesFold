@@ -142,6 +142,28 @@
   margin-bottom: var(--spacing-3);
 }
 
+/* Responsive Image Component within Lessons */
+.lesson-image-wrapper {
+  margin: var(--spacing-6) 0;
+  text-align: center;
+}
+
+.lesson-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-md);
+  object-fit: cover;
+  max-height: 480px;
+}
+
+.lesson-image-caption {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin-top: var(--spacing-2);
+  font-style: italic;
+}
+
 .lesson-navigation-footer {
   display: flex;
   align-items: center;

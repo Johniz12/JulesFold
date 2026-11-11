@@ -1,0 +1,25 @@
+{
+  "format": "learnhub-content",
+  "version": 1,
+  "type": "lesson_series",
+  "course": {
+    "title": "Interactive Early Science: Animals & Nature",
+    "description": "An engaging, picture-assisted natural science course designed for all learners.",
+    "category": "Natural Science",
+    "cover_image_url": "https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=800&auto=format&fit=crop&q=60"
+  },
+  "lessons": [
+    {
+      "title": "1. Mammals and Their Habitats",
+      "description": "Discover warm-blooded animals and how they adapt to nature.",
+      "order": 1,
+      "content": "### What is a Mammal?\n\nMammals are warm-blooded vertebrates that have hair or fur, and nourish their young with milk.\n\n![Red Fox in Nature](https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=800&auto=format&fit=crop&q=60 \"A red fox exploring its natural woodland habitat\")\n\n#### Key Characteristics of Mammals:\n- They breathe oxygen with lungs.\n- They have specialized teeth adapted to their diet.\n- Most give birth to live young.\n\nFrom forest foxes to ocean blue whales, mammals live in almost every climate on Earth!"
+    },
+    {
+      "title": "2. Birds and the Science of Flight",
+      "description": "How feathers and light bones enable birds to soar across the sky.",
+      "order": 2,
+      "content": "### The Marvel of Avian Flight\n\nBirds are feathered, winged animals with exceptional vision and lightweight skeletal systems.\n\n![Bald Eagle Soaring](https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=800&auto=format&fit=crop&q=60 \"An eagle in flight demonstrating wing aerodynamic lift\")\n\n#### Adaptations for Flight:\n1. Hollow, air-filled bones that reduce body mass.\n2. Powerful chest muscles attached to a specialized keel bone.\n3. Aerodynamic flight feathers creating high lift with minimal drag."
+    }
+  ]
+}

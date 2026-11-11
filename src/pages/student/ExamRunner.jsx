@@ -9,7 +9,8 @@ import {
   AlertCircle,
   HelpCircle,
   Send,
-  X
+  X,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { examService } from '../../services/examService';
@@ -28,6 +29,7 @@ export const ExamRunner = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [timeRemainingSeconds, setTimeRemainingSeconds] = useState(null);
+  const [startTime, setStartTime] = useState(Date.now());
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [error, setError] = useState('');
 
@@ -52,7 +54,6 @@ export const ExamRunner = () => {
           return;
         }
 
-        // Check prior attempt limits
         if (user && examData.max_attempts > 0) {
           const priorAttempts = await examService.getStudentAttempts(examId, user.id);
           if (priorAttempts.length >= examData.max_attempts) {
@@ -63,8 +64,8 @@ export const ExamRunner = () => {
 
         setExam(examData);
         setQuestions(studentQuestions);
+        setStartTime(Date.now());
 
-        // Initialize countdown timer if duration is specified
         if (examData.duration_minutes > 0) {
           setTimeRemainingSeconds(examData.duration_minutes * 60);
         }
@@ -79,7 +80,6 @@ export const ExamRunner = () => {
     initExam();
   }, [examId, user]);
 
-  // Active countdown timer with auto-submit
   useEffect(() => {
     if (timeRemainingSeconds === null || submitted) return;
 
@@ -120,17 +120,18 @@ export const ExamRunner = () => {
         clearInterval(timerRef.current);
       }
 
-      // Format answers payload for secure server-side grading
+      const elapsedSeconds = Math.round((Date.now() - startTime) / 1000);
+
       const formattedAnswers = questions.map((q) => ({
         question_id: q.id,
         student_answer: answers[q.id] || '',
       }));
 
-      // Call secure server grading RPC
       const gradingResult = await examService.submitAndGradeExam(
         examId,
         formattedAnswers,
-        user.id
+        user.id,
+        elapsedSeconds
       );
 
       setSubmitted(true);
@@ -186,7 +187,7 @@ export const ExamRunner = () => {
 
   const currentQuestion = questions[currentIndex];
   const answeredCount = Object.keys(answers).length;
-  const isTimeCritical = timeRemainingSeconds !== null && timeRemainingSeconds <= 120; // under 2 mins
+  const isTimeCritical = timeRemainingSeconds !== null && timeRemainingSeconds <= 120;
 
   return (
     <div className="exam-runner-container">
@@ -213,27 +214,73 @@ export const ExamRunner = () => {
           <div style={{ display: 'flex', gap: 'var(--spacing-2)', alignItems: 'center' }}>
             <span className="badge badge-primary">Q{currentIndex + 1}</span>
             <span className="badge badge-secondary">{currentQuestion.points} Points</span>
+            <span className="badge badge-secondary">{currentQuestion.question_type}</span>
           </div>
         </div>
 
         <h3 className="exam-question-text">{currentQuestion.question_text}</h3>
 
-        {/* Choices */}
+        {/* Optional Question Image */}
+        {currentQuestion.image?.url && (
+          <div className="exam-question-image-box" style={{ marginBottom: 'var(--spacing-6)', textAlign: 'center' }}>
+            <img
+              src={currentQuestion.image.url}
+              alt={currentQuestion.image.alt || 'Question illustration'}
+              style={{
+                maxWidth: '100%',
+                maxHeight: 340,
+                borderRadius: 'var(--radius-card)',
+                objectFit: 'contain',
+                boxShadow: 'var(--shadow-sm)',
+                backgroundColor: 'var(--color-surface-hover)'
+              }}
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+            {currentQuestion.image.caption && (
+              <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)', marginTop: 4, fontStyle: 'italic' }}>
+                {currentQuestion.image.caption}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Choices Grid (supports both text and choice images) */}
         <div className="exam-choices-grid">
           {currentQuestion.choices.map((choice, idx) => {
-            const isSelected = answers[currentQuestion.id] === choice;
+            const choiceVal = typeof choice === 'string' ? choice : (choice.text || choice.id);
+            const choiceLabel = typeof choice === 'string' ? choice : choice.text;
+            const choiceImage = typeof choice === 'object' ? choice.image?.url : null;
+            const isSelected = answers[currentQuestion.id] === choiceVal;
+
             return (
               <button
                 key={idx}
                 type="button"
                 className={`exam-choice-item ${isSelected ? 'selected' : ''}`}
-                onClick={() => handleSelectAnswer(currentQuestion.id, choice)}
+                onClick={() => handleSelectAnswer(currentQuestion.id, choiceVal)}
                 disabled={submitting || submitted}
               >
                 <div className="exam-choice-marker">
                   {isSelected ? <CheckCircle2 size={16} /> : String.fromCharCode(65 + idx)}
                 </div>
-                <span className="exam-choice-text">{choice}</span>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minWidth: 0 }}>
+                  <span className="exam-choice-text">{choiceLabel}</span>
+                  {choiceImage && (
+                    <img
+                      src={choiceImage}
+                      alt="Choice illustration"
+                      style={{
+                        maxHeight: 140,
+                        maxWidth: 220,
+                        borderRadius: 'var(--radius-sm)',
+                        objectFit: 'cover',
+                        marginTop: 4,
+                      }}
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  )}
+                </div>
               </button>
             );
           })}

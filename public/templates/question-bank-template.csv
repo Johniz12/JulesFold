@@ -1,0 +1,4 @@
+question,type,choices,correct_answer,explanation,points,image_url
+"What organ do terrestrial mammals use to breathe?",multiple_choice,Gills|Lungs|Spiracles|Skin,Lungs,Mammals breathe atmospheric oxygen using internal lungs.,5,
+"True or False: Reptiles are endothermic (warm-blooded) animals.",true_false,True|False,False,Reptiles are ectothermic and rely on environmental heat.,5,
+"Identify the organism known for photosynthesis and chlorophyll.",multiple_choice,Green Plants|Mushrooms|Insects|Bacteria,Green Plants,Plants produce glucose through photosynthesis using chlorophyll.,5,https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=400&auto=format&fit=crop&q=60

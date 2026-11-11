@@ -1,0 +1,51 @@
+.import-studio-container {
+  max-width: 1040px;
+}
+
+.import-stepper {
+  display: flex;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-6);
+  overflow: hidden;
+}
+
+.import-step {
+  flex: 1;
+  text-align: center;
+  padding: 0.75rem 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-subtle);
+  border-right: 1px solid var(--color-border);
+  background-color: var(--color-background);
+  transition: all var(--transition-fast);
+}
+
+.import-step:last-child {
+  border-right: none;
+}
+
+.import-step.active {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.import-dropzone {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-6);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-surface-hover);
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.import-dropzone:hover {
+  border-color: var(--color-primary);
+}

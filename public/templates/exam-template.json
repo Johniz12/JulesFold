@@ -1,0 +1,71 @@
+{
+  "format": "learnhub-content",
+  "version": 1,
+  "type": "exam",
+  "exam": {
+    "title": "Zoology & Wildlife Visual Assessment",
+    "description": "Visual knowledge assessment testing animal and habitat identification.",
+    "duration_minutes": 25,
+    "passing_percentage": 75,
+    "max_attempts": 3,
+    "review_answers_enabled": true,
+    "randomize_questions": false,
+    "randomize_options": false,
+    "questions": [
+      {
+        "type": "multiple_choice",
+        "question": "Which animal is shown in the photograph below?",
+        "image": {
+          "url": "https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=800&auto=format&fit=crop&q=60",
+          "alt": "A wild red fox sitting in golden grass",
+          "caption": "Identify the wild mammal in this portrait"
+        },
+        "options": [
+          {"id": "A", "text": "Timber Wolf"},
+          {"id": "B", "text": "Red Fox"},
+          {"id": "C", "text": "Coyote"},
+          {"id": "D", "text": "Jackal"}
+        ],
+        "correct_answer": "B",
+        "explanation": "The distinctive rusty-red fur, bushy white-tipped tail, and pointed ears characterize the Red Fox (Vulpes vulpes).",
+        "points": 10
+      },
+      {
+        "type": "multiple_choice",
+        "question": "Which visual option depicts a domestic feline?",
+        "options": [
+          {
+            "id": "A",
+            "text": "Golden Retriever (Canine)",
+            "image": {
+              "url": "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&auto=format&fit=crop&q=60",
+              "alt": "Golden Retriever dog"
+            }
+          },
+          {
+            "id": "B",
+            "text": "Tabby Cat (Feline)",
+            "image": {
+              "url": "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&auto=format&fit=crop&q=60",
+              "alt": "Tabby cat portrait"
+            }
+          }
+        ],
+        "correct_answer": "B",
+        "explanation": "Option B represents a domestic cat (Felis catus), whereas Option A is a canine.",
+        "points": 10
+      },
+      {
+        "type": "true_false",
+        "question": "True or False: Birds possess lightweight, hollow bones that facilitate aerodynamic flight.",
+        "options": [
+          {"id": "A", "text": "True"},
+          {"id": "B", "text": "False"}
+        ],
+        "correct_answer": "True",
+        "explanation": "Pneumatized (hollow) bones drastically reduce weight while retaining structural strength for flight.",
+        "points": 10
+      }
+    ]
+  }
+}

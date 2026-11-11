@@ -95,13 +95,16 @@ export const LessonViewer = () => {
     );
   }
 
-  // Simple clean markdown parser for headings, paragraphs, lists, and code blocks
+  // Markdown parser supporting Headings, Paragraphs, Lists, Code, and Visual Images with Captions
   const renderFormattedContent = (text) => {
     if (!text) return null;
     const lines = text.split('\n');
     const elements = [];
     let inCodeBlock = false;
     let codeBuffer = [];
+
+    // Image regex: ![alt](url "caption") or ![alt](url)
+    const imageRegex = /^!\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)$/;
 
     lines.forEach((line, index) => {
       if (line.startsWith('```')) {
@@ -125,7 +128,26 @@ export const LessonViewer = () => {
       }
 
       const trimmed = line.trim();
-      if (!trimmed) {
+      if (!trimmed) return;
+
+      const imgMatch = trimmed.match(imageRegex);
+      if (imgMatch) {
+        const alt = imgMatch[1];
+        const url = imgMatch[2];
+        const caption = imgMatch[3] || alt;
+
+        elements.push(
+          <figure key={`img-${index}`} className="lesson-image-wrapper">
+            <img
+              src={url}
+              alt={alt}
+              className="lesson-image"
+              loading="lazy"
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+            {caption && <figcaption className="lesson-image-caption">{caption}</figcaption>}
+          </figure>
+        );
         return;
       }
 
@@ -228,7 +250,7 @@ export const LessonViewer = () => {
 
           <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 'var(--spacing-6) 0' }} />
 
-          {/* Formatted body */}
+          {/* Formatted body with responsive visual elements */}
           <div className="lesson-body-content">
             {renderFormattedContent(currentLesson.content)}
           </div>

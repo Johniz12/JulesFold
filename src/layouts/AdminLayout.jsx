@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   GraduationCap,
@@ -12,7 +12,8 @@ import {
   X,
   UserCheck,
   Shield,
-  ExternalLink
+  ExternalLink,
+  FileUp
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './AdminLayout.css';
@@ -31,6 +32,7 @@ export const AdminLayout = () => {
     { label: 'Overview', to: '/admin', icon: LayoutDashboard, end: true },
     { label: 'Courses', to: '/admin/courses', icon: BookOpen },
     { label: 'Examinations', to: '/admin/exams', icon: ClipboardList },
+    { label: 'Content Import', to: '/admin/import', icon: FileUp },
     { label: 'Students', to: '/admin/students', icon: Users },
     { label: 'Exam Results', to: '/admin/results', icon: Award },
   ];

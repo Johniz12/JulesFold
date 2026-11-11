@@ -8,7 +8,8 @@ import {
   ArrowLeft,
   ChevronRight,
   ShieldCheck,
-  RotateCcw
+  RotateCcw,
+  Image as ImageIcon
 } from 'lucide-react';
 import { examService } from '../../services/examService';
 
@@ -58,8 +59,11 @@ export const ExamResult = () => {
   const { attempt, review_allowed, questions } = reviewData;
   const isPassed = attempt?.passed;
 
+  const correctCount = questions?.filter((q) => q.is_correct).length || 0;
+  const incorrectCount = (questions?.length || 0) - correctCount;
+
   return (
-    <div className="page-container" style={{ maxWidth: 840 }}>
+    <div className="page-container" style={{ maxWidth: 880 }}>
       {/* Score Header Card */}
       <div className="card" style={{
         textAlign: 'center',
@@ -92,17 +96,42 @@ export const ExamResult = () => {
           Points Earned: <strong>{attempt.points_earned}</strong> out of <strong>{attempt.total_points}</strong> total points
         </p>
 
+        {/* Detailed Metrics Strip */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+          gap: 'var(--spacing-3)',
+          padding: 'var(--spacing-4)',
+          backgroundColor: 'var(--color-background)',
+          borderRadius: 'var(--radius-md)',
+          marginBottom: 'var(--spacing-4)',
+          textAlign: 'center'
+        }}>
+          <div>
+            <div className="text-muted text-xs font-semibold">Total Questions</div>
+            <div className="font-bold text-base">{questions?.length || 0}</div>
+          </div>
+          <div>
+            <div className="text-muted text-xs font-semibold" style={{ color: 'var(--color-success)' }}>Correct Answers</div>
+            <div className="font-bold text-base text-success">{correctCount}</div>
+          </div>
+          <div>
+            <div className="text-muted text-xs font-semibold" style={{ color: 'var(--color-danger)' }}>Incorrect Answers</div>
+            <div className="font-bold text-base text-danger">{incorrectCount}</div>
+          </div>
+          <div>
+            <div className="text-muted text-xs font-semibold">Attempt</div>
+            <div className="font-bold text-base">#{attempt.attempt_number}</div>
+          </div>
+        </div>
+
         <div style={{
           display: 'flex',
           justifyContent: 'center',
           gap: 'var(--spacing-6)',
-          paddingTop: 'var(--spacing-4)',
-          borderTop: '1px solid var(--color-border)',
-          fontSize: '0.875rem',
+          fontSize: '0.8125rem',
           color: 'var(--color-text-muted)'
         }}>
-          <div>Attempt #{attempt.attempt_number}</div>
-          <div>•</div>
           <div>Submitted: {new Date(attempt.submitted_at).toLocaleString()}</div>
         </div>
       </div>
@@ -112,42 +141,96 @@ export const ExamResult = () => {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-2)', marginBottom: 'var(--spacing-4)' }}>
             <ShieldCheck size={20} className="text-primary" />
-            <h3 style={{ margin: 0 }}>Detailed Answer Review</h3>
+            <h3 style={{ margin: 0 }}>Question-by-Question Detailed Review</h3>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4)', marginBottom: 'var(--spacing-8)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-6)', marginBottom: 'var(--spacing-8)' }}>
             {questions.map((q, idx) => (
               <div key={q.question_id || idx} className="card" style={{
-                borderLeft: `4px solid ${q.is_correct ? 'var(--color-success)' : 'var(--color-danger)'}`,
-                padding: 'var(--spacing-5)'
+                borderLeft: `5px solid ${q.is_correct ? 'var(--color-success)' : 'var(--color-danger)'}`,
+                padding: 'var(--spacing-6)'
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-2)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-3)' }}>
                   <div style={{ display: 'flex', gap: 'var(--spacing-2)', alignItems: 'center' }}>
                     <span className="badge badge-secondary">Question {idx + 1}</span>
                     <span className={`badge ${q.is_correct ? 'badge-success' : 'badge-danger'}`}>
-                      {q.is_correct ? `+${q.points_awarded} Points` : '0 Points'}
+                      {q.is_correct ? `+${q.points_awarded} Points (CORRECT)` : '0 Points (INCORRECT)'}
                     </span>
                   </div>
                   <span className="text-xs text-muted">Value: {q.points} pts</span>
                 </div>
 
-                <div className="font-semibold text-base" style={{ marginBottom: 'var(--spacing-3)' }}>
+                <div className="font-semibold text-lg" style={{ marginBottom: 'var(--spacing-3)' }}>
                   {q.question_text}
                 </div>
 
+                {/* Optional Question Image in Review */}
+                {q.image?.url && (
+                  <div style={{ marginBottom: 'var(--spacing-4)' }}>
+                    <img
+                      src={q.image.url}
+                      alt={q.image.alt || 'Question illustration'}
+                      style={{
+                        maxHeight: 200,
+                        maxWidth: '100%',
+                        borderRadius: 'var(--radius-sm)',
+                        objectFit: 'contain',
+                        backgroundColor: 'var(--color-surface-hover)'
+                      }}
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  </div>
+                )}
+
+                {/* Choices listing if available */}
+                {Array.isArray(q.choices) && q.choices.length > 0 && (
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: 'var(--spacing-2)',
+                    margin: 'var(--spacing-3) 0 var(--spacing-4)'
+                  }}>
+                    {q.choices.map((c, cIdx) => {
+                      const cText = typeof c === 'string' ? c : c.text;
+                      const cImg = typeof c === 'object' ? c.image?.url : null;
+                      return (
+                        <div key={cIdx} style={{
+                          padding: 'var(--spacing-2) var(--spacing-3)',
+                          border: '1px solid var(--color-border)',
+                          borderRadius: 'var(--radius-sm)',
+                          fontSize: '0.8125rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 'var(--spacing-2)'
+                        }}>
+                          {cImg && (
+                            <img
+                              src={cImg}
+                              alt="Choice"
+                              style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: 4 }}
+                            />
+                          )}
+                          <span>{cText}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Student answer comparison */}
                 <div style={{
                   backgroundColor: 'var(--color-secondary-light)',
-                  padding: 'var(--spacing-3) var(--spacing-4)',
+                  padding: 'var(--spacing-4)',
                   borderRadius: 'var(--radius-md)',
                   fontSize: '0.875rem',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: 4
+                  gap: 6
                 }}>
                   <div>
-                    <span className="text-muted">Your Answer: </span>
+                    <span className="text-muted">Your Selection: </span>
                     <strong style={{ color: q.is_correct ? 'var(--color-success)' : 'var(--color-danger)' }}>
-                      {q.student_answer || '(No answer provided)'}
+                      {q.student_answer || '(No answer selected)'}
                     </strong>
                   </div>
 
@@ -159,8 +242,15 @@ export const ExamResult = () => {
                   )}
 
                   {q.explanation && (
-                    <div style={{ marginTop: 4, paddingTop: 4, borderTop: '1px solid rgba(0,0,0,0.06)', color: 'var(--color-text-subtle)', fontSize: '0.8125rem' }}>
-                      <em>Explanation: {q.explanation}</em>
+                    <div style={{
+                      marginTop: 6,
+                      paddingTop: 6,
+                      borderTop: '1px solid rgba(0,0,0,0.06)',
+                      color: 'var(--color-text-main)',
+                      fontSize: '0.8125rem'
+                    }}>
+                      <strong>Explanation: </strong>
+                      <span>{q.explanation}</span>
                     </div>
                   )}
                 </div>

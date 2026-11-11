@@ -12,10 +12,12 @@ import {
   FileText,
   AlertCircle,
   X,
-  Code
+  Image as ImageIcon,
+  Upload
 } from 'lucide-react';
 import { courseService } from '../../services/courseService';
 import { lessonService } from '../../services/lessonService';
+import { storageService } from '../../services/storageService';
 
 export const AdminLessons = () => {
   const { courseId } = useParams();
@@ -33,6 +35,7 @@ export const AdminLessons = () => {
   });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const loadData = async () => {
     try {
@@ -66,13 +69,8 @@ Write your lesson content using Markdown formatting:
 - Supports headings (###)
 - Bulleted and numbered lists
 - Inline code \`code\`
-- Code blocks:
-
-\`\`\`javascript
-function example() {
-  console.log("Hello LearnHub");
-}
-\`\`\`
+- Visual Images with captions:
+![Sample Image](https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=800&auto=format&fit=crop&q=60 "Descriptive image caption")
 `,
       sequence: lessons.length + 1,
       is_published: true,
@@ -92,6 +90,26 @@ function example() {
     });
     setError('');
     setIsModalOpen(true);
+  };
+
+  const handleInsertImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      setError('');
+      const uploaded = await storageService.uploadImage(file, `lessons/${courseId}`);
+      const markdownTag = `\n\n![${file.name.replace(/\.[^/.]+$/, '')}](${uploaded.url} "${file.name}")\n\n`;
+      setFormData((prev) => ({
+        ...prev,
+        content: prev.content + markdownTag,
+      }));
+    } catch (err) {
+      setError('Image upload failed: ' + err.message);
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleSaveLesson = async (e) => {
@@ -143,7 +161,6 @@ function example() {
     const targetLesson = lessons[targetIndex];
 
     try {
-      // Swap sequences
       await Promise.all([
         lessonService.updateLesson(lesson.id, { sequence: targetLesson.sequence }),
         lessonService.updateLesson(targetLesson.id, { sequence: lesson.sequence }),
@@ -176,7 +193,7 @@ function example() {
       <div className="page-header">
         <div>
           <h1 className="page-title">{course?.title || 'Course'} — Lessons</h1>
-          <p className="text-muted text-sm">Organize and sequence the syllabus modules for this course.</p>
+          <p className="text-muted text-sm">Organize and sequence the syllabus modules with text and visual illustrations.</p>
         </div>
         <button className="btn btn-primary" onClick={openCreateModal}>
           <Plus size={18} /> Add New Lesson
@@ -195,7 +212,7 @@ function example() {
           </div>
           <h3>No Lessons in this Course</h3>
           <p className="text-muted text-sm" style={{ maxWidth: 400, margin: '0 auto var(--spacing-4)' }}>
-            Start building your curriculum by adding your first educational lesson with headings, explanations, and code examples.
+            Start building your curriculum by adding your first educational lesson with headings, explanations, and pictures.
           </p>
           <button className="btn btn-primary" onClick={openCreateModal}>
             <Plus size={18} /> Add First Lesson
@@ -285,7 +302,7 @@ function example() {
       {/* Lesson Modal */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" style={{ maxWidth: 750 }} onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" style={{ maxWidth: 800 }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3 style={{ margin: 0 }}>{editingLesson ? 'Edit Lesson' : 'Add New Lesson'}</h3>
               <button className="btn btn-secondary btn-icon" onClick={() => setIsModalOpen(false)}>
@@ -308,7 +325,7 @@ function example() {
                     id="lessonTitle"
                     type="text"
                     className="form-control"
-                    placeholder="e.g. 1. Introduction to State Management"
+                    placeholder="e.g. 1. Introduction to Animal Habitats"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     required
@@ -328,7 +345,21 @@ function example() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label" htmlFor="lessonContent">Lesson Content (Markdown, Headings, Lists, Code) *</label>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                    <label className="form-label" htmlFor="lessonContent" style={{ margin: 0 }}>
+                      Lesson Content (Headings, Paragraphs, Images, Code) *
+                    </label>
+                    <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', padding: '2px 8px' }}>
+                      <ImageIcon size={14} /> {uploadingImage ? 'Uploading...' : 'Insert Uploaded Image'}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        style={{ display: 'none' }}
+                        onChange={handleInsertImageUpload}
+                        disabled={uploadingImage}
+                      />
+                    </label>
+                  </div>
                   <textarea
                     id="lessonContent"
                     className="form-textarea"
@@ -338,6 +369,9 @@ function example() {
                     required
                     style={{ fontFamily: 'var(--font-family-mono)', fontSize: '0.875rem' }}
                   />
+                  <small className="form-help">
+                    Image syntax: <code>![Alt Text](https://... "Optional Caption")</code>
+                  </small>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-4)' }}>
@@ -370,7 +404,7 @@ function example() {
                 <button type="button" className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary" disabled={submitting}>
+                <button type="submit" className="btn btn-primary" disabled={submitting || uploadingImage}>
                   {submitting ? 'Saving...' : editingLesson ? 'Update Lesson' : 'Create Lesson'}
                 </button>
               </div>
