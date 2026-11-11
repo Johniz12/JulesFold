@@ -1,5 +1,5 @@
-import { supabase, isSupabaseConfigured } from './supabase';
-import { STORAGE_KEYS, getStored, setStored } from './mockStorage';
+import { supabase, isSupabaseConfigured } from './supabase.js';
+import { STORAGE_KEYS, getStored, setStored } from './mockStorage.js';
 
 export const courseService = {
   /**

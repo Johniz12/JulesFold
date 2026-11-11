@@ -2,6 +2,81 @@ import { courseService } from './courseService.js';
 import { lessonService } from './lessonService.js';
 import { examService } from './examService.js';
 
+/**
+ * Helper to convert structured content blocks into formatted Markdown content
+ */
+export function formatContentBlocks(blocks) {
+  if (!Array.isArray(blocks) || blocks.length === 0) return '';
+
+  return blocks
+    .map((block) => {
+      if (!block || typeof block !== 'object') return '';
+
+      const type = (block.type || '').toLowerCase();
+
+      switch (type) {
+        case 'heading': {
+          const level = Math.min(Math.max(block.level || 3, 1), 4);
+          const prefix = '#'.repeat(level);
+          return `${prefix} ${block.text || block.content || ''}`;
+        }
+        case 'paragraph':
+          return `${block.text || block.content || ''}`;
+        case 'image': {
+          const url = block.url || block.image_url || block.image?.url || '';
+          const alt = block.alt || block.caption || block.image?.alt || 'Illustration';
+          const caption = block.caption || block.image?.caption || '';
+          if (!url) return '';
+          return caption ? `![${alt}](${url} "${caption}")` : `![${alt}](${url})`;
+        }
+        case 'list': {
+          const items = Array.isArray(block.items) ? block.items : [];
+          const isOrdered = block.ordered || block.style === 'ordered';
+          return items
+            .map((item, i) => (isOrdered ? `${i + 1}. ${item}` : `- ${item}`))
+            .join('\n');
+        }
+        case 'code':
+          return `\`\`\`${block.language || ''}\n${block.code || block.content || ''}\n\`\`\``;
+        default:
+          return block.text || block.content || '';
+      }
+    })
+    .filter(Boolean)
+    .join('\n\n');
+}
+
+/**
+ * Helper to convert multi-page or structured lesson data into unified content format
+ */
+export function compileLessonContent(lesson) {
+  // 1. If explicit pages array provided
+  if (Array.isArray(lesson.pages) && lesson.pages.length > 0) {
+    return lesson.pages
+      .map((page) => {
+        if (typeof page === 'string') return page;
+        if (page.content_blocks) return formatContentBlocks(page.content_blocks);
+        if (page.content) return page.content;
+        return '';
+      })
+      .filter(Boolean)
+      .join('\n\n<!-- pagebreak -->\n\n');
+  }
+
+  // 2. If content_blocks provided directly on the lesson
+  if (Array.isArray(lesson.content_blocks) && lesson.content_blocks.length > 0) {
+    const formattedBlocks = formatContentBlocks(lesson.content_blocks);
+    // If there is legacy text content as well, prepend or append it gracefully
+    if (lesson.content && typeof lesson.content === 'string' && !formattedBlocks.includes(lesson.content.trim())) {
+      return `${lesson.content.trim()}\n\n${formattedBlocks}`;
+    }
+    return formattedBlocks;
+  }
+
+  // 3. Fallback to standard content string
+  return lesson.content || '';
+}
+
 export const importService = {
   /**
    * Validate a lesson series payload
@@ -41,9 +116,17 @@ export const importService = {
         if (!l.title || !l.title.trim()) {
           errors.push(`Lesson #${itemNumber}: 'title' is required.`);
         }
-        if (!l.content || !l.content.trim()) {
-          errors.push(`Lesson #${itemNumber} ("${l.title || 'Untitled'}"): 'content' is required.`);
+
+        const hasContent = Boolean(
+          (l.content && l.content.trim()) ||
+          (Array.isArray(l.content_blocks) && l.content_blocks.length > 0) ||
+          (Array.isArray(l.pages) && l.pages.length > 0)
+        );
+
+        if (!hasContent) {
+          errors.push(`Lesson #${itemNumber} ("${l.title || 'Untitled'}"): 'content', 'content_blocks', or 'pages' is required.`);
         }
+
         const orderNum = l.order !== undefined ? l.order : (l.sequence !== undefined ? l.sequence : itemNumber);
         if (orders.has(orderNum)) {
           errors.push(`Lesson #${itemNumber}: duplicate sequence/order number '${orderNum}'.`);
@@ -129,7 +212,6 @@ export const importService = {
           if (!Array.isArray(rawOptions) || rawOptions.length < 2) {
             errors.push(`Question #${qNum}: must contain at least 2 options/choices.`);
           } else {
-            // Check correct answer reference
             const correctAnswer = (q.correct_answer || '').toString().trim().toLowerCase();
             if (!correctAnswer) {
               errors.push(`Question #${qNum}: 'correct_answer' is missing.`);
@@ -154,7 +236,6 @@ export const importService = {
           }
         }
 
-        // Validate image URLs if specified
         if (q.image && q.image.url) {
           if (!q.image.url.startsWith('http://') && !q.image.url.startsWith('https://') && !q.image.url.startsWith('data:')) {
             errors.push(`Question #${qNum}: question image URL is not a valid web URL.`);
@@ -170,8 +251,7 @@ export const importService = {
   },
 
   /**
-   * Parse CSV Question Bank format:
-   * question,type,choices,correct_answer,explanation,points,image_url
+   * Parse CSV Question Bank format
    */
   parseCSV(csvText) {
     const lines = csvText.trim().split(/\r?\n/);
@@ -197,7 +277,6 @@ export const importService = {
       const line = lines[i].trim();
       if (!line) continue;
 
-      // Handle CSV quoting
       const cols = [];
       let inQuotes = false;
       let curr = '';
@@ -271,11 +350,13 @@ export const importService = {
     for (let i = 0; i < data.lessons.length; i++) {
       const l = data.lessons[i];
       const seq = l.order !== undefined ? l.order : (l.sequence !== undefined ? l.sequence : i + 1);
+      const compiledContent = compileLessonContent(l);
+
       const created = await lessonService.createLesson({
         course_id: courseId,
         title: l.title,
         description: l.description || '',
-        content: l.content,
+        content: compiledContent,
         sequence: seq,
         is_published: true,
       });
@@ -310,7 +391,6 @@ export const importService = {
 
     const createdQuestions = [];
     for (const q of examData.questions) {
-      // Normalize choices array
       const rawOpts = q.options || q.choices || [];
       const choices = rawOpts.map((opt, idx) => {
         if (typeof opt === 'string') {
@@ -323,7 +403,6 @@ export const importService = {
         };
       });
 
-      // Find normalized correct answer text
       let normalizedCorrect = q.correct_answer;
       const matchedChoice = choices.find(
         (c) => c.id.toLowerCase() === (q.correct_answer || '').toString().toLowerCase()

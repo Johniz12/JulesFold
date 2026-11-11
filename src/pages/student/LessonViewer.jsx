@@ -26,6 +26,7 @@ export const LessonViewer = () => {
   const [currentLesson, setCurrentLesson] = useState(null);
   const [completedLessonIds, setCompletedLessonIds] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [marking, setMarking] = useState(false);
 
@@ -42,6 +43,7 @@ export const LessonViewer = () => {
 
         const active = lList.find((l) => l.id === lessonId) || lList[0];
         setCurrentLesson(active);
+        setCurrentPageIndex(0); // Reset page on lesson switch
 
         if (user) {
           const completed = await progressService.getCompletedLessonIds(user.id, courseId);
@@ -62,6 +64,16 @@ export const LessonViewer = () => {
   const nextLesson = currentIndex < lessons.length - 1 ? lessons[currentIndex + 1] : null;
   const isCompleted = currentLesson ? completedLessonIds.includes(currentLesson.id) : false;
 
+  // Split lesson content into pages if delimited by <!-- pagebreak -->
+  const rawContent = currentLesson?.content || '';
+  const pages = rawContent.includes('<!-- pagebreak -->')
+    ? rawContent.split('<!-- pagebreak -->').map((p) => p.trim()).filter(Boolean)
+    : [rawContent];
+
+  const totalPages = Math.max(pages.length, 1);
+  const isFirstPage = currentPageIndex === 0;
+  const isLastPage = currentPageIndex === totalPages - 1;
+
   const handleMarkCompleted = async () => {
     if (!user || !currentLesson || isCompleted) return;
     try {
@@ -72,6 +84,20 @@ export const LessonViewer = () => {
       alert('Failed to update progress: ' + err.message);
     } finally {
       setMarking(false);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (!isLastPage) {
+      setCurrentPageIndex((prev) => prev + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (!isFirstPage) {
+      setCurrentPageIndex((prev) => prev - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -187,6 +213,8 @@ export const LessonViewer = () => {
     return elements;
   };
 
+  const activePageContent = pages[currentPageIndex] || '';
+
   return (
     <div className="lesson-viewer-layout">
       {/* Mobile drawer toggle */}
@@ -195,7 +223,7 @@ export const LessonViewer = () => {
           <List size={16} /> Syllabus Outline ({lessons.length})
         </button>
         <span className="text-xs text-muted">
-          Lesson {currentIndex + 1} of {lessons.length}
+          Lesson {currentIndex + 1} of {lessons.length} {totalPages > 1 && `(Page ${currentPageIndex + 1}/${totalPages})`}
         </span>
       </div>
 
@@ -239,9 +267,16 @@ export const LessonViewer = () => {
       <div className="lesson-article-container">
         <div className="lesson-card">
           <div className="lesson-article-header">
-            <span className="badge badge-primary" style={{ alignSelf: 'flex-start', marginBottom: 'var(--spacing-2)' }}>
-              Lesson {currentLesson.sequence}
-            </span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-2)' }}>
+              <span className="badge badge-primary">
+                Lesson {currentLesson.sequence}
+              </span>
+              {totalPages > 1 && (
+                <span className="badge badge-secondary" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  Page {currentPageIndex + 1} of {totalPages}
+                </span>
+              )}
+            </div>
             <h1 className="lesson-main-title">{currentLesson.title}</h1>
             {currentLesson.description && (
               <p className="lesson-lead-summary">{currentLesson.description}</p>
@@ -252,7 +287,7 @@ export const LessonViewer = () => {
 
           {/* Formatted body with responsive visual elements */}
           <div className="lesson-body-content">
-            {renderFormattedContent(currentLesson.content)}
+            {renderFormattedContent(activePageContent)}
           </div>
 
           <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 'var(--spacing-8) 0 var(--spacing-6)' }} />
@@ -260,7 +295,12 @@ export const LessonViewer = () => {
           {/* Complete & Navigation Controls */}
           <div className="lesson-navigation-footer">
             <div>
-              {prevLesson ? (
+              {/* If multi-page and not on first page, show Previous Page; otherwise Previous Lesson if available */}
+              {!isFirstPage ? (
+                <button className="btn btn-secondary" onClick={handlePrevPage}>
+                  <ChevronLeft size={16} /> Previous Page
+                </button>
+              ) : prevLesson ? (
                 <button
                   className="btn btn-secondary"
                   onClick={() => navigate(`/courses/${courseId}/lessons/${prevLesson.id}`)}
@@ -273,29 +313,38 @@ export const LessonViewer = () => {
             </div>
 
             <div style={{ display: 'flex', gap: 'var(--spacing-3)', alignItems: 'center' }}>
-              <button
-                className={`btn ${isCompleted ? 'btn-success' : 'btn-primary'}`}
-                onClick={handleMarkCompleted}
-                disabled={isCompleted || marking}
-              >
-                {isCompleted ? (
-                  <>
-                    <CheckCircle size={16} /> Completed
-                  </>
-                ) : (
-                  <>
-                    {marking ? 'Saving...' : 'Mark as Completed'}
-                  </>
-                )}
-              </button>
-
-              {nextLesson && (
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => navigate(`/courses/${courseId}/lessons/${nextLesson.id}`)}
-                >
-                  Next Lesson <ChevronRight size={16} />
+              {/* If on non-last page of a multi-page lesson, show Next Page button */}
+              {!isLastPage ? (
+                <button className="btn btn-primary" onClick={handleNextPage}>
+                  Next Page ({currentPageIndex + 2}/{totalPages}) <ChevronRight size={16} />
                 </button>
+              ) : (
+                <>
+                  <button
+                    className={`btn ${isCompleted ? 'btn-success' : 'btn-primary'}`}
+                    onClick={handleMarkCompleted}
+                    disabled={isCompleted || marking}
+                  >
+                    {isCompleted ? (
+                      <>
+                        <CheckCircle size={16} /> Completed
+                      </>
+                    ) : (
+                      <>
+                        {marking ? 'Saving...' : 'Mark as Completed'}
+                      </>
+                    )}
+                  </button>
+
+                  {nextLesson && (
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => navigate(`/courses/${courseId}/lessons/${nextLesson.id}`)}
+                    >
+                      Next Lesson <ChevronRight size={16} />
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>

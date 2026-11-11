@@ -12,10 +12,15 @@ const STORAGE_KEYS = {
   ANSWERS: 'learnhub_mock_answers',
 };
 
+const memoryStorage = new Map();
+
 const getStored = (key, fallback) => {
   try {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : fallback;
+    if (typeof localStorage !== 'undefined') {
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : fallback;
+    }
+    return memoryStorage.has(key) ? memoryStorage.get(key) : fallback;
   } catch {
     return fallback;
   }
@@ -23,7 +28,11 @@ const getStored = (key, fallback) => {
 
 const setStored = (key, value) => {
   try {
-    localStorage.setItem(key, JSON.stringify(value));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(key, JSON.stringify(value));
+    } else {
+      memoryStorage.set(key, value);
+    }
   } catch (err) {
     console.error('Storage save error:', err);
   }
