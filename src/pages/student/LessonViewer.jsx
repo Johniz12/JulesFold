@@ -12,7 +12,8 @@ import {
   Award,
   HelpCircle,
   LayoutDashboard,
-  RotateCcw
+  CheckCircle2,
+  Circle
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { courseService } from '../../services/courseService';
@@ -36,43 +37,74 @@ export const LessonViewer = () => {
   const [savingCompletion, setSavingCompletion] = useState(false);
   const [completionError, setCompletionError] = useState(null);
   const [courseAssessments, setCourseAssessments] = useState([]);
-  const [reviewMode, setReviewMode] = useState(false);
 
-  // Keep track of completion calls in progress to guarantee idempotency
+  // Ref to track if user actively navigated to final page within the current lesson session
+  // Initial lesson selection should NEVER auto-complete the lesson!
+  const hasUserNavigatedToFinalPageRef = useRef(false);
+  const activeLessonIdRef = useRef(null);
   const completingRef = useRef(false);
 
+  // 1. Initial Course & Lesson List Loading
   useEffect(() => {
-    const loadLessonData = async () => {
+    let isMounted = true;
+
+    const loadData = async () => {
       try {
         setLoading(true);
         setCompletionError(null);
-        setReviewMode(false);
+
         const [c, lList, allExams] = await Promise.all([
           courseService.getCourseById(courseId),
           lessonService.getLessonsByCourse(courseId, false),
           examService.getAvailableExams(),
         ]);
+
+        if (!isMounted) return;
+
         setCourse(c);
         setLessons(lList);
         setCourseAssessments(allExams.filter((e) => e.course_id === courseId));
 
-        const active = lList.find((l) => l.id === lessonId) || lList[0];
-        setCurrentLesson(active);
-        setCurrentPageIndex(0); // Reset page on lesson switch
+        const targetLesson = lList.find((l) => l.id === lessonId) || lList[0];
+        setCurrentLesson(targetLesson);
+        setCurrentPageIndex(0);
+        hasUserNavigatedToFinalPageRef.current = false;
+        activeLessonIdRef.current = targetLesson?.id || null;
 
         if (user) {
           const completed = await progressService.getCompletedLessonIds(user.id, courseId);
-          setCompletedLessonIds(completed);
+          if (isMounted) {
+            setCompletedLessonIds(completed);
+          }
         }
       } catch (err) {
-        console.error('Failed to load lesson:', err);
+        console.error('Failed to load lesson syllabus:', err);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
-    loadLessonData();
-  }, [courseId, lessonId, user]);
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [courseId, user]);
+
+  // 2. Switching Lessons via URL change (Sidebar click or URL navigation)
+  useEffect(() => {
+    if (!lessons.length) return;
+
+    const targetLesson = lessons.find((l) => l.id === lessonId);
+    if (targetLesson && targetLesson.id !== activeLessonIdRef.current) {
+      activeLessonIdRef.current = targetLesson.id;
+      setCurrentLesson(targetLesson);
+      setCurrentPageIndex(0);
+      hasUserNavigatedToFinalPageRef.current = false;
+      setCompletionError(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [lessonId, lessons]);
 
   const currentIndex = lessons.findIndex((l) => l.id === currentLesson?.id);
   const prevLesson = currentIndex > 0 ? lessons[currentIndex - 1] : null;
@@ -89,63 +121,69 @@ export const LessonViewer = () => {
   const isFirstPage = currentPageIndex === 0;
   const isLastPage = currentPageIndex === totalPages - 1;
 
-  // Automatic completion effect: Triggered when reaching the final page
-  useEffect(() => {
-    if (!user || !currentLesson || !isLastPage || loading) return;
+  // 3. Independent Completion Handler
+  const triggerLessonCompletion = async (lessonToComplete) => {
+    if (!user || !lessonToComplete) return;
 
-    // If already marked completed in local state, no need to re-record
-    if (completedLessonIds.includes(currentLesson.id)) {
-      return;
-    }
-
+    // Check if already recorded in completedLessonIds
+    if (completedLessonIds.includes(lessonToComplete.id)) return;
     if (completingRef.current) return;
 
-    const recordAutomaticCompletion = async () => {
-      try {
-        completingRef.current = true;
-        setSavingCompletion(true);
-        setCompletionError(null);
-        await progressService.completeLesson(user.id, currentLesson.id, courseId);
-        setCompletedLessonIds((prev) => {
-          if (prev.includes(currentLesson.id)) return prev;
-          return [...prev, currentLesson.id];
-        });
-      } catch (err) {
-        console.error('Failed to automatically record lesson completion:', err);
-        setCompletionError('Failed to record lesson completion. Please check your connection.');
-      } finally {
-        setSavingCompletion(false);
-        completingRef.current = false;
-      }
-    };
+    try {
+      completingRef.current = true;
+      setSavingCompletion(true);
+      setCompletionError(null);
 
-    recordAutomaticCompletion();
-  }, [isLastPage, user, currentLesson, courseId, completedLessonIds, loading]);
+      await progressService.completeLesson(user.id, lessonToComplete.id, courseId);
 
+      setCompletedLessonIds((prev) => {
+        if (prev.includes(lessonToComplete.id)) return prev;
+        return [...prev, lessonToComplete.id];
+      });
+    } catch (err) {
+      console.error('Failed to record lesson completion:', err);
+      setCompletionError('Failed to record lesson completion. Please check your network connection.');
+    } finally {
+      setSavingCompletion(false);
+      completingRef.current = false;
+    }
+  };
+
+  // 4. Navigation Handlers
   const handleNextPage = () => {
     if (!isLastPage) {
-      setCurrentPageIndex((prev) => prev + 1);
+      const nextIdx = currentPageIndex + 1;
+      setCurrentPageIndex(nextIdx);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // If this navigation lands on the final page of a multi-page lesson, mark as completed
+      if (nextIdx === totalPages - 1) {
+        hasUserNavigatedToFinalPageRef.current = true;
+        triggerLessonCompletion(currentLesson);
+      }
     }
   };
 
   const handlePrevPage = () => {
     if (!isFirstPage) {
       setCurrentPageIndex((prev) => prev - 1);
-      setReviewMode(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
+  // For single-page lessons, student reaches the end of the content and confirms finishing
+  const handleFinishSinglePageLesson = () => {
+    hasUserNavigatedToFinalPageRef.current = true;
+    triggerLessonCompletion(currentLesson);
+  };
+
   // Identify quizzes vs comprehensive exams associated with this course
-  // Quizzes: titled with 'quiz', duration <= 15m, or description mentions quiz
   const quizzes = courseAssessments.filter((a) => {
     const titleLower = (a.title || '').toLowerCase();
     const descLower = (a.description || '').toLowerCase();
     return titleLower.includes('quiz') || descLower.includes('quiz') || (a.duration_minutes && a.duration_minutes <= 15);
   });
 
-  // Exams: comprehensive exams not counted as short quizzes, or all available course exams
   const exams = courseAssessments.filter((a) => !quizzes.includes(a));
   const primaryQuiz = quizzes.length > 0 ? quizzes[0] : null;
   const primaryExam = exams.length > 0 ? exams[0] : (courseAssessments.length > 0 && !primaryQuiz ? courseAssessments[0] : null);
@@ -178,7 +216,6 @@ export const LessonViewer = () => {
     let inCodeBlock = false;
     let codeBuffer = [];
 
-    // Image regex: ![alt](url "caption") or ![alt](url)
     const imageRegex = /^!\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)$/;
 
     lines.forEach((line, index) => {
@@ -264,17 +301,18 @@ export const LessonViewer = () => {
 
   const activePageContent = pages[currentPageIndex] || '';
 
-  // Show completion screen if on final page, completion saved (or already completed), and not explicitly reviewing content
-  const shouldShowCompletionScreen = isLastPage && (isCompleted || !savingCompletion) && !completionError && !reviewMode;
-
   return (
     <div className="lesson-viewer-layout">
-      {/* Mobile drawer toggle */}
+      {/* Mobile syllabus bar */}
       <div className="lesson-mobile-bar">
-        <button className="btn btn-secondary btn-sm" onClick={() => setSidebarOpen(!sidebarOpen)}>
+        <button
+          className="btn btn-secondary btn-sm"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          aria-label="Toggle Syllabus Outline"
+        >
           <List size={16} /> Syllabus Outline ({lessons.length})
         </button>
-        <span className="text-xs text-muted">
+        <span className="text-sm font-semibold text-muted">
           Lesson {currentIndex + 1} of {lessons.length} {totalPages > 1 && `(Page ${currentPageIndex + 1}/${totalPages})`}
         </span>
       </div>
@@ -282,31 +320,49 @@ export const LessonViewer = () => {
       {/* Sidebar Table of Contents */}
       <aside className={`lesson-toc-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="lesson-toc-header">
-          <Link to={`/courses/${courseId}`} className="text-sm font-semibold text-muted" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <ArrowLeft size={14} /> {course?.title || 'Course'}
+          <Link
+            to={`/courses/${courseId}`}
+            className="text-sm font-semibold text-muted lesson-back-link"
+          >
+            <ArrowLeft size={16} /> {course?.title || 'Back to Course'}
           </Link>
-          <h4 style={{ margin: 'var(--spacing-2) 0 0', fontSize: '1.1rem' }}>Course Syllabus</h4>
+          <div className="lesson-toc-title-row">
+            <h3 className="lesson-toc-heading">Course Syllabus</h3>
+            <span className="badge badge-secondary">{completedLessonIds.length}/{lessons.length} Done</span>
+          </div>
         </div>
 
-        <nav className="lesson-toc-list">
+        <nav className="lesson-toc-list" aria-label="Lessons List">
           {lessons.map((lesson) => {
             const isActive = lesson.id === currentLesson.id;
-            const completed = completedLessonIds.includes(lesson.id);
+            const isLessonDone = completedLessonIds.includes(lesson.id);
 
             return (
               <button
                 key={lesson.id}
                 type="button"
-                className={`lesson-toc-item ${isActive ? 'active' : ''}`}
+                className={`lesson-toc-item ${isActive ? 'active' : ''} ${isLessonDone ? 'completed-item' : ''}`}
                 onClick={() => {
                   setSidebarOpen(false);
                   navigate(`/courses/${courseId}/lessons/${lesson.id}`);
                 }}
               >
-                <div className={`lesson-toc-indicator ${completed ? 'completed' : ''}`}>
-                  {completed ? <Check size={12} /> : lesson.sequence}
+                <div className={`lesson-toc-indicator ${isLessonDone ? 'completed' : isActive ? 'active-indicator' : 'not-started'}`}>
+                  {isLessonDone ? <Check size={14} strokeWidth={3} /> : lesson.sequence}
                 </div>
-                <span className="lesson-toc-item-title">{lesson.title}</span>
+
+                <div className="lesson-toc-info">
+                  <span className="lesson-toc-item-title">{lesson.title}</span>
+                  <div className="lesson-toc-item-meta">
+                    {isLessonDone ? (
+                      <span className="text-success text-xs font-semibold">Completed</span>
+                    ) : isActive ? (
+                      <span className="text-primary text-xs font-semibold">Currently Reading</span>
+                    ) : (
+                      <span className="text-muted text-xs">Lesson {lesson.sequence}</span>
+                    )}
+                  </div>
+                </div>
               </button>
             );
           })}
@@ -316,7 +372,7 @@ export const LessonViewer = () => {
       {sidebarOpen && <div className="lesson-toc-backdrop" onClick={() => setSidebarOpen(false)} />}
 
       {/* Main Lesson Content Area */}
-      <div className="lesson-article-container">
+      <main className="lesson-article-container">
         {completionError && (
           <div className="alert alert-danger" style={{ marginBottom: 'var(--spacing-4)' }}>
             <div>{completionError}</div>
@@ -330,14 +386,97 @@ export const LessonViewer = () => {
           </div>
         )}
 
-        {shouldShowCompletionScreen ? (
-          /* Post-Lesson Completion Screen */
-          <div className="card lesson-completion-screen">
+        {/* Lesson Reading Card */}
+        <article className="card lesson-card">
+          <header className="lesson-article-header">
+            <div className="lesson-meta-bar">
+              <span className="badge badge-primary">
+                Lesson {currentLesson.sequence}
+              </span>
+
+              {totalPages > 1 && (
+                <span className="badge badge-secondary" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  Page {currentPageIndex + 1} of {totalPages}
+                </span>
+              )}
+
+              {isCompleted && (
+                <span className="badge badge-success" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <CheckCircle size={14} /> Completed
+                </span>
+              )}
+            </div>
+
+            <h1 className="lesson-main-title">{currentLesson.title}</h1>
+            {currentLesson.description && (
+              <p className="lesson-lead-summary">{currentLesson.description}</p>
+            )}
+          </header>
+
+          <hr className="lesson-divider" />
+
+          {/* Formatted Content */}
+          <div className="lesson-body-content">
+            {renderFormattedContent(activePageContent)}
+          </div>
+
+          <hr className="lesson-divider-footer" />
+
+          {/* Navigation Controls */}
+          <footer className="lesson-navigation-footer">
+            <div className="footer-nav-left">
+              {!isFirstPage ? (
+                <button className="btn btn-secondary" onClick={handlePrevPage}>
+                  <ChevronLeft size={18} /> Previous Page
+                </button>
+              ) : prevLesson ? (
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => navigate(`/courses/${courseId}/lessons/${prevLesson.id}`)}
+                >
+                  <ChevronLeft size={18} /> Previous Lesson
+                </button>
+              ) : (
+                <div />
+              )}
+            </div>
+
+            <div className="footer-nav-right">
+              {/* Multi-page lesson: Next Page button */}
+              {!isLastPage && (
+                <button className="btn btn-primary" onClick={handleNextPage}>
+                  Next Page ({currentPageIndex + 2}/{totalPages}) <ChevronRight size={18} />
+                </button>
+              )}
+
+              {/* Single-page lesson: Student confirms finishing to record completion */}
+              {isLastPage && totalPages === 1 && !isCompleted && (
+                <button className="btn btn-primary" onClick={handleFinishSinglePageLesson}>
+                  Finish Lesson & Mark Complete <Check size={18} />
+                </button>
+              )}
+
+              {/* Next Lesson navigation when on last page */}
+              {isLastPage && nextLesson && (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => navigate(`/courses/${courseId}/lessons/${nextLesson.id}`)}
+                >
+                  Next Lesson: {nextLesson.title} <ChevronRight size={18} />
+                </button>
+              )}
+            </div>
+          </footer>
+        </article>
+
+        {/* Post-Lesson Completion Section (Displayed on final page once completed) */}
+        {isLastPage && isCompleted && (
+          <section className="card lesson-completion-screen" style={{ marginTop: 'var(--spacing-8)' }}>
             <div className="completion-badge-icon">
               <CheckCircle size={48} />
             </div>
 
-            <h1 className="completion-title">Lesson Completed!</h1>
+            <h2 className="completion-title">Lesson Completed!</h2>
             <p className="completion-subtitle">
               Congratulations! You have successfully finished <strong>{currentLesson.title}</strong>.
             </p>
@@ -407,17 +546,8 @@ export const LessonViewer = () => {
                 </div>
               )}
 
-              {/* Option C: Return to Dashboard & Course Navigation */}
+              {/* Course Navigation Links */}
               <div className="completion-nav-links">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setReviewMode(true)}
-                  title="Review lesson text and pages"
-                >
-                  <RotateCcw size={16} /> Review Lesson Content
-                </button>
-
                 <Link to={`/courses/${courseId}`} className="btn btn-secondary">
                   <BookOpen size={16} /> Course Syllabus
                 </Link>
@@ -427,75 +557,9 @@ export const LessonViewer = () => {
                 </Link>
               </div>
             </div>
-          </div>
-        ) : (
-          /* Normal Lesson Content View */
-          <div className="card lesson-card">
-            <div className="lesson-article-header">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-2)' }}>
-                <span className="badge badge-primary">
-                  Lesson {currentLesson.sequence}
-                </span>
-                {totalPages > 1 && (
-                  <span className="badge badge-secondary" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                    Page {currentPageIndex + 1} of {totalPages}
-                  </span>
-                )}
-              </div>
-              <h1 className="lesson-main-title">{currentLesson.title}</h1>
-              {currentLesson.description && (
-                <p className="lesson-lead-summary">{currentLesson.description}</p>
-              )}
-            </div>
-
-            <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 'var(--spacing-6) 0' }} />
-
-            {/* Formatted body with responsive visual elements */}
-            <div className="lesson-body-content">
-              {renderFormattedContent(activePageContent)}
-            </div>
-
-            <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 'var(--spacing-8) 0 var(--spacing-6)' }} />
-
-            {/* Complete & Navigation Controls */}
-            <div className="lesson-navigation-footer">
-              <div>
-                {/* If multi-page and not on first page, show Previous Page; otherwise Previous Lesson if available */}
-                {!isFirstPage ? (
-                  <button className="btn btn-secondary" onClick={handlePrevPage}>
-                    <ChevronLeft size={16} /> Previous Page
-                  </button>
-                ) : prevLesson ? (
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => navigate(`/courses/${courseId}/lessons/${prevLesson.id}`)}
-                  >
-                    <ChevronLeft size={16} /> Previous Lesson
-                  </button>
-                ) : (
-                  <div />
-                )}
-              </div>
-
-              <div style={{ display: 'flex', gap: 'var(--spacing-3)', alignItems: 'center' }}>
-                {/* If on non-last page of a multi-page lesson, show Next Page button */}
-                {!isLastPage ? (
-                  <button className="btn btn-primary" onClick={handleNextPage}>
-                    Next Page ({currentPageIndex + 2}/{totalPages}) <ChevronRight size={16} />
-                  </button>
-                ) : isCompleted ? (
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => setReviewMode(false)}
-                  >
-                    View Completion Summary <CheckCircle size={16} style={{ color: 'var(--color-success)' }} />
-                  </button>
-                ) : null}
-              </div>
-            </div>
-          </div>
+          </section>
         )}
-      </div>
+      </main>
     </div>
   );
 };
